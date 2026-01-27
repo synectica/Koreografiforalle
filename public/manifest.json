@@ -1,0 +1,15 @@
+{
+  "name": "KOREOGRAFI - BETALING",
+  "short_name": "BETALING",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#EA4335",
+  "icons": [
+    {
+      "src": "https://ui-avatars.com/api/?name=K&background=EA4335&color=fff&size=512&font-size=0.7&bold=true",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
