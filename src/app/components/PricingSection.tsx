@@ -14,7 +14,6 @@ export function PricingSection({ lang }: { lang: string }) {
     { name: "Privat / Gruppe", price: "Avtale", info: "Individuell", description: "Skreddersydd opplegg" }
   ];
 
-  // Логіка автоматичного повернення картки до початкового стану
   const resetCard = (index: number) => {
     setSuccessStates(prev => ({ ...prev, [index]: false }));
     setSliderVals(prev => ({ ...prev, [index]: 0 }));
@@ -30,11 +29,6 @@ export function PricingSection({ lang }: { lang: string }) {
           box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.3);
           transition: all 0.3s ease;
           user-select: none; -webkit-user-select: none;
-        }
-        .slider-light-mode {
-          box-shadow: inset 4px 4px 12px rgba(0, 0, 0, 0.15), inset -2px -2px 6px rgba(255, 255, 255, 0.2) !important;
-          border-color: rgba(0, 0, 0, 0.05) !important;
-          background: rgba(0, 0, 0, 0.03) !important;
         }
         .slider-text-base {
           position: absolute; inset: 0; z-index: 2;
@@ -81,11 +75,10 @@ export function PricingSection({ lang }: { lang: string }) {
                 }}
               >
                 {isSuccess && (
-                  <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in">
+                  <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
                     <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
                     <p className="text-black font-bold text-xl mt-6 uppercase">Vi gleder oss til å se deg!</p>
-                    <p className="text-[#f97316] font-bold text-xs mt-4 uppercase tracking-widest">Vipps åpnes nå...</p>
                   </div>
                 )}
 
@@ -97,15 +90,13 @@ export function PricingSection({ lang }: { lang: string }) {
 
                 <div className="flex flex-col items-center py-6 min-h-[160px] justify-center">
                   <span className="text-7xl font-bold tracking-tighter leading-none">{plan.price}</span>
-                  <span className="text-lg font-bold uppercase tracking-widest mt-2" style={{ color: '#f97316' }}>
-                    {plan.price === "Avtale" ? "Pris" : "NOK"}
-                  </span>
+                  <span className="text-lg font-bold uppercase tracking-widest mt-2" style={{ color: '#f97316' }}>{plan.price === "Avtale" ? "Pris" : "NOK"}</span>
                 </div>
 
                 <div className="w-full h-24 flex flex-col justify-end">
                   <ManualSlider 
                     id={`slider-card-${index}`}
-                    beforeLabel={plan.price === "Avtale" ? "Betal med Vipps" : `Betal ${plan.price} med Vipps`}
+                    beforeLabel={plan.price === "Avtale" ? "Betal із Vipps" : `Betal ${plan.price} із Vipps`}
                     afterLabel="Gå til betaling"
                     color="#f97316" 
                     icon={<CreditCard className="w-5 h-5"/>} 
@@ -113,17 +104,10 @@ export function PricingSection({ lang }: { lang: string }) {
                     onValueChange={(v) => setSliderVals(prev => ({ ...prev, [index]: v }))}
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
-                      
                       const bizPhone = "4798148210";
                       const priceValue = parseInt(plan.price);
-                      const url = !isNaN(priceValue) 
-                        ? `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=2&a=${priceValue * 100}`
-                        : `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=1`;
-                      
-                      // 1. Перехід на Vipps через 3 секунди
+                      const url = !isNaN(priceValue) ? `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=2&a=${priceValue * 100}` : `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=1`;
                       setTimeout(() => { window.location.assign(url); }, 3000);
-                      
-                      // 2. Повернення картки до базової через 5 секунд
                       setTimeout(() => { resetCard(index); }, 5000);
                     }}
                   />
@@ -133,13 +117,14 @@ export function PricingSection({ lang }: { lang: string }) {
           })}
         </div>
 
-        <div className="mt-8 w-full max-w-5xl">
+        {/* ОСЬ ЦЯ ОДНА ПРАВКА: Обмеження ширини футер-слайдера */}
+        <div className="mt-12 w-full max-w-[340px]">
            <ManualSlider 
              id="slider-booking-footer"
-             beforeLabel="Meld deg på gratis prøvetime" 
+             beforeLabel="Meld deg på prøvetime" 
              afterLabel="Gå til booking"
              color="#22c55e" 
-             icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>} 
+             icon={<CreditCard className="w-5 h-5"/>} 
              isLightMode={false}
              onValueChange={() => {}}
              onComplete={() => {
@@ -152,7 +137,6 @@ export function PricingSection({ lang }: { lang: string }) {
   );
 }
 
-// Компонент ManualSlider залишається без змін (як у вашому коді)
 function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, onValueChange, isLightMode }: any) {
   const [position, setPosition] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -161,102 +145,53 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
 
   useEffect(() => {
     if (id === "slider-booking-footer" && position > 0 && !isDragging) {
-      const timer = setTimeout(() => {
-        setPosition(0);
-        positionRef.current = 0;
-        onValueChange(0);
-      }, 1000);
+      const timer = setTimeout(() => { setPosition(0); positionRef.current = 0; onValueChange(0); }, 1000);
       return () => clearTimeout(timer);
     }
   }, [position, isDragging, id, onValueChange]);
 
-  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (activeSliderId !== null) return;
-    activeSliderId = id;
-    setIsDragging(true);
-  };
+  const handleStart = () => { if (activeSliderId !== null) return; activeSliderId = id; setIsDragging(true); };
 
   useEffect(() => {
-    const handleMove = (e: MouseEvent | TouchEvent) => {
+    const handleMove = (e: any) => {
       if (!isDragging || activeSliderId !== id || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const x = clientX - rect.left - 32;
       const maxPath = rect.width - 64;
-      
       const newPos = Math.max(0, Math.min(x, maxPath));
-      positionRef.current = newPos;
-      setPosition(newPos);
+      positionRef.current = newPos; setPosition(newPos);
       onValueChange((newPos / maxPath) * 100);
     };
-
     const handleEnd = () => {
       if (!isDragging || activeSliderId !== id) return;
-      setIsDragging(false);
-      activeSliderId = null;
-
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const maxPath = rect.width - 64;
-
-      if (positionRef.current >= maxPath * 0.95) {
-        setPosition(maxPath);
-        onValueChange(100);
-        setTimeout(onComplete, 200);
-      } else {
-        setPosition(0);
-        positionRef.current = 0;
-        onValueChange(0);
-      }
+      setIsDragging(false); activeSliderId = null;
+      const maxPath = containerRef.current!.offsetWidth - 64;
+      if (positionRef.current >= maxPath * 0.95) { setPosition(maxPath); onValueChange(100); setTimeout(onComplete, 200); }
+      else { setPosition(0); positionRef.current = 0; onValueChange(0); }
     };
-
     if (isDragging) {
-      window.addEventListener("mousemove", handleMove);
-      window.addEventListener("mouseup", handleEnd);
-      window.addEventListener("touchmove", handleMove);
-      window.addEventListener("touchend", handleEnd);
+      window.addEventListener("mousemove", handleMove); window.addEventListener("mouseup", handleEnd);
+      window.addEventListener("touchmove", handleMove); window.addEventListener("touchend", handleEnd);
     }
     return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleEnd);
-      window.removeEventListener("touchmove", handleMove);
-      window.removeEventListener("touchend", handleEnd);
+      window.removeEventListener("mousemove", handleMove); window.removeEventListener("mouseup", handleEnd);
+      window.removeEventListener("touchmove", handleMove); window.removeEventListener("touchend", handleEnd);
     };
   }, [isDragging, id, onComplete, onValueChange]);
 
   const textStyle = { fontWeight: 800, textTransform: 'uppercase' as const, fontSize: '11px', letterSpacing: '1px' };
 
   return (
-    <div ref={containerRef} className={`slider-wrapper ${isLightMode ? 'slider-light-mode' : ''}`}>
+    <div ref={containerRef} className={`slider-wrapper`}>
       <div className="slider-text-base">
         <span style={{ ...textStyle, color: isLightMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)' }}>{beforeLabel}</span>
       </div>
-      
-      <div 
-        className="glass-fill" 
-        style={{ 
-          width: position > 0 ? `${position + 56}px` : 0, 
-          transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          opacity: position > 0 ? 1 : 0
-        }} 
-      />
-
+      <div className="glass-fill" style={{ width: position > 0 ? `${position + 56}px` : 0, transition: isDragging ? 'none' : '0.4s', opacity: position > 0 ? 1 : 0 }} />
       <div className="slider-text-active">
-        <span style={{ ...textStyle, color, opacity: position > 120 ? 1 : 0, transition: 'opacity 0.2s ease' }}>
-          {afterLabel}
-        </span>
+        <span style={{ ...textStyle, color, opacity: position > 120 ? 1 : 0, transition: '0.2s' }}>{afterLabel}</span>
       </div>
-      <div 
-        className="thumb-element" 
-        onMouseDown={handleStart} 
-        onTouchStart={handleStart}
-        style={{ 
-          left: position + 4, 
-          transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
-          color,
-          backgroundColor: isLightMode ? '#ffffff' : '#ffffff'
-        }}
-      >
+      <div className="thumb-element" onMouseDown={handleStart} onTouchStart={handleStart} style={{ left: position + 4, transition: isDragging ? 'none' : '0.4s', color }}>
         {icon}
       </div>
     </div>
