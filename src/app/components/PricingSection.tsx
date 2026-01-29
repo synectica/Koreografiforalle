@@ -14,6 +14,12 @@ export function PricingSection({ lang }: { lang: string }) {
     { name: "Privat / Gruppe", price: "Avtale", info: "Individuell", description: "Skreddersydd opplegg" }
   ];
 
+  // Логіка автоматичного повернення картки до початкового стану
+  const resetCard = (index: number) => {
+    setSuccessStates(prev => ({ ...prev, [index]: false }));
+    setSliderVals(prev => ({ ...prev, [index]: 0 }));
+  };
+
   return (
     <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent">
       <style>{`
@@ -21,18 +27,15 @@ export function PricingSection({ lang }: { lang: string }) {
           position: relative; width: 100%; height: 64px;
           background: rgba(255, 255, 255, 0.08); border-radius: 9999px;
           overflow: hidden; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);
-          /* ЗАВЖДИ ВНУТРІШНЯ ТІНЬ */
           box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.3);
           transition: all 0.3s ease;
           user-select: none; -webkit-user-select: none;
         }
-
         .slider-light-mode {
           box-shadow: inset 4px 4px 12px rgba(0, 0, 0, 0.15), inset -2px -2px 6px rgba(255, 255, 255, 0.2) !important;
           border-color: rgba(0, 0, 0, 0.05) !important;
           background: rgba(0, 0, 0, 0.03) !important;
         }
-
         .slider-text-base {
           position: absolute; inset: 0; z-index: 2;
           display: flex; align-items: center; justify-content: center; pointer-events: none;
@@ -110,12 +113,18 @@ export function PricingSection({ lang }: { lang: string }) {
                     onValueChange={(v) => setSliderVals(prev => ({ ...prev, [index]: v }))}
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
+                      
                       const bizPhone = "4798148210";
                       const priceValue = parseInt(plan.price);
                       const url = !isNaN(priceValue) 
                         ? `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=2&a=${priceValue * 100}`
                         : `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=1`;
+                      
+                      // 1. Перехід на Vipps через 3 секунди
                       setTimeout(() => { window.location.assign(url); }, 3000);
+                      
+                      // 2. Повернення картки до базової через 5 секунд
+                      setTimeout(() => { resetCard(index); }, 5000);
                     }}
                   />
                 </div>
@@ -143,6 +152,7 @@ export function PricingSection({ lang }: { lang: string }) {
   );
 }
 
+// Компонент ManualSlider залишається без змін (як у вашому коді)
 function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, onValueChange, isLightMode }: any) {
   const [position, setPosition] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
