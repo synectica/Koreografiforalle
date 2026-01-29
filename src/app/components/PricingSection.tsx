@@ -1,17 +1,12 @@
 "use client";
-import React, { useState } from "react";
-import { CreditCard, ArrowDown, Check, Heart } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { CreditCard, Heart } from "lucide-react";
+
+let activeSliderId: string | null = null;
 
 export function PricingSection({ lang }: { lang: string }) {
-  const [flippedStates, setFlippedStates] = useState<{ [key: number]: boolean }>({
-    0: false, 1: false, 2: false
-  });
-
-  const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({
-    0: false, 1: false, 2: false
-  });
-
-  const [activeCardIndex, setActiveCardIndex] = useState<number | null>(null);
+  const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({ 0: false, 1: false, 2: false });
+  const [sliderVals, setSliderVals] = useState<{ [key: number]: number }>({ 0: 0, 1: 0, 2: 0 });
 
   const pricingData = [
     { name: "60 Minutter", price: "110", info: "Tirsdager", description: "Nybegynnere & Grunnleggende" },
@@ -19,240 +14,241 @@ export function PricingSection({ lang }: { lang: string }) {
     { name: "Privat / Gruppe", price: "Avtale", info: "Individuell", description: "Skreddersydd opplegg" }
   ];
 
-  const toggleCard = (index: number) => {
-    if (successStates[index]) return;
-    setFlippedStates(prev => ({ ...prev, [index]: !prev[index] }));
-    if (!flippedStates[index]) {
-      setActiveCardIndex(index);
-    }
-  };
-
-  const resetCards = () => {
-    setFlippedStates({ 0: false, 1: false, 2: false });
-    setSuccessStates({ 0: false, 1: false, 2: false });
-    setActiveCardIndex(null);
-  };
-
-  const handleVippsClick = (index: number) => {
-    const plan = pricingData[index];
-    setActiveCardIndex(index);
-
-    // Копіюємо суму одразу
-    if (plan.price !== "Avtale") {
-      navigator.clipboard.writeText(plan.price).catch(() => {
-        const el = document.createElement('textarea');
-        el.value = plan.price;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-      });
-    }
-
-    // 1. ЗАЙТРИМКА 0.5 СЕКУНДИ ДЛЯ ЕФЕКТУ НАТИСНУТОЇ КНОПКИ
-    setTimeout(() => {
-      setSuccessStates(prev => ({ ...prev, [index]: true }));
-
-      const bizPhone = "4798148210";
-      const priceValue = parseInt(plan.price);
-      
-      let vippsUrl;
-      if (!isNaN(priceValue)) {
-        const amountInOre = priceValue * 100;
-        vippsUrl = `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=2&a=${amountInOre}`;
-      } else {
-        vippsUrl = `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=1`;
-      }
-
-      // 2. ЗАЙТРИМКА 3 СЕКУНДИ ПЕРЕД ПЕРЕХОДОМ У VIPPS
-      setTimeout(() => {
-        window.location.assign(vippsUrl);
-      }, 3000);
-    }, 500); 
-  };
-
-  const isAnyCardFlipped = Object.values(flippedStates).some(state => state);
-
   return (
-    <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent overflow-visible">
+    <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent">
       <style>{`
-        @keyframes softFlow {
-          0% { transform: translate(-60%, -50%) scale(1); opacity: 0.6; }
-          50% { transform: translate(-40%, -50%) scale(1.2); opacity: 0.9; }
-          100% { transform: translate(-60%, -50%) scale(1); opacity: 0.6; }
-        }
-        @keyframes strongFlow {
-          0% { transform: translate(-55%, -50%) scale(1.1); opacity: 0.8; }
-          50% { transform: translate(-45%, -50%) scale(1.35); opacity: 1; }
-          100% { transform: translate(-55%, -50%) scale(1.1); opacity: 0.8; }
-        }
-        @keyframes heartBeatGlow {
-          0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255,255,255,0.4)); }
-          25% { transform: scale(1.3); filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); }
-          40% { transform: scale(1.1); filter: drop-shadow(0 0 10px rgba(255,255,255,0.6)); }
-          60% { transform: scale(1.4); filter: drop-shadow(0 0 25px rgba(255,255,255,0.9)); }
-          100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255,255,255,0.4)); }
-        }
-        .animate-heart-glow { animation: heartBeatGlow 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-        
-        .glass-btn-base {
-          position: relative; overflow: hidden;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-          border: 1px solid var(--border-color);
-          display: flex; align-items: center; justify-content: center;
-          gap: 10px; cursor: pointer;
-        }
-        .glass-btn-base::before {
-          content: ''; position: absolute; top: 50%; left: 50%;
-          width: 180%; height: 180%; background: var(--glow-gradient);
-          z-index: 1; pointer-events: none;
-          animation: softFlow 4s ease-in-out infinite;
-        }
-        
-        .glass-btn-base:hover:not(:disabled) {
-          transform: scale(0.98) translateY(2px); filter: brightness(1.2);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        .slider-wrapper {
+          position: relative; width: 100%; height: 64px;
+          background: rgba(255, 255, 255, 0.08); border-radius: 9999px;
+          overflow: hidden; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);
+          /* ЗАВЖДИ ВНУТРІШНЯ ТІНЬ */
+          box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.3);
+          transition: all 0.3s ease;
+          user-select: none; -webkit-user-select: none;
         }
 
-        .pricing-active-state {
-          transform: scale(0.95) translateY(4px) !important;
-          box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.6) !important;
-          filter: brightness(0.9);
+        .slider-light-mode {
+          box-shadow: inset 4px 4px 12px rgba(0, 0, 0, 0.15), inset -2px -2px 6px rgba(255, 255, 255, 0.2) !important;
+          border-color: rgba(0, 0, 0, 0.05) !important;
+          background: rgba(0, 0, 0, 0.03) !important;
         }
 
-        .btn-content { position: relative; z-index: 10; display: flex; align-items: center; gap: 10px; font-weight: 700; }
-        
-        .btn-brand-pricing { 
-          background: rgba(255, 255, 255, 0.1);
-          --glow-gradient: radial-gradient(circle, #EA4335 0%, #FBBC05 45%, #f97316 70%, transparent 85%); 
-          --border-color: rgba(255, 255, 255, 0.3); color: white;
+        .slider-text-base {
+          position: absolute; inset: 0; z-index: 2;
+          display: flex; align-items: center; justify-content: center; pointer-events: none;
         }
-
-        .btn-pay-orange { 
-          background: rgba(234, 67, 53, 0.1);
-          --glow-gradient: radial-gradient(circle, #EA4335 0%, #f97316 40%, #FBBC05 70%, transparent 90%); 
-          border: 1px solid rgba(234, 67, 53, 0.4); color: white;
-        }
-        .btn-pay-orange::before { animation: strongFlow 3s ease-in-out infinite; opacity: 0.95; width: 200%; height: 200%; }
-        
-        .btn-booking-green {
-          background: rgba(255, 255, 255, 0.05);
-          --glow-gradient: radial-gradient(circle, #fbbc05 0%, #22c55e 40%, transparent 70%); 
-          --border-color: rgba(34, 197, 94, 0.5); color: white;
-        }
-
-        .text-soft-shadow { text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        .glass-success-overlay {
-          position: absolute; inset: 0; background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-          z-index: 40; display: flex; flex-direction: column; align-items: center; text-align: center;
+        .glass-fill {
+          position: absolute; left: 4px; top: 4px; bottom: 4px;
+          background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+          border-radius: 9999px; z-index: 5;
           pointer-events: none;
+        }
+        .slider-text-active {
+          position: absolute; inset: 0; z-index: 10;
+          display: flex; align-items: center; justify-content: center; pointer-events: none;
+        }
+        .thumb-element {
+          position: absolute; width: 56px; height: 56px; border-radius: 9999px;
+          background: white; z-index: 40; display: flex; align-items: center;
+          justify-content: center; cursor: grab; box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+          touch-action: none;
         }
       `}</style>
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center text-white">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold text-center mb-4 tracking-tight drop-shadow-lg text-white">Priser</h2>
-          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmøte.</p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-white capitalize">Priser</h2>
+          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөte.</p>
         </div>
 
         <div className="w-full max-w-5xl bg-white/5 backdrop-blur-3xl rounded-[50px] border border-white/20 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
           {pricingData.map((plan, index) => {
-            const isFlipped = flippedStates[index];
             const isSuccess = successStates[index];
-            const isActive = activeCardIndex === index;
-            
-            let cardClasses = isFlipped 
-              ? (isActive ? "bg-white opacity-100 z-10 shadow-lg text-black" : "bg-white/85 backdrop-blur-md z-0 text-black")
-              : "bg-transparent hover:bg-white/5 text-white";
+            const currentVal = sliderVals[index];
+            const cardOpacity = currentVal / 100;
 
             return (
-              <div key={index} className={`relative flex-1 min-h-[480px] md:min-h-[500px] flex flex-col items-center justify-center p-8 transition-all duration-300 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''} ${cardClasses}`}>
-                
+              <div 
+                key={index} 
+                className={`relative flex-1 min-h-[520px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}
+                style={{ 
+                  backgroundColor: `rgba(255, 255, 255, ${cardOpacity})`,
+                  color: currentVal > 50 ? 'black' : 'white',
+                  transition: 'background-color 0.1s linear, color 0.2s ease'
+                }}
+              >
                 {isSuccess && (
-                  <div className="glass-success-overlay p-8 animate-in fade-in zoom-in duration-500 text-white">
-                    <div className="h-32 flex items-center justify-center">
-                        <Heart className="w-8 h-8 text-white fill-white animate-heart-glow" />
-                    </div>
-
-                    <div className="flex-1 flex flex-col items-center justify-center">
-                        <h3 className="text-6xl font-black tracking-tighter text-white text-soft-shadow">Takk!</h3>
-                        <p className="text-white font-black text-lg text-soft-shadow leading-tight mt-2 whitespace-nowrap">
-                          Vi gleder oss til å se deg!
-                        </p>
-                    </div>
-
-                    <div className="w-full h-[112px] flex flex-col items-center justify-center mb-8">
-                        <div className="h-[44px] flex flex-col items-center justify-center">
-                           <p className="text-black font-bold text-[10px] uppercase tracking-widest leading-none opacity-60">Sum kopiert!</p>
-                           <p className="text-black font-black text-xs leading-none mt-1 uppercase">Lim inn i Vipps</p>
-                        </div>
-                        <div className="h-3" />
-                        <div className="h-[56px] w-full flex items-center justify-center">
-                           <p className="text-black font-bold text-sm uppercase flex items-center gap-2">
-                              <Check className="w-4 h-4" /> Åpner Vipps app...
-                           </p>
-                        </div>
-                    </div>
+                  <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in">
+                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
+                    <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
+                    <p className="text-black font-bold text-xl mt-6 uppercase">Vi gleder oss til å se deg!</p>
+                    <p className="text-[#f97316] font-bold text-xs mt-4 uppercase tracking-widest">Vipps åpnes nå...</p>
                   </div>
                 )}
 
-                <div className={`w-full h-full flex flex-col items-center text-center justify-between transition-all duration-500 ${isSuccess ? 'scale-95 blur-[1px]' : ''}`}>
-                  <div className="w-full flex flex-col items-center">
-                    <div className="h-8 flex items-center justify-center text-[#22c55e]">
-                      <span className="font-bold tracking-widest uppercase text-[10px]">{plan.info}</span>
-                    </div>
-                    <div className="h-14 flex items-center justify-center">
-                      <h3 className="text-2xl font-bold tracking-tight">{plan.name}</h3>
-                    </div>
-                    <div className="h-10 flex items-center justify-center text-xs uppercase opacity-60">
-                      {plan.description}
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 flex flex-col items-center justify-center py-6">
-                    <span className="text-6xl font-bold tracking-tighter">{plan.price}</span>
-                    <span className={`text-lg mt-2 font-bold uppercase tracking-widest ${isFlipped ? 'text-black/40' : 'text-[#22c55e]'}`}>{plan.price === "Avtale" ? "Pris" : "NOK"}</span>
-                  </div>
+                <div className="w-full flex flex-col items-center h-24 justify-center">
+                  <span className="font-bold tracking-widest uppercase text-[10px] mb-2" style={{ color: '#f97316' }}>{plan.info}</span>
+                  <h3 className="text-2xl font-bold tracking-tight mb-2 uppercase text-center">{plan.name}</h3>
+                  <p className="text-[10px] uppercase opacity-60 tracking-widest font-bold text-center h-4">{plan.description}</p>
+                </div>
 
-                  <div className="w-full h-[100px] flex flex-col items-center justify-end relative z-10">
-                    {!isFlipped ? (
-                      <button onClick={(e) => { e.stopPropagation(); toggleCard(index); }} className={`glass-btn-base btn-brand-pricing w-full h-[56px] rounded-full font-bold text-lg ${flippedStates[index] ? 'pricing-active-state' : ''}`}>
-                        <span className="btn-content"><CreditCard className="w-5 h-5" /> Vipps nå</span>
-                      </button>
-                    ) : (
-                      <div className="w-full flex flex-col items-center gap-3">
-                        <div className="p-2 bg-black/5 rounded-xl h-[44px] w-full flex flex-col items-center justify-center text-black">
-                          <p className="text-[9px] font-bold text-black/40 uppercase leading-none">Vippsnummer</p>
-                          <p className="text-sm font-mono font-black text-black leading-none mt-1">#981 48 210</p>
-                        </div>
-                        <button onClick={(e) => { e.stopPropagation(); handleVippsClick(index); }} className={`glass-btn-base btn-pay-orange h-[56px] text-sm w-full rounded-full font-bold ${successStates[index] ? 'pricing-active-state' : ''}`}>
-                          <span className="btn-content"><CreditCard className="w-4 h-4" /> Betal {plan.price} NOK</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex flex-col items-center py-6 min-h-[160px] justify-center">
+                  <span className="text-7xl font-bold tracking-tighter leading-none">{plan.price}</span>
+                  <span className="text-lg font-bold uppercase tracking-widest mt-2" style={{ color: '#f97316' }}>
+                    {plan.price === "Avtale" ? "Pris" : "NOK"}
+                  </span>
+                </div>
+
+                <div className="w-full h-24 flex flex-col justify-end">
+                  <ManualSlider 
+                    id={`slider-card-${index}`}
+                    beforeLabel={plan.price === "Avtale" ? "Betal med Vipps" : `Betal ${plan.price} med Vipps`}
+                    afterLabel="Gå til betaling"
+                    color="#f97316" 
+                    icon={<CreditCard className="w-5 h-5"/>} 
+                    isLightMode={currentVal > 50}
+                    onValueChange={(v) => setSliderVals(prev => ({ ...prev, [index]: v }))}
+                    onComplete={() => {
+                      setSuccessStates(prev => ({ ...prev, [index]: true }));
+                      const bizPhone = "4798148210";
+                      const priceValue = parseInt(plan.price);
+                      const url = !isNaN(priceValue) 
+                        ? `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=2&a=${priceValue * 100}`
+                        : `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=1`;
+                      setTimeout(() => { window.location.assign(url); }, 3000);
+                    }}
+                  />
                 </div>
               </div>
             );
           })}
         </div>
 
-        <div className="h-16 flex items-center justify-center w-full mt-6">
-          {isAnyCardFlipped && (
-            <button onClick={resetCards} className="text-white/40 hover:text-white transition-all text-[11px] font-bold uppercase tracking-[0.3em]">Nullstill valg</button>
-          )}
-        </div>
-
-        <div className="mt-4 text-center">
-          <a href="#booking" className="glass-btn-base btn-booking-green inline-flex py-4 px-12 rounded-full no-underline">
-            <span className="btn-content font-bold text-sm md:text-base text-white">
-              Vil du prøve først? Meld deg på gratis prøvetime her <ArrowDown className="w-5 h-5 animate-bounce text-[#22c55e]" />
-            </span>
-          </a>
+        <div className="mt-8 w-full max-w-5xl">
+           <ManualSlider 
+             id="slider-booking-footer"
+             beforeLabel="Meld deg på gratis prøvetime" 
+             afterLabel="Gå til booking"
+             color="#22c55e" 
+             icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>} 
+             isLightMode={false}
+             onValueChange={() => {}}
+             onComplete={() => {
+               document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" });
+             }}
+           />
         </div>
       </div>
     </section>
+  );
+}
+
+function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, onValueChange, isLightMode }: any) {
+  const [position, setPosition] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const positionRef = useRef(0);
+
+  useEffect(() => {
+    if (id === "slider-booking-footer" && position > 0 && !isDragging) {
+      const timer = setTimeout(() => {
+        setPosition(0);
+        positionRef.current = 0;
+        onValueChange(0);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [position, isDragging, id, onValueChange]);
+
+  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (activeSliderId !== null) return;
+    activeSliderId = id;
+    setIsDragging(true);
+  };
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!isDragging || activeSliderId !== id || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+      const x = clientX - rect.left - 32;
+      const maxPath = rect.width - 64;
+      
+      const newPos = Math.max(0, Math.min(x, maxPath));
+      positionRef.current = newPos;
+      setPosition(newPos);
+      onValueChange((newPos / maxPath) * 100);
+    };
+
+    const handleEnd = () => {
+      if (!isDragging || activeSliderId !== id) return;
+      setIsDragging(false);
+      activeSliderId = null;
+
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const maxPath = rect.width - 64;
+
+      if (positionRef.current >= maxPath * 0.95) {
+        setPosition(maxPath);
+        onValueChange(100);
+        setTimeout(onComplete, 200);
+      } else {
+        setPosition(0);
+        positionRef.current = 0;
+        onValueChange(0);
+      }
+    };
+
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMove);
+      window.addEventListener("mouseup", handleEnd);
+      window.addEventListener("touchmove", handleMove);
+      window.addEventListener("touchend", handleEnd);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleEnd);
+      window.removeEventListener("touchmove", handleMove);
+      window.removeEventListener("touchend", handleEnd);
+    };
+  }, [isDragging, id, onComplete, onValueChange]);
+
+  const textStyle = { fontWeight: 800, textTransform: 'uppercase' as const, fontSize: '11px', letterSpacing: '1px' };
+
+  return (
+    <div ref={containerRef} className={`slider-wrapper ${isLightMode ? 'slider-light-mode' : ''}`}>
+      <div className="slider-text-base">
+        <span style={{ ...textStyle, color: isLightMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)' }}>{beforeLabel}</span>
+      </div>
+      
+      <div 
+        className="glass-fill" 
+        style={{ 
+          width: position > 0 ? `${position + 56}px` : 0, 
+          transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          opacity: position > 0 ? 1 : 0
+        }} 
+      />
+
+      <div className="slider-text-active">
+        <span style={{ ...textStyle, color, opacity: position > 120 ? 1 : 0, transition: 'opacity 0.2s ease' }}>
+          {afterLabel}
+        </span>
+      </div>
+      <div 
+        className="thumb-element" 
+        onMouseDown={handleStart} 
+        onTouchStart={handleStart}
+        style={{ 
+          left: position + 4, 
+          transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
+          color,
+          backgroundColor: isLightMode ? '#ffffff' : '#ffffff'
+        }}
+      >
+        {icon}
+      </div>
+    </div>
   );
 }
