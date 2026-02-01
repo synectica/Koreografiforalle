@@ -20,7 +20,7 @@ export function BioSection() {
       color: "#FBBC05",
       video: "", 
       whatItGives: "Koordinasjon og estetisk utførelse uten støtte fra barren.",
-      result: "Grasiøсе bevegelser og evnen til å tolke musikk gjennom dans."
+      result: "Grasiøse bevegelser og evnen til å tolke musikk gjennom dans."
     },
     gulv: {
       title: "Gulvarbeid",
@@ -54,8 +54,8 @@ export function BioSection() {
 
         .photo-popup {
           position: absolute; inset: 0; z-index: 30;
-          background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px);
-          display: flex; flex-direction: column; padding: 1.5rem;
+          background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px);
+          display: flex; flex-direction: column; padding: 1rem;
           color: white; animation: fadeIn 0.3s ease forwards;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -71,7 +71,6 @@ export function BioSection() {
           <div className="w-full md:w-[40%] h-[350px] md:h-auto relative border-b md:border-b-0 md:border-r border-white/5 shrink-0 overflow-hidden">
             <img src="https://res.cloudinary.com/dt4imocd3/image/upload/v1768882046/copy_of_img-20250904-wa0003_vd4ktj_2aeeb9.webp" alt="Galyna Gerasymenko" className="bio-img" />
             
-            {/* Текстовий підпис на фото для мобільних */}
             {!activeTab && (
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent z-10 flex flex-col justify-end p-6 md:hidden">
                 <h3 className="font-bebas-bio text-3xl text-white uppercase leading-none">Galyna Gerasymenko</h3>
@@ -80,24 +79,27 @@ export function BioSection() {
             )}
 
             {activeTab && (
-              <div className="photo-popup text-left">
-                <button onClick={() => setActiveTab(null)} className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all z-40">
-                  <X className="w-5 h-5" />
+              <div className="photo-popup text-left justify-start">
+                <button onClick={() => setActiveTab(null)} className="absolute top-3 right-3 p-1.5 bg-white/10 rounded-full hover:bg-white/20 transition-all z-40">
+                  <X className="w-4 h-4" />
                 </button>
-                <div className="w-full aspect-video bg-black rounded-xl overflow-hidden mb-4 border border-white/10 shadow-2xl shrink-0">
+                
+                {/* Оптимізована висота відео для запобігання прокрутці */}
+                <div className="w-full aspect-[16/10] bg-black rounded-xl overflow-hidden mb-3 border border-white/10 shadow-2xl shrink-0">
                   {content[activeTab as keyof typeof content].video && (
                     <video key={content[activeTab as keyof typeof content].video} autoPlay loop muted playsInline className="w-full h-full object-cover">
                       <source src={content[activeTab as keyof typeof content].video} type="video/mp4" />
                     </video>
                   )}
                 </div>
-                <div className="overflow-y-auto pr-2">
-                  <h5 className="font-bebas-bio text-3xl uppercase tracking-widest leading-none mb-1" style={{ color: content[activeTab as keyof typeof content].color }}>
+
+                <div className="shrink-0">
+                  <h5 className="font-bebas-bio text-2xl uppercase tracking-widest leading-none mb-2" style={{ color: content[activeTab as keyof typeof content].color }}>
                     {content[activeTab as keyof typeof content].title}
                   </h5>
-                  <div className="space-y-3 text-[11px] md:text-xs leading-relaxed mt-4">
-                    <p><span className="font-bold uppercase tracking-tighter mr-2 italic opacity-70">Hva det gir:</span>{content[activeTab as keyof typeof content].whatItGives}</p>
-                    <p><span className="text-[#22c55e] font-bold uppercase tracking-tighter mr-2 italic">Resultat:</span>{content[activeTab as keyof typeof content].result}</p>
+                  <div className="space-y-2 text-[10px] md:text-xs leading-snug">
+                    <p><span className="font-bold uppercase tracking-tighter mr-1 italic opacity-70">Hva det gir:</span>{content[activeTab as keyof typeof content].whatItGives}</p>
+                    <p><span className="text-[#22c55e] font-bold uppercase tracking-tighter mr-1 italic">Resultat:</span>{content[activeTab as keyof typeof content].result}</p>
                   </div>
                 </div>
               </div>
@@ -128,7 +130,7 @@ export function BioSection() {
             </div>
 
             <div className="w-full">
-              <div className="mb-4 md:mb-6 w-full">
+              <div className="mb-4 md:mb-6 w-full text-center">
                 <h4 className="font-bebas-bio text-2xl md:text-4xl text-[#EA4335] uppercase tracking-[0.2em] md:tracking-[0.3em] flex justify-between md:justify-center w-full overflow-hidden leading-none">
                   {"Koreografi for alle".split("").map((char, i) => (
                     <span key={i} className={char === " " ? "w-2" : ""}>{char}</span>
@@ -138,7 +140,7 @@ export function BioSection() {
               </div>
               
               <div className="flex flex-row justify-between items-start w-full gap-2 md:gap-4 font-bebas-bio">
-                <IconBox active={activeTab === 'barre'} color="#22c55e" icon={<Activity />} title="Ved barren" sub="Teknikk" animClass="animate-bounce-mid" onClick={() => setActiveTab(activeTab === 'barre' ? null : 'barre')} />
+                <IconBox active={activeTab === 'barre'} color="#22c55e" icon={<Activity />} title="Ved barren" sub="Teknikк" animClass="animate-bounce-mid" onClick={() => setActiveTab(activeTab === 'barre' ? null : 'barre')} />
                 <IconBox active={activeTab === 'senter'} color="#FBBC05" icon={<Music />} title="Senter" sub="Flyt" animClass="animate-bounce-slow" onClick={() => setActiveTab(activeTab === 'senter' ? null : 'senter')} />
                 <IconBox active={activeTab === 'gulv'} color="#EA4335" icon={<Move />} title="Gulvarbeid" sub="Styrke" animClass="animate-bounce-fast" onClick={() => setActiveTab(activeTab === 'gulv' ? null : 'gulv')} />
               </div>
