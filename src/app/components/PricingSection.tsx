@@ -96,7 +96,7 @@ export function PricingSection({ lang }: { lang: string }) {
                 <div className="w-full h-24 flex flex-col justify-end">
                   <ManualSlider 
                     id={`slider-card-${index}`}
-                    beforeLabel={plan.price === "Avtale" ? "Betal із Vipps" : `Betal ${plan.price} із Vipps`}
+                    beforeLabel={plan.price === "Avtale" ? "Betal - Vipps" : `Betal ${plan.price} - Vipps`}
                     afterLabel="Gå til betaling"
                     color="#f97316" 
                     icon={<CreditCard className="w-5 h-5"/>} 

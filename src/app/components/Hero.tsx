@@ -15,7 +15,6 @@ export function Hero() {
     const handlePlay = async () => {
       try { 
         await video.play(); 
-        // ЗМЕНШЕНО ВДВІЧІ: Тепер червоний зникає через 500мс замість 1000мс
         setTimeout(() => setIsRedOverlayVisible(false), 500); 
       } catch (err) { console.error(err); }
     };
@@ -23,16 +22,12 @@ export function Hero() {
 
     const handleTimeUpdate = () => {
       const stopTime = video.duration - 10;
-      
-      // ПЛАВНИЙ ПЕРЕХІД: Починаємо проявляти червоний за 1.5 сек до кінця
       if (video.currentTime >= stopTime - 1.5 && !isRedOverlayVisible) {
         setIsRedOverlayVisible(true);
       }
-
       if (video.currentTime >= stopTime) {
         video.currentTime = 10;
         video.play();
-        // Знову швидке відкриття після рестарту
         setTimeout(() => setIsRedOverlayVisible(false), 500);
       }
     };
@@ -65,9 +60,26 @@ export function Hero() {
           .hero-title { font-size: 8.5rem !important; }
           .hero-subtitle { font-size: 2.6rem !important; }
         }
-        /* ПЛАВНІСТЬ ПЕРЕХОДУ */
         .red-transition {
           transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* АНІМАЦІЯ ПІДКАЗКИ ТА СЯЙВА */
+        @keyframes sliderHint {
+          0%, 100% { transform: translateX(0); }
+          10%, 30% { transform: translateX(15px); }
+          20% { transform: translateX(5px); }
+        }
+        .slider-hint-anim {
+          animation: sliderHint 4s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+          0%, 100% { box-shadow: 0 0 5px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+          50% { box-shadow: 0 0 20px rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
+        }
+        .slider-glow {
+          animation: pulseGlow 2s infinite ease-in-out;
         }
       `}</style>
 
@@ -75,7 +87,6 @@ export function Hero() {
         <video ref={videoRef} muted playsInline className="w-full h-full object-cover" style={{ filter: "brightness(0.35)" }}>
           <source src="https://res.cloudinary.com/dt4imocd3/video/upload/v1768832308/VUE_20251018125313_eijxvp.mp4" type="video/mp4" />
         </video>
-        {/* Щільний червоний з плавним анімуванням opacity */}
         <div className={`absolute inset-0 z-[3] bg-red-600 red-transition pointer-events-none ${isRedOverlayVisible ? 'opacity-100' : 'opacity-0'}`} />
         <div className="absolute inset-0 bg-black/40 z-[2]" />
       </div>
@@ -102,8 +113,8 @@ export function Hero() {
           </div>
 
           <div className="slider-group flex flex-col md:flex-row gap-6 justify-center items-center w-full">
-            <TouchSlider beforeText="Skyv for prøvetime" afterText="Gå til booking" target="#booking" activeColor="#22c55e" />
-            <TouchSlider beforeText="Skyv for betaling" afterText="Gå til priser" target="#pricing" activeColor="#f97316" />
+            <TouchSlider beforeText="Skyv for prøvetime" afterText="Gå til booking" target="#booking" activeColor="#22c55e" delay={0} />
+            <TouchSlider beforeText="Skyv for betaling" afterText="Gå til priser" target="#pricing" activeColor="#f97316" delay={0.5} />
           </div>
         </div>
       </div>
@@ -111,13 +122,17 @@ export function Hero() {
   );
 }
 
-function TouchSlider({ beforeText, afterText, target, activeColor }: any) {
+function TouchSlider({ beforeText, afterText, target, activeColor, delay }: any) {
   const [position, setPosition] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const posRef = useRef(0);
 
-  const handleStart = () => setIsDragging(true);
+  const handleStart = () => {
+    setIsDragging(true);
+    setHasInteracted(true);
+  };
 
   const handleMove = (e: any) => {
     if (!isDragging || !containerRef.current) return;
@@ -134,12 +149,10 @@ function TouchSlider({ beforeText, afterText, target, activeColor }: any) {
   const handleEnd = () => {
     if (!isDragging || !containerRef.current) return;
     setIsDragging(false);
-    
     const rect = containerRef.current.getBoundingClientRect();
     const thumbWidth = containerRef.current.offsetHeight - 8;
     const max = rect.width - thumbWidth - 8;
 
-    // Скрол ТІЛЬКИ ПРИ handleEnd
     if (posRef.current >= max * 0.95) {
       setPosition(max);
       const el = document.querySelector(target);
@@ -154,7 +167,7 @@ function TouchSlider({ beforeText, afterText, target, activeColor }: any) {
   return (
     <div 
       ref={containerRef}
-      className="slider-container-main relative w-full max-w-[320px] h-[58px] bg-white/10 rounded-full p-1 border border-white/20 overflow-hidden select-none"
+      className={`slider-container-main slider-glow relative w-full max-w-[320px] h-[58px] bg-white/10 rounded-full p-1 border border-white/20 overflow-hidden select-none transition-shadow`}
       onMouseMove={handleMove} onMouseUp={handleEnd} onMouseLeave={handleEnd} onTouchMove={handleMove} onTouchEnd={handleEnd}
       style={{ touchAction: 'none' }}
     >
@@ -162,16 +175,31 @@ function TouchSlider({ beforeText, afterText, target, activeColor }: any) {
         <span style={{ color: activeColor, opacity: position > 120 ? 0 : 1, transition: '0.2s' }}>{beforeText}</span>
         <span style={{ color: activeColor, opacity: position > 120 ? 1 : 0, transition: '0.2s', position: 'absolute' }}>{afterText}</span>
       </div>
+      
+      {/* Біла плашка, що наздоганяє бігунок */}
       <div 
         className="absolute left-1 top-1 bottom-1 bg-white/90 rounded-full z-20"
-        style={{ width: position + (containerRef.current?.offsetHeight || 60) - 8, transition: isDragging ? 'none' : '0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }} 
+        style={{ 
+          width: position + (containerRef.current?.offsetHeight || 60) - 8, 
+          transition: isDragging ? 'none' : '0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' 
+        }} 
       />
+
+      {/* Бігунок */}
       <div 
-        className="absolute aspect-square h-full max-h-[50px] bg-white rounded-full z-40 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg"
+        className={`absolute aspect-square h-full max-h-[50px] bg-white rounded-full z-40 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg 
+          ${!hasInteracted ? 'slider-hint-anim' : ''}`}
         onMouseDown={handleStart} onTouchStart={handleStart}
-        style={{ left: position + 4, transition: isDragging ? 'none' : '0.4s ease', color: activeColor }}
+        style={{ 
+          left: position + 4, 
+          transition: isDragging ? 'none' : '0.4s ease', 
+          color: activeColor,
+          animationDelay: `${delay}s` 
+        }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </div>
     </div>
   );

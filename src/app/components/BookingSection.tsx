@@ -10,7 +10,9 @@ export function BookingSection() {
   const [phone, setPhone] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [finalDetails, setFinalDetails] = useState({ day: "", time: "" });
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 0, 1));
+  
+  const [currentMonth, setCurrentMonth] = useState(new Date()); 
+  
   const [activeFilter, setActiveFilter] = useState<"tuesday" | "friday" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -93,7 +95,7 @@ export function BookingSection() {
       `}</style>
       
       <div className="w-full max-w-3xl z-10 flex flex-col items-center">
-        {/* ПОВЕРНУТО БАЗОВІ ШРИФТИ */}
+        {/* ПОВЕРНУТО БАЗОВУ НАЗВУ БЛОКУ (БЕЗ FONT-BEBAS) */}
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
           Book en gratis prøvetime
         </h2>
@@ -129,12 +131,13 @@ export function BookingSection() {
                           const isAvailable = (dateObj.getDay() === 2 && activeFilter === 'tuesday') || (dateObj.getDay() === 5 && activeFilter === 'friday');
                           const isSelected = selectedDate?.toDateString() === dateObj.toDateString();
                           const isToday = dateObj.toDateString() === new Date().toDateString();
+
                           return (
                               <div key={i} className="flex items-center justify-center h-10">
                                   <button type="button" disabled={!isAvailable} onClick={() => setSelectedDate(dateObj)}
                                       className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all relative
                                           ${isSelected ? 'bg-[#22c55e] text-white shadow-none' : 
-                                            isToday ? 'bg-white text-black' : 
+                                            isToday ? 'bg-white text-black ring-2 ring-white/50' : 
                                             isAvailable ? 'text-white border border-white/20 hover:bg-white/10' : 'text-white/10'}`}>
                                       {dateObj.getDate()}
                                   </button>
