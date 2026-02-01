@@ -49,7 +49,8 @@ export function BookingSection() {
     if (!selectedDate || isSubmitting) return;
     setIsSubmitting(true);
     const isTuesday = selectedDate.getDay() === 2;
-    const timeRange = isTuesday ? "15:00 - 16:00" : "15:30 - 17:00";
+    // ТУТ ЗМІНЕНО ЧАС
+    const timeRange = isTuesday ? "15:00 - 16:00" : "16:00 - 17:30";
     const formattedDay = `${isTuesday ? "Tirsdag" : "Fredag"} ${selectedDate.toLocaleDateString('no-NO')}`;
     setFinalDetails({ day: formattedDay, time: timeRange });
 
@@ -95,7 +96,6 @@ export function BookingSection() {
       `}</style>
       
       <div className="w-full max-w-3xl z-10 flex flex-col items-center">
-        {/* ПОВЕРНУТО БАЗОВУ НАЗВУ БЛОКУ (БЕЗ FONT-BEBAS) */}
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
           Book en gratis prøvetime
         </h2>
@@ -111,7 +111,8 @@ export function BookingSection() {
               
               <div className="flex flex-col gap-3">
                   <BookingSlider id="tue" beforeLabel="Tirsdag 15:00 - 16:00" afterLabel="Tirsdag valgt" activeColor="#22c55e" icon={<Calendar className="w-4 h-4" />} isActive={activeFilter === 'tuesday'} onComplete={() => { setActiveFilter('tuesday'); setSelectedDate(null); }} isFormSubmitted={submitted} />
-                  <BookingSlider id="fri" beforeLabel="Fredag 15:30 - 17:00" afterLabel="Fredag valgt" activeColor="#22c55e" icon={<Calendar className="w-4 h-4" />} isActive={activeFilter === 'friday'} onComplete={() => { setActiveFilter('friday'); setSelectedDate(null); }} isFormSubmitted={submitted} />
+                  {/* ТУТ ЗМІНЕНО ЧАС */}
+                  <BookingSlider id="fri" beforeLabel="Fredag 16:00 - 17:30" afterLabel="Fredag valgt" activeColor="#22c55e" icon={<Calendar className="w-4 h-4" />} isActive={activeFilter === 'friday'} onComplete={() => { setActiveFilter('friday'); setSelectedDate(null); }} isFormSubmitted={submitted} />
               </div>
 
               <div className="w-full pt-2 text-center flex-1 flex flex-col justify-center">
