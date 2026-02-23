@@ -1,12 +1,9 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import { CreditCard, Heart } from "lucide-react";
-
-let activeSliderId: string | null = null;
+import React, { useState } from "react";
+import { CreditCard, Heart, ArrowRight } from "lucide-react";
 
 export function PricingSection({ lang }: { lang: string }) {
   const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({ 0: false, 1: false, 2: false });
-  const [sliderVals, setSliderVals] = useState<{ [key: number]: number }>({ 0: 0, 1: 0, 2: 0 });
 
   const pricingData = [
     { name: "60 Minutter", price: "110", info: "Tirsdager", description: "Nybegynnere & Grunnleggende" },
@@ -14,236 +11,124 @@ export function PricingSection({ lang }: { lang: string }) {
     { name: "Privat / Gruppe", price: "Avtale", info: "Individuell", description: "Skreddersydd opplegg" }
   ];
 
-  const resetCard = (index: number) => {
-    setSuccessStates(prev => ({ ...prev, [index]: false }));
-    setSliderVals(prev => ({ ...prev, [index]: 0 }));
+  const handlePayment = (index: number) => {
+    setSuccessStates(prev => ({ ...prev, [index]: true }));
+    
+    const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
+    window.location.href = vippsUrl;
+
+    setTimeout(() => {
+      setSuccessStates(prev => ({ ...prev, [index]: false }));
+    }, 10000);
+  };
+
+  const handleBookingScroll = () => {
+    document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent font-sans text-white">
       <style>{`
-        .slider-wrapper {
-          position: relative; width: 100%; height: 64px;
-          background: rgba(255, 255, 255, 0.08); border-radius: 9999px;
-          overflow: hidden; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.3);
-          transition: all 0.3s ease;
-          user-select: none; -webkit-user-select: none;
-        }
-        .slider-text-base {
-          position: absolute; inset: 0; z-index: 2;
-          display: flex; align-items: center; justify-content: center; pointer-events: none;
-        }
-        .glass-fill {
-          position: absolute; left: 4px; top: 4px; bottom: 4px;
-          background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-          border-radius: 9999px; z-index: 5;
-          pointer-events: none;
-        }
-        .slider-text-active {
-          position: absolute; inset: 0; z-index: 10;
-          display: flex; align-items: center; justify-content: center; pointer-events: none;
-        }
-        .thumb-element {
-          position: absolute; width: 56px; height: 56px; border-radius: 9999px;
-          background: white; z-index: 40; display: flex; align-items: center;
-          justify-content: center; cursor: grab; box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-          touch-action: none;
-        }
-        .vipps-btn {
-          background-color: #f97316;
-          color: white;
-          padding: 16px 32px;
-          border-radius: 16px;
-          font-weight: 900;
+        .btn-premium {
+          width: 100%;
+          height: 64px;
+          border-radius: 9999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 1px;
-          box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
-          transition: transform 0.2s ease;
+          letter-spacing: 1.5px;
+          font-size: 13px;
+          transition: all 0.2s ease;
+          position: relative;
+          border: none;
+          cursor: pointer;
         }
-        .vipps-btn:active {
-          transform: scale(0.95);
+        /* БІЛА КНОПКА VIPPS */
+        .btn-white-vipps {
+          background-color: #ffffff;
+          color: #000000;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        /* ЕФЕКТ ВНУТРІШНЬОЇ ТІНІ ПРИ НАТИСКАННІ */
+        .btn-white-vipps:active {
+          transform: scale(0.98);
+          background-color: #ffffff;
+          box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .btn-booking {
+          background-color: #22c55e;
+          color: white;
+          box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2);
+        }
+        .btn-booking:active {
+          transform: scale(0.96);
+          box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.2);
         }
       `}</style>
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize text-white">Priser</h2>
-          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөte.</p>
+          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөте.</p>
         </div>
 
         <div className="w-full max-w-5xl bg-white/5 backdrop-blur-3xl rounded-[50px] border border-white/20 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
           {pricingData.map((plan, index) => {
             const isSuccess = successStates[index];
-            const currentVal = sliderVals[index];
-            const cardOpacity = currentVal / 100;
-
-            // Визначаємо браузер для логіки "TAKK"
-            const getIsStrict = () => {
-                if (typeof window === "undefined") return false;
-                const ua = navigator.userAgent;
-                return /SamsungBrowser|iPhone|iPad|iPod/i.test(ua);
-            };
-            const isStrict = getIsStrict();
-            const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
 
             return (
               <div 
                 key={index} 
-                className={`relative flex-1 min-h-[520px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}
-                style={{ 
-                  backgroundColor: `rgba(255, 255, 255, ${cardOpacity})`,
-                  color: currentVal > 50 ? 'black' : 'white',
-                  transition: 'background-color 0.1s linear, color 0.2s ease'
-                }}
+                className={`relative flex-1 min-h-[500px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}
               >
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
-                    <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none mb-10">TAKK!</h3>
-                    
-                    {isStrict ? (
-                      /* ДЛЯ SAMSUNG ТА IPHONE: Центральна кнопка-імітація */
-                      <div className="flex flex-col items-center">
-                        <button 
-                          onClick={() => window.location.href = vippsUrl}
-                          className="vipps-btn text-xl"
-                        >
-                          ÅPNE VIPPS
-                        </button>
-                        <p className="text-black text-[10px] font-bold uppercase tracking-widest mt-4 opacity-40">
-                          Trykk для å betale
-                        </p>
-                      </div>
-                    ) : (
-                      /* ДЛЯ CHROME: Автоматичний текст */
-                      <p className="text-black text-lg font-bold uppercase tracking-widest">Åpner Vipps...</p>
-                    )}
+                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-8" />
+                    <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
+                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">ÅPNER VIPPS...</p>
                   </div>
                 )}
 
                 <div className="w-full flex flex-col items-center h-24 justify-center">
-                  <span className="font-bold tracking-widest uppercase text-[10px] mb-2" style={{ color: '#f97316' }}>{plan.info}</span>
+                  <span className="font-bold tracking-widest uppercase text-[10px] mb-2 text-[#f97316]">{plan.info}</span>
                   <h3 className="text-2xl font-bold tracking-tight mb-2 uppercase text-center">{plan.name}</h3>
                   <p className="text-[10px] uppercase opacity-60 tracking-widest font-bold text-center h-4">{plan.description}</p>
                 </div>
 
                 <div className="flex flex-col items-center py-6 min-h-[160px] justify-center">
                   <span className="text-7xl font-bold tracking-tighter leading-none">{plan.price}</span>
-                  <span className="text-lg font-bold uppercase tracking-widest mt-2" style={{ color: '#f97316' }}>{plan.price === "Avtale" ? "Pris" : "NOK"}</span>
+                  <span className="text-lg font-bold uppercase tracking-widest mt-2 text-[#f97316]">
+                    {plan.price === "Avtale" ? "Pris" : "NOK"}
+                  </span>
                 </div>
 
-                <div className="w-full h-24 flex flex-col justify-end">
-                  <ManualSlider 
-                    id={`slider-card-${index}`}
-                    beforeLabel={plan.price === "Avtale" ? "Betal - Vipps" : `Betal ${plan.price} - Vipps`}
-                    afterLabel="Gå til betaling"
-                    color="#f97316" 
-                    icon={<CreditCard className="w-5 h-5"/>} 
-                    isLightMode={currentVal > 50}
-                    onValueChange={(v: number) => setSliderVals(prev => ({ ...prev, [index]: v }))}
-                    onComplete={() => {
-                      setSuccessStates(prev => ({ ...prev, [index]: true }));
-                      
-                      if (!isStrict) {
-                        // Chrome: затримка 3 секунди
-                        setTimeout(() => {
-                          window.location.href = vippsUrl;
-                        }, 3000);
-                      }
-
-                      setTimeout(() => { resetCard(index); }, 12000); // Довше тримаємо екран, щоб встигли натиснути
-                    }}
-                  />
+                <div className="w-full h-24 flex flex-col justify-end px-2">
+                  <button 
+                    onClick={() => handlePayment(index)}
+                    className="btn-premium btn-white-vipps"
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    <span>{plan.price === "Avtale" ? "BETAL" : `BETAL ${plan.price}`}</span>
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
 
-        <div className="mt-12 w-full max-w-[340px]">
-           <ManualSlider 
-             id="slider-booking-footer"
-             beforeLabel="Meld deg på prøvetime" 
-             afterLabel="Gå til booking"
-             color="#22c55e" 
-             icon={<CreditCard className="w-5 h-5"/>} 
-             isLightMode={false}
-             onValueChange={() => {}}
-             onComplete={() => {
-               document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" });
-             }}
-           />
+        <div className="mt-12 w-full max-w-[340px] px-4">
+           <button 
+             onClick={handleBookingScroll}
+             className="btn-premium btn-booking"
+           >
+             <span>Meld deg på prøvetime</span>
+             <ArrowRight className="w-5 h-5" />
+           </button>
         </div>
       </div>
     </section>
-  );
-}
-
-function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, onValueChange, isLightMode }: any) {
-  const [position, setPosition] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const positionRef = useRef(0);
-
-  useEffect(() => {
-    if (id === "slider-booking-footer" && position > 0 && !isDragging) {
-      const timer = setTimeout(() => { setPosition(0); positionRef.current = 0; onValueChange(0); }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [position, isDragging, id, onValueChange]);
-
-  const handleStart = () => { if (activeSliderId !== null) return; activeSliderId = id; setIsDragging(true); };
-
-  useEffect(() => {
-    const handleMove = (e: any) => {
-      if (!isDragging || activeSliderId !== id || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const x = clientX - rect.left - 32;
-      const maxPath = rect.width - 64;
-      const newPos = Math.max(0, Math.min(x, maxPath));
-      positionRef.current = newPos; setPosition(newPos);
-      onValueChange((newPos / maxPath) * 100);
-    };
-    const handleEnd = () => {
-      if (!isDragging || activeSliderId !== id) return;
-      setIsDragging(false); activeSliderId = null;
-      const maxPath = containerRef.current!.offsetWidth - 64;
-      if (positionRef.current >= maxPath * 0.95) { 
-        setPosition(maxPath); 
-        onValueChange(100); 
-        onComplete();
-        setPosition(0);
-        positionRef.current = 0;
-        onValueChange(0);
-      }
-      else { setPosition(0); positionRef.current = 0; onValueChange(0); }
-    };
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMove); window.addEventListener("mouseup", handleEnd);
-      window.addEventListener("touchmove", handleMove); window.addEventListener("touchend", handleEnd);
-    }
-    return () => {
-      window.removeEventListener("mousemove", handleMove); window.removeEventListener("mouseup", handleEnd);
-      window.removeEventListener("touchmove", handleMove); window.removeEventListener("touchend", handleEnd);
-    };
-  }, [isDragging, id, onComplete, onValueChange]);
-
-  const textStyle = { fontWeight: 800, textTransform: 'uppercase' as const, fontSize: '11px', letterSpacing: '1px' };
-
-  return (
-    <div ref={containerRef} className={`slider-wrapper`}>
-      <div className="slider-text-base">
-        <span style={{ ...textStyle, color: isLightMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)' }}>{beforeLabel}</span>
-      </div>
-      <div className="glass-fill" style={{ width: position > 0 ? `${position + 56}px` : 0, transition: isDragging ? 'none' : '0.4s', opacity: position > 0 ? 1 : 0 }} />
-      <div className="slider-text-active">
-        <span style={{ ...textStyle, color, opacity: position > 120 ? 1 : 0, transition: '0.2s' }}>{afterLabel}</span>
-      </div>
-      <div className="thumb-element" onMouseDown={handleStart} onTouchStart={handleStart} style={{ left: position + 4, transition: isDragging ? 'none' : '0.4s', color }}>
-        {icon}
-      </div>
-    </div>
   );
 }
