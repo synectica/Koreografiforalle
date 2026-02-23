@@ -43,12 +43,28 @@ export function BookingSection() {
     return { days: calendarDays, monthName: currentMonth.toLocaleString('no-NO', { month: 'long' }), year: y };
   }, [currentMonth]);
 
+  // СУВОРА ВАЛІДАЦІЯ
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isNameValid = name.trim().split(" ").length >= 2; 
+  const isPhoneValid = phone.replace(/\s/g, "").length >= 8;
+
+  const getButtonState = () => {
+    if (!activeFilter) return { label: "Velg ukedag", disabled: true };
+    if (!selectedDate) return { label: "Velg dato i kalenderen", disabled: true };
+    if (!isNameValid) return { label: "Skriv fullt navn", disabled: true };
+    if (!isEmailValid) return { label: "Ugyldig e-post", disabled: true };
+    if (!isPhoneValid) return { label: "Oppgi telefonnummer", disabled: true };
+    return { label: "Book prøvetime nå", disabled: false };
+  };
+
+  const buttonState = getButtonState();
+
   const executeSubmit = async () => {
-    if (!selectedDate || isSubmitting) return;
+    if (buttonState.disabled || isSubmitting) return;
     setIsSubmitting(true);
-    const isTuesday = selectedDate.getDay() === 2;
+    const isTuesday = selectedDate!.getDay() === 2;
     const timeRange = isTuesday ? "15:00 - 16:00" : "16:00 - 17:30";
-    const formattedDay = `${isTuesday ? "Tirsdag" : "Fredag"} ${selectedDate.toLocaleDateString('no-NO')}`;
+    const formattedDay = `${isTuesday ? "Tirsdag" : "Fredag"} ${selectedDate!.toLocaleDateString('no-NO')}`;
     setFinalDetails({ day: formattedDay, time: timeRange });
 
     try {
@@ -65,12 +81,14 @@ export function BookingSection() {
     setSubmitted(false);
     setSelectedDate(null);
     setActiveFilter(null);
+    setPhone("");
   };
 
   return (
     <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
       <div className="w-full max-w-3xl z-10 flex flex-col items-center">
-        {/* Заголовок повернуто до стандартного вигляду (без uppercase) */}
+        
+        {/* ПОВЕРНУТО ОРИГІНАЛЬНИЙ СТИЛЬ ЗАГОЛОВКА */}
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
           Book en gratis prøvetime
         </h2>
@@ -80,7 +98,6 @@ export function BookingSection() {
         </div>
         
         <div className="relative w-full min-h-[650px]">
-          {/* ФОРМА БРОНЮВАННЯ */}
           <div className={`w-full h-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col transition-all duration-500 ${submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-10'} relative`}>
             <div className="flex flex-col h-full justify-between gap-6">
               
@@ -137,26 +154,25 @@ export function BookingSection() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <input type="text" placeholder="Navn" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
-                <input type="email" placeholder="E-post" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
-                <input type="tel" placeholder="Telefon" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
+                <input type="text" placeholder="Galyna Gerasymenko" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
+                <input type="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
+                <input type="tel" placeholder="+47 900 00 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
                 
                 <button 
-                  disabled={!selectedDate || isSubmitting}
+                  disabled={buttonState.disabled || isSubmitting}
                   onClick={executeSubmit}
                   className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300
-                  ${!selectedDate || isSubmitting 
+                  ${buttonState.disabled || isSubmitting 
                     ? 'bg-white/5 text-white/20 border border-white/10 cursor-not-allowed' 
                     : 'bg-white text-[#22c55e] border border-white shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95'}`}
                 >
-                  {isSubmitting ? "Sender..." : !selectedDate ? "Vennligst velg dato" : "Book prøvetime nå"}
+                  {isSubmitting ? "Sender..." : buttonState.label}
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
           </div>
 
-          {/* ЕКРАН УСПІХУ (Текст повернуто до стандартного) */}
           <div className={`w-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
                 <div className="flex flex-col items-center justify-center flex-1">
                   <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
