@@ -103,32 +103,17 @@ export function PricingSection({ lang }: { lang: string }) {
                     isLightMode={currentVal > 50}
                     onValueChange={(v: number) => setSliderVals(prev => ({ ...prev, [index]: v }))}
                     onComplete={() => {
+                      // 1. Вмикаємо екран "TAKK!"
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
-                      
-                      const ua = navigator.userAgent;
-                      const isSamsung = /SamsungBrowser/i.test(ua);
-                      const isiOS = /iPhone|iPad|iPod/i.test(ua);
                       
                       const phone = "4798148210";
                       const vippsUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
-                      // ВАРІАНТИ ЗАТРИМКИ:
-                      // Samsung та iPhone блокують переходи, якщо затримка велика.
-                      // Ставимо 1 сек для них, 3 сек для Chrome/PC.
-                      const delay = (isSamsung || isiOS) ? 1000 : 3000;
+                      // 2. МИТТЄВИЙ ПЕРЕХІД (Без setTimeout!)
+                      // Це єдиний спосіб обійти захист Samsung та iOS Safari
+                      window.location.assign(vippsUrl);
 
-                      setTimeout(() => {
-                        const a = document.createElement('a');
-                        a.href = vippsUrl;
-                        if (!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))) {
-                           a.target = "_blank";
-                        }
-                        a.rel = "noopener noreferrer";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                      }, delay);
-
+                      // 3. Скидаємо стан картки через деякий час, щоб можна було повернутися
                       setTimeout(() => { resetCard(index); }, 8000);
                     }}
                   />
@@ -190,12 +175,12 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
       if (positionRef.current >= maxPath * 0.95) { 
         setPosition(maxPath); 
         onValueChange(100); 
-        setTimeout(() => {
-            onComplete();
-            setPosition(0);
-            positionRef.current = 0;
-            onValueChange(0);
-        }, 200); 
+        // Викликаємо миттєво
+        onComplete();
+        // Скидаємо слайдер візуально
+        setPosition(0);
+        positionRef.current = 0;
+        onValueChange(0);
       }
       else { setPosition(0); positionRef.current = 0; onValueChange(0); }
     };
