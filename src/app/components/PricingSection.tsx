@@ -106,18 +106,24 @@ export function PricingSection({ lang }: { lang: string }) {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                      
-                      // ВИКОРИСТОВУЄМО ТВОЮ СТРУКТУРУ ПОСИЛАННЯ (Приватна особа)
-                      // Номер Галіни: 4798148210
-                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
+                      const phone = "4798148210";
 
-                      // ПОЧЕКАТИ 3 СЕКУНДИ ПЕРЕД ПЕРЕХОДОМ
+                      // ДЛЯ МОБІЛЬНИХ: Прямий виклик додатку (Deep Link)
+                      // ДЛЯ КОМП'ЮТЕРА: QR-сторінка
+                      const mobileUrl = `vipps://qr?token=28.2.01.031.${phone}`;
+                      const desktopUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
+
                       setTimeout(() => { 
                         if (isMobile) {
-                          // На iPhone/Android це посилання має автоматично "підхопити" додаток Vipps
-                          window.location.href = vippsUrl;
+                          window.location.href = mobileUrl;
+                          // Резерв на випадок, якщо vipps:// не спрацював
+                          setTimeout(() => {
+                            if (document.hasFocus()) {
+                              window.location.assign(desktopUrl);
+                            }
+                          }, 1000);
                         } else {
-                          window.open(vippsUrl, '_blank');
+                          window.open(desktopUrl, '_blank');
                         }
                       }, 3000);
 
