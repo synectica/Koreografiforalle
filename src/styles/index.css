@@ -1,25 +1,55 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+:root {
+  /* Головний секрет: rem тепер залежить від ширини екрана */
+  /* Сайт буде плавно зменшуватись/збільшуватись як одне ціле */
+  font-size: clamp(14px, 0.8vw + 4px, 18px);
+}
+
 html {
   scroll-behavior: smooth;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
 /* Контейнер для всього сайту */
 .snap-container {
   scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-  height: 100vh;
+  overflow-y: auto; /* Дозволяємо звичайний скрол, якщо контент не влізає */
+  height: 100dvh;   /* Динамічна висота (враховує панелі браузера на мобілках) */
+  width: 100%;
+  overflow-x: hidden; /* Захист від горизонтального перекосу */
 }
 
 /* Кожна секція (Hero, Booking, Contact) */
 .snap-section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  min-height: 100vh;
+  
+  /* ЗМІНА: використовуємо min-height замість жорсткого height */
+  /* Це дозволяє секції рости вниз, якщо текст при зумі став завеликим */
+  min-height: 100dvh; 
+  height: auto !important; 
+  
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  
+  /* Додаємо невеликий запас для безпеки контенту */
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* Виправляємо баг Chrome при сильному зумі для фіксованих фонів */
+@media (max-width: 1024px) {
+  .snap-container {
+    scroll-snap-type: none; /* Вимикаємо прилипання на малих екранах/зумі для плавності */
+  }
 }
