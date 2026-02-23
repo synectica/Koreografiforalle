@@ -105,23 +105,22 @@ export function PricingSection({ lang }: { lang: string }) {
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
-                      const userAgent = navigator.userAgent || navigator.vendor;
-                      const isiOS = /iPad|iPhone|iPod/.test(userAgent);
-                      
                       const phone = "4798148210";
-                      const targetUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
+                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
-                      // ДЛЯ IPHONE (iOS) - мінімальна затримка для стабільності
-                      // ДЛЯ ANDROID та PC - твої 3 секунди
-                      const delay = isiOS ? 500 : 3000;
-
-                      setTimeout(() => { 
-                        if (isiOS) {
-                          window.location.href = targetUrl;
-                        } else {
-                          window.location.assign(targetUrl);
+                      setTimeout(() => {
+                        // Симуляція реального кліку по лінку (це обходить захист Samsung Internet / Safari)
+                        const a = document.createElement('a');
+                        a.href = vippsUrl;
+                        // На мобільних відкриваємо в тому ж вікні для спрацювання редиректу в додаток
+                        if (!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))) {
+                           a.target = "_blank";
                         }
-                      }, delay);
+                        a.rel = "noopener noreferrer";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                      }, 3000);
 
                       setTimeout(() => { resetCard(index); }, 8000);
                     }}
