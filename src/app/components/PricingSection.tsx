@@ -55,7 +55,7 @@ export function PricingSection({ lang }: { lang: string }) {
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize text-white">Priser</h2>
-          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөte.</p>
+          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөте.</p>
         </div>
 
         <div className="w-full max-w-5xl bg-white/5 backdrop-blur-3xl rounded-[50px] border border-white/20 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
@@ -78,7 +78,7 @@ export function PricingSection({ lang }: { lang: string }) {
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
                     <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">Åpner Vipps...</p>
+                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">ÅPNER VIPPS...</p>
                   </div>
                 )}
 
@@ -103,17 +103,27 @@ export function PricingSection({ lang }: { lang: string }) {
                     isLightMode={currentVal > 50}
                     onValueChange={(v: number) => setSliderVals(prev => ({ ...prev, [index]: v }))}
                     onComplete={() => {
-                      // 1. Вмикаємо екран "TAKK!"
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
+                      const ua = navigator.userAgent;
+                      const isSamsung = /SamsungBrowser/i.test(ua);
+                      const isiOS = /iPhone|iPad|iPod/i.test(ua);
                       const phone = "4798148210";
-                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
-                      // 2. МИТТЄВИЙ ПЕРЕХІД (Без setTimeout!)
-                      // Це єдиний спосіб обійти захист Samsung та iOS Safari
-                      window.location.assign(vippsUrl);
+                      let finalUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
-                      // 3. Скидаємо стан картки через деякий час, щоб можна було повернутися
+                      // ДЛЯ SAMSUNG INTERNET: Використовуємо системний Intent
+                      if (isSamsung) {
+                        finalUrl = `intent://qr.vipps.no/28/2/01/031/${phone}?v=1#Intent;scheme=https;package=no.vipps.vipps;end;`;
+                      } 
+                      // ДЛЯ IPHONE (Safari): Спробуємо прямий протокол
+                      else if (isiOS) {
+                        finalUrl = `vipps://qr?token=28.2.01.031.${phone}`;
+                      }
+
+                      // Миттєвий перехід без затримок для Samsung/iOS
+                      window.location.href = finalUrl;
+
                       setTimeout(() => { resetCard(index); }, 8000);
                     }}
                   />
@@ -175,9 +185,7 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
       if (positionRef.current >= maxPath * 0.95) { 
         setPosition(maxPath); 
         onValueChange(100); 
-        // Викликаємо миттєво
         onComplete();
-        // Скидаємо слайдер візуально
         setPosition(0);
         positionRef.current = 0;
         onValueChange(0);
