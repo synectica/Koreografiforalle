@@ -20,7 +20,7 @@ export function PricingSection({ lang }: { lang: string }) {
   };
 
   return (
-    <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent">
+    <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent font-sans text-white">
       <style>{`
         .slider-wrapper {
           position: relative; width: 100%; height: 64px;
@@ -52,9 +52,9 @@ export function PricingSection({ lang }: { lang: string }) {
         }
       `}</style>
 
-      <div className="max-w-6xl w-full z-10 flex flex-col items-center text-white">
+      <div className="max-w-6xl w-full z-10 flex flex-col items-center">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-white capitalize">Priser</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize">Priser</h2>
           <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөte.</p>
         </div>
 
@@ -75,10 +75,10 @@ export function PricingSection({ lang }: { lang: string }) {
                 }}
               >
                 {isSuccess && (
-                  <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center">
+                  <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
                     <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black font-bold text-xl mt-6 uppercase">Åpner Vipps...</p>
+                    <p className="text-black font-bold text-xl mt-6 uppercase opacity-70 italic tracking-widest">Åpner Vipps...</p>
                   </div>
                 )}
 
@@ -107,30 +107,25 @@ export function PricingSection({ lang }: { lang: string }) {
                       
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                       const priceValue = parseInt(plan.price);
-                      // ДОДАЄМО 47 до номера
-                      const phoneWithCountryCode = "4798148210"; 
+                      // Використовуємо 47 префікс для надійності
+                      const phone = "4798148210"; 
 
-                      if (isMobile) {
-                        // 1. МОБІЛЬНИЙ ВАРІАНТ (vipps://)
-                        // Додаємо 47 в параметр t= (target)
-                        let appUrl = `vipps://send?t=${phoneWithCountryCode}`;
-                        
-                        // Якщо є ціна, додаємо її (a=amount)
-                        if (!isNaN(priceValue)) {
-                            appUrl += `&a=${priceValue}`;
+                      // Отримуємо URL (v=1 це найнадійніший формат для Vipps Business)
+                      const vippsUrl = !isNaN(priceValue)
+                        ? `https://qr.vipps.no/28/2/01/031/${phone}?v=2&a=${priceValue * 100}`
+                        : `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
+
+                      // ПОЧЕКАТИ 3 СЕКУНДИ ПЕРЕД ПЕРЕХОДОМ
+                      setTimeout(() => { 
+                        if (isMobile) {
+                          window.location.assign(vippsUrl);
+                        } else {
+                          window.open(vippsUrl, '_blank');
                         }
-                        
-                        // Примусово переходимо
-                        window.location.href = appUrl;
-                        
-                      } else {
-                        // 2. КОМП'ЮТЕР (QR)
-                        // Використовуємо v=1 (безпечний режим), він просто підставляє номер
-                        const qrUrl = `https://qr.vipps.no/28/2/01/031/${phoneWithCountryCode}?v=1`;
-                        window.open(qrUrl, '_blank');
-                      }
+                      }, 3000);
 
-                      setTimeout(() => { resetCard(index); }, 5000);
+                      // Повернення картки в робочий стан через 6 секунд
+                      setTimeout(() => { resetCard(index); }, 6000);
                     }}
                   />
                 </div>
@@ -193,6 +188,7 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
         onValueChange(100); 
         setTimeout(() => {
             onComplete();
+            // ПОВЕРНУТИ СЛАЙДЕР НА ПОЧАТОК
             setPosition(0);
             positionRef.current = 0;
             onValueChange(0);
