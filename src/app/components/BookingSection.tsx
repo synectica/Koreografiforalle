@@ -45,7 +45,7 @@ export function BookingSection() {
 
   // СУВОРА ВАЛІДАЦІЯ
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isNameValid = name.trim().split(" ").length >= 2; 
+  const isNameValid = name.trim().split(/\s+/).length >= 2; 
   const isPhoneValid = phone.replace(/\s/g, "").length >= 8;
 
   const getButtonState = () => {
@@ -88,7 +88,6 @@ export function BookingSection() {
     <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
       <div className="w-full max-w-3xl z-10 flex flex-col items-center">
         
-        {/* ПОВЕРНУТО ОРИГІНАЛЬНИЙ СТИЛЬ ЗАГОЛОВКА */}
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
           Book en gratis prøvetime
         </h2>
@@ -120,6 +119,7 @@ export function BookingSection() {
                   />
               </div>
 
+              {/* КАЛЕНДАР */}
               <div className="w-full pt-2 text-center flex-1 flex flex-col justify-center">
                   <div className="flex justify-between items-center w-full px-2 mb-4">
                       <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="text-white hover:opacity-50 transition-opacity"><ChevronLeft/></button>
@@ -153,26 +153,30 @@ export function BookingSection() {
                   </div>
               </div>
 
+              {/* ПОЛЯ ВВОДУ */}
               <div className="flex flex-col gap-3">
                 <input type="text" placeholder="Galyna Gerasymenko" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
                 <input type="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
                 <input type="tel" placeholder="+47 900 00 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
                 
+                {/* КНОПКА З КОЛЬОРОВИМ ТЕКСТОМ */}
                 <button 
                   disabled={buttonState.disabled || isSubmitting}
                   onClick={executeSubmit}
                   className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300
                   ${buttonState.disabled || isSubmitting 
-                    ? 'bg-white/5 text-white/20 border border-white/10 cursor-not-allowed' 
-                    : 'bg-white text-[#22c55e] border border-white shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95'}`}
+                    ? 'bg-white/5 text-[#ef4444] border border-white/10 cursor-not-allowed' // ЧЕРВОНИЙ ТЕКСТ ЯКЩО НЕАКТИВНА
+                    : 'bg-white text-[#22c55e] border border-white shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95' // ЗЕЛЕНИЙ ТЕКСТ ЯКЩО АКТИВНА
+                  }`}
                 >
                   {isSubmitting ? "Sender..." : buttonState.label}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className={`w-5 h-5 transition-colors ${buttonState.disabled ? 'text-[#ef4444]' : 'text-[#22c55e]'}`} />
                 </button>
               </div>
             </div>
           </div>
 
+          {/* SUCCESS SCREEN */}
           <div className={`w-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
                 <div className="flex flex-col items-center justify-center flex-1">
                   <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
