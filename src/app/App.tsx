@@ -8,6 +8,7 @@ import { PricingSection } from "./components/PricingSection";
 import { BookingSection } from "./components/BookingSection";
 import { ContactForm } from "./components/ContactForm";
 import { MapSection } from "./components/MapSection";
+import { PosterSection } from "./components/PosterSection"; // Імпорт на місці
 
 function FlagSwitch({ lang, setLang }: { lang: string, setLang: (l: string) => void }) {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -131,13 +132,16 @@ export default function App() {
           <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <ContactForm />
           <MapSection />
+          
+          {/* БЛОК ПОСТЕРА ТУТ */}
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <PosterSection /> 
         </div>
       </div>
 
       <footer className="w-full py-8 text-center relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10"
               style={{ paddingBottom: 'calc(2.1rem + env(safe-area-inset-bottom))' }}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-2.5"> 
-          {/* whitespace-nowrap та зменшений текст на мобільних для одного рядка */}
           <p className="font-bebas text-white uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-50 text-[11px] sm:text-[14px] md:text-[18px] leading-none whitespace-nowrap">
             Koreografi for alle med Galyna Gerasymenko — © {new Date().getFullYear()}
           </p>
