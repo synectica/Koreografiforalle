@@ -7,7 +7,6 @@ let activeSliderId: string | null = null;
 export function PricingSection({ lang }: { lang: string }) {
   const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({ 0: false, 1: false, 2: false });
   const [sliderVals, setSliderVals] = useState<{ [key: number]: number }>({ 0: 0, 1: 0, 2: 0 });
-  const [toastMessage, setToastMessage] = useState<string | null>(null); // Для повідомлення про копіювання
 
   const pricingData = [
     { name: "60 Minutter", price: "110", info: "Tirsdager", description: "Nybegynnere & Grunnleggende" },
@@ -18,7 +17,6 @@ export function PricingSection({ lang }: { lang: string }) {
   const resetCard = (index: number) => {
     setSuccessStates(prev => ({ ...prev, [index]: false }));
     setSliderVals(prev => ({ ...prev, [index]: 0 }));
-    setToastMessage(null);
   };
 
   return (
@@ -52,15 +50,7 @@ export function PricingSection({ lang }: { lang: string }) {
           justify-content: center; cursor: grab; box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
           touch-action: none;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
-
-      {/* Тост-повідомлення */}
-      {toastMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[1000] bg-[#f97316] text-white px-6 py-3 rounded-full shadow-2xl font-bold uppercase tracking-widest text-sm animate-[fadeIn_0.3s_ease-out]">
-          {toastMessage}
-        </div>
-      )}
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center text-white">
         <div className="text-center mb-12">
@@ -88,7 +78,7 @@ export function PricingSection({ lang }: { lang: string }) {
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
                     <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black font-bold text-xl mt-6 uppercase">Vipps åpnes...</p>
+                    <p className="text-black font-bold text-xl mt-6 uppercase">Åpner Vipps...</p>
                   </div>
                 )}
 
@@ -117,25 +107,27 @@ export function PricingSection({ lang }: { lang: string }) {
                       
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                       const priceValue = parseInt(plan.price);
-                      const phoneNoPrefix = "98148210";
-                      const phoneWithPrefix = "4798148210"; 
+                      // ДОДАЄМО 47 до номера
+                      const phoneWithCountryCode = "4798148210"; 
 
                       if (isMobile) {
-                        // 1. ДЛЯ МОБІЛЬНИХ: Копіюємо номер + Відкриваємо додаток примусово
-                        navigator.clipboard.writeText(phoneNoPrefix).then(() => {
-                            setToastMessage("Vipps-nummer kopiert!");
-                        }).catch(() => {});
+                        // 1. МОБІЛЬНИЙ ВАРІАНТ (vipps://)
+                        // Додаємо 47 в параметр t= (target)
+                        let appUrl = `vipps://send?t=${phoneWithCountryCode}`;
                         
-                        // Відкриваємо Vipps (головну сторінку, бо це найнадійніше для бізнесу без API)
-                        setTimeout(() => { window.location.href = "vipps://"; }, 1000);
+                        // Якщо є ціна, додаємо її (a=amount)
+                        if (!isNaN(priceValue)) {
+                            appUrl += `&a=${priceValue}`;
+                        }
+                        
+                        // Примусово переходимо
+                        window.location.href = appUrl;
                         
                       } else {
-                        // 2. ДЛЯ КОМП'ЮТЕРА: QR-код
-                        const url = !isNaN(priceValue)
-                            ? `https://qr.vipps.no/28/2/01/031/${phoneWithPrefix}?v=2&a=${priceValue * 100}`
-                            : `https://qr.vipps.no/28/2/01/031/${phoneWithPrefix}?v=1`;
-                        
-                        setTimeout(() => { window.open(url, '_blank'); }, 1500);
+                        // 2. КОМП'ЮТЕР (QR)
+                        // Використовуємо v=1 (безпечний режим), він просто підставляє номер
+                        const qrUrl = `https://qr.vipps.no/28/2/01/031/${phoneWithCountryCode}?v=1`;
+                        window.open(qrUrl, '_blank');
                       }
 
                       setTimeout(() => { resetCard(index); }, 5000);
@@ -201,7 +193,6 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
         onValueChange(100); 
         setTimeout(() => {
             onComplete();
-            // Скидання слайдера на початок
             setPosition(0);
             positionRef.current = 0;
             onValueChange(0);
