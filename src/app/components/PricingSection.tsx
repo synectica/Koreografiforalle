@@ -97,7 +97,7 @@ export function PricingSection({ lang }: { lang: string }) {
                   <ManualSlider 
                     id={`slider-card-${index}`}
                     beforeLabel={plan.price === "Avtale" ? "Betal - Vipps" : `Betal ${plan.price} - Vipps`}
-                    afterLabel="Gå до betaling"
+                    afterLabel="Gå til betaling"
                     color="#f97316" 
                     icon={<CreditCard className="w-5 h-5"/>} 
                     isLightMode={currentVal > 50}
@@ -106,26 +106,22 @@ export function PricingSection({ lang }: { lang: string }) {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                      const phone = "4798148210";
+                      
+                      // Твій робочий формат лінку для приватної особи
+                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
 
-                      // НАЙБІЛЬШ ПРЯМИЙ DEEP LINK ДЛЯ ПРИВАТНОГО ПЕРЕКАЗУ
-                      // vipps://pay-addresses - це нативний протокол для миттєвого відкриття профілю
-                      const mobileDeepLink = `vipps://pay-addresses?v=1&phone=${phone}`;
-                      const desktopUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
-
+                      // Чекаємо 3 секунди, поки горить серце
                       setTimeout(() => { 
                         if (isMobile) {
-                          // Відкриваємо безпосередньо додаток
-                          window.location.href = mobileDeepLink;
-                          // Резерв через 1 сек, якщо додаток не відкрився (наприклад, не встановлений)
-                          setTimeout(() => {
-                             if (document.hasFocus()) window.location.assign(desktopUrl);
-                          }, 1000);
+                          // На телефоні це посилання ПРИМУСОВО відкриває додаток Vipps
+                          window.location.href = vippsUrl;
                         } else {
-                          window.open(desktopUrl, '_blank');
+                          // На компі відкриває в новій вкладці для сканування
+                          window.open(vippsUrl, '_blank');
                         }
                       }, 3000);
 
+                      // Скидаємо "TAKK!" через 7 секунд
                       setTimeout(() => { resetCard(index); }, 7000);
                     }}
                   />
