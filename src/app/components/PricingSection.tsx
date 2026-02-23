@@ -108,23 +108,21 @@ export function PricingSection({ lang }: { lang: string }) {
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                       const phone = "4798148210"; 
 
-                      // НАЙБІЛЬШ ПРЯМИЙ ШЛЯХ ДЛЯ ПРИВАТНИХ ОСІБ
-                      const mobileDeepLink = `vipps://user?phone=${phone}`;
+                      // Це посилання примушує ТЕЛЕФОН відкрити додаток (протокол vipps://)
+                      // Використовуємо формат токена, який імітує сканування
+                      const mobileUrl = `vipps://qr?token=28.2.01.031.${phone}?v=1`;
                       const desktopUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
-                      // ПОЧЕКАТИ 3 СЕКУНДИ ПЕРЕД ПЕРЕХОДОМ
+                      // Очікуємо 3 секунди з серцем на екрані
                       setTimeout(() => { 
                         if (isMobile) {
-                          window.location.href = mobileDeepLink;
-                          // Резервний перехід на сайт, якщо додаток не відкрився
-                          setTimeout(() => {
-                            if (document.hasFocus()) window.location.assign(desktopUrl);
-                          }, 1500);
+                          window.location.href = mobileUrl;
                         } else {
                           window.open(desktopUrl, '_blank');
                         }
                       }, 3000);
 
+                      // Скидаємо картку через 6 секунд
                       setTimeout(() => { resetCard(index); }, 6000);
                     }}
                   />
