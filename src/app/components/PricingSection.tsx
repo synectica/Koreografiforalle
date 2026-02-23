@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { CreditCard, Heart, ArrowRight, ArrowUpRight } from "lucide-react";
+import { CreditCard, Heart, ArrowRight } from "lucide-react";
+
+// Прибрав ArrowUpRight з імпортів, бо більше не використовується
 
 export function PricingSection({ lang }: { lang: string }) {
   const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({ 0: false, 1: false, 2: false });
@@ -29,13 +31,18 @@ export function PricingSection({ lang }: { lang: string }) {
   const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
 
   const handlePayment = (index: number) => {
+    // Показуємо стан "TAKK!"
     setSuccessStates(prev => ({ ...prev, [index]: true }));
 
     if (browserInfo.isChromeAndroid) {
+      // Для Chrome Android залишаємо затримку 3с для візуального фідбеку
       setTimeout(() => {
         window.location.href = vippsUrl;
       }, 3000);
-    } 
+    } else {
+      // Для iOS та Samsung переходимо ВІДРАЗУ, щоб браузер не заблокував вікно
+      window.location.href = vippsUrl;
+    }
   };
 
   const resetCard = (index: number) => {
@@ -57,20 +64,7 @@ export function PricingSection({ lang }: { lang: string }) {
         
         .btn-booking { background-color: #22c55e; color: white; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2); }
         
-        .samsung-hint-arrow {
-          position: absolute; top: 20px; right: 20px;
-          animation: point-up 1s infinite; color: #f97316;
-        }
-        @keyframes point-up {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(10px, -10px); }
-        }
-        .big-vipps-trigger {
-          background: #f97316; color: white; padding: 20px 40px;
-          border-radius: 20px; font-weight: 900; font-size: 18px;
-          box-shadow: 0 10px 30px rgba(249, 115, 22, 0.4);
-          margin-top: 20px;
-        }
+        /* Стилі для стрілки та анімації видалено */
       `}</style>
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
@@ -82,35 +76,20 @@ export function PricingSection({ lang }: { lang: string }) {
         <div className="w-full max-w-5xl bg-white/5 backdrop-blur-3xl rounded-[50px] border border-white/20 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
           {pricingData.map((plan, index) => {
             const isSuccess = successStates[index];
-            const isStrict = browserInfo.isSamsung || browserInfo.isiOS;
 
             return (
               <div key={index} className={`relative flex-1 min-h-[520px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}>
                 
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-                    {browserInfo.isSamsung && (
-                      <div className="samsung-hint-arrow flex flex-col items-end">
-                        <ArrowUpRight size={48} strokeWidth={3} />
-                        <span className="text-[10px] font-black text-black mt-2">TRYKK PÅ VIPPS-IKONET HER</span>
-                      </div>
-                    )}
+                    {/* Стрілка видалена звідси */}
 
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
                     <h3 className="text-6xl font-black tracking-tighter text-black uppercase leading-none">TAKK!</h3>
                     
-                    {isStrict ? (
-                      <div className="mt-8 flex flex-col items-center">
-                        <button 
-                          onClick={() => window.location.href = vippsUrl}
-                          className="big-vipps-trigger"
-                        >
-                          ÅPNE VIPPS APP
-                        </button>
-                      </div>
-                    ) : (
-                      <p className="text-black text-lg font-bold uppercase tracking-widest mt-8">ÅPNER VIPPS...</p>
-                    )}
+                    <p className="text-black text-sm font-bold uppercase tracking-widest mt-8 opacity-40">
+                      {browserInfo.isChromeAndroid ? "ÅPNER VIPPS..." : "SENDER DEG TIL VIPPS"}
+                    </p>
 
                     <button 
                       onClick={() => resetCard(index)}
