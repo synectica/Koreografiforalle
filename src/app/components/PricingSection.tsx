@@ -106,22 +106,20 @@ export function PricingSection({ lang }: { lang: string }) {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                      const phone = "4798148210";
+                      const phone = "4798148210"; 
 
-                      // ДЛЯ МОБІЛЬНИХ: Прямий виклик додатку (Deep Link)
-                      // ДЛЯ КОМП'ЮТЕРА: QR-сторінка
-                      const mobileUrl = `vipps://qr?token=28.2.01.031.${phone}`;
+                      // НАЙБІЛЬШ ПРЯМИЙ ШЛЯХ ДЛЯ ПРИВАТНИХ ОСІБ
+                      const mobileDeepLink = `vipps://user?phone=${phone}`;
                       const desktopUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
+                      // ПОЧЕКАТИ 3 СЕКУНДИ ПЕРЕД ПЕРЕХОДОМ
                       setTimeout(() => { 
                         if (isMobile) {
-                          window.location.href = mobileUrl;
-                          // Резерв на випадок, якщо vipps:// не спрацював
+                          window.location.href = mobileDeepLink;
+                          // Резервний перехід на сайт, якщо додаток не відкрився
                           setTimeout(() => {
-                            if (document.hasFocus()) {
-                              window.location.assign(desktopUrl);
-                            }
-                          }, 1000);
+                            if (document.hasFocus()) window.location.assign(desktopUrl);
+                          }, 1500);
                         } else {
                           window.open(desktopUrl, '_blank');
                         }
