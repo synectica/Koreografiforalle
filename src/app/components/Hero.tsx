@@ -4,16 +4,12 @@ import React, { useEffect, useRef, useState } from "react";
 export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isRedOverlayVisible, setIsRedOverlayVisible] = useState(true);
-  
-  // Стейт для анімації тексту при скролі
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Обчислюємо прогрес скролу від 0 до 1 (на дистанції 500px)
       const maxScroll = 500;
-      const currentScroll = window.scrollY;
-      const progress = Math.min(currentScroll / maxScroll, 1);
+      const progress = Math.min(window.scrollY / maxScroll, 1);
       setScrollProgress(progress);
     };
 
@@ -25,20 +21,18 @@ export function Hero() {
     const video = videoRef.current;
     if (!video) return;
 
-    // ПОЧАТОК З 3-Ї СЕКУНДИ
     video.currentTime = 3;
 
     const handleTimeUpdate = () => {
-      // ПОЯВА ЧЕРВОНОГО НА ОСТАННІЙ СЕКУНДІ
+      // Поява червоного фону в кінці відео
       if (video.currentTime >= video.duration - 1 && !isRedOverlayVisible) {
         setIsRedOverlayVisible(true);
       }
       
-      // ЗАЦИКЛЕННЯ
+      // Зациклення на 3-ю секунду
       if (video.currentTime >= video.duration - 0.1) {
-        video.currentTime = 3; // ПОВЕРНЕННЯ НА 3-Ю СЕКУНДУ
+        video.currentTime = 3;
         video.play();
-        // ТРИМАЄМО ЧЕРВОНИЙ ЩІЛЬНИЙ КОЛІР 3 СЕКУНДИ
         setTimeout(() => setIsRedOverlayVisible(false), 3000);
       }
     };
@@ -50,7 +44,7 @@ export function Hero() {
             await video.play();
             setTimeout(() => setIsRedOverlayVisible(false), 500);
         } catch (e) {
-            console.log("Autoplay blocked, waiting for interaction");
+            console.log("Autoplay blocked");
         }
     };
     startPlay();
@@ -58,12 +52,7 @@ export function Hero() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [isRedOverlayVisible]);
 
-  // Обчислення стилів для тексту
-  // 1. Scale: від 1 до 0.5
   const textScale = 1 - (scrollProgress * 0.5);
-  // 2. Top position: від 35% (центр екрану) до 20px (шапка)
-  // Використовуємо calc() у стилях, але тут логіка для opacity або додаткових зсувів
-  const textOpacity = 1; 
 
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
@@ -72,13 +61,12 @@ export function Hero() {
         .font-bebas { font-family: 'Bebas Neue', sans-serif; }
         .fixed-bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; z-index: 1; pointer-events: none; }
         
-        /* Стилі для плаваючого заголовка */
         .sticky-title-container {
           position: fixed;
           left: 0;
           width: 100%;
-          z-index: 40; /* Високий z-index, щоб бути поверх контенту, але під меню/прапором */
-          pointer-events: none; /* Щоб крізь текст можна було клікати */
+          z-index: 40;
+          pointer-events: none;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -91,7 +79,7 @@ export function Hero() {
           line-height: 0.8;
           display: block;
           width: 100%;
-          font-style: italic !important; /* КУРСИВ */
+          font-style: italic !important;
           text-align: center;
         }
         .hero-subtitle { 
@@ -115,17 +103,13 @@ export function Hero() {
           10%, 30% { transform: translateX(15px); }
           20% { transform: translateX(5px); }
         }
-        .slider-hint-anim {
-          animation: sliderHint 4s ease-in-out infinite;
-        }
+        .slider-hint-anim { animation: sliderHint 4s ease-in-out infinite; }
 
         @keyframes pulseGlow {
           0%, 100% { box-shadow: 0 0 5px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
           50% { box-shadow: 0 0 20px rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
         }
-        .slider-glow {
-          animation: pulseGlow 2s infinite ease-in-out;
-        }
+        .slider-glow { animation: pulseGlow 2s infinite ease-in-out; }
       `}</style>
 
       <div className="fixed-bg-video">
@@ -136,7 +120,7 @@ export function Hero() {
             playsInline 
             loop={false} 
             className="w-full h-full object-cover" 
-            style={{ filter: "brightness(0.35)", transform: "scale(1.45)" }} /* ЗБІЛЬШЕННЯ МАСШТАБУ */
+            style={{ filter: "brightness(0.35)", transform: "scale(1.45)" }}
         >
           <source src="https://cdn.jsdelivr.net/gh/synectica/assets/KFA.mp4" type="video/mp4" />
         </video>
@@ -155,11 +139,8 @@ export function Hero() {
       <div 
         className="sticky-title-container"
         style={{
-            // Інтерполяція позиції: від 35% зверху до 20px зверху
             top: `calc(35% - ${scrollProgress * 35}% + ${scrollProgress * 20}px)`,
-            // Інтерполяція масштабу: від 1 до 0.5
             transform: `scale(${textScale})`,
-            // Компенсація розмиття тексту при scale
             transformOrigin: "top center" 
         }}
       >
@@ -169,8 +150,8 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Пустий блок, щоб зберегти місце в потоці Hero, де раніше був текст (щоб кнопки не стрибали) */}
-      <div className="relative z-[10] text-center w-full flex flex-col items-center px-4 mb-4 opacity-0 pointer-events-none select-none">
+      {/* Spacer для збереження висоти секції */}
+      <div className="relative z-[10] text-center w-full flex flex-col items-center px-4 mb-4 opacity-0 pointer-events-none">
          <div className="w-full max-w-6xl">
           <h1 className="hero-title font-bebas font-bold uppercase text-white">KOREOGRAFI FOR ALLE</h1>
           <p className="hero-subtitle font-bebas opacity-90 uppercase mt-3">med GALYNA GERASYMENKO</p>
@@ -202,10 +183,7 @@ function TouchSlider({ beforeText, afterText, target, activeColor, delay }: any)
   const containerRef = useRef<HTMLDivElement>(null);
   const posRef = useRef(0);
 
-  const handleStart = () => {
-    setIsDragging(true);
-    setHasInteracted(true);
-  };
+  const handleStart = () => { setIsDragging(true); setHasInteracted(true); };
 
   const handleMove = (e: any) => {
     if (!isDragging || !containerRef.current) return;
@@ -223,13 +201,11 @@ function TouchSlider({ beforeText, afterText, target, activeColor, delay }: any)
     if (!isDragging || !containerRef.current) return;
     setIsDragging(false);
     const rect = containerRef.current.getBoundingClientRect();
-    const thumbWidth = containerRef.current.offsetHeight - 8;
-    const max = rect.width - thumbWidth - 8;
+    const max = rect.width - (containerRef.current.offsetHeight - 8) - 8;
 
     if (posRef.current >= max * 0.95) {
       setPosition(max);
-      const el = document.querySelector(target);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      document.querySelector(target)?.scrollIntoView({ behavior: "smooth" });
       setTimeout(() => { setPosition(0); posRef.current = 0; }, 1000);
     } else {
       setPosition(0);
@@ -240,7 +216,7 @@ function TouchSlider({ beforeText, afterText, target, activeColor, delay }: any)
   return (
     <div 
       ref={containerRef}
-      className="slider-container-main slider-glow relative w-full max-w-[320px] h-[58px] bg-white/10 rounded-full p-1 border border-white/20 overflow-hidden select-none transition-shadow"
+      className="slider-container-main slider-glow relative w-full max-w-[320px] h-[58px] bg-white/10 rounded-full p-1 border border-white/20 overflow-hidden select-none"
       onMouseMove={handleMove} onMouseUp={handleEnd} onMouseLeave={handleEnd} onTouchMove={handleMove} onTouchEnd={handleEnd}
       style={{ touchAction: 'none' }}
     >
@@ -258,8 +234,7 @@ function TouchSlider({ beforeText, afterText, target, activeColor, delay }: any)
       />
 
       <div 
-        className={`absolute aspect-square h-full max-h-[50px] bg-white rounded-full z-40 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg 
-          ${!hasInteracted ? 'slider-hint-anim' : ''}`}
+        className={`absolute aspect-square h-full max-h-[50px] bg-white rounded-full z-40 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg ${!hasInteracted ? 'slider-hint-anim' : ''}`}
         onMouseDown={handleStart} onTouchStart={handleStart}
         style={{ 
           left: position + 4, 

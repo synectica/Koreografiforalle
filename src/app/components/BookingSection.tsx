@@ -1,9 +1,6 @@
 "use client";
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Heart, Calendar, ArrowRight, Check } from "lucide-react";
-
-// Глобальна змінна для блокування одночасного перетягування
-let activeSliderId: string | null = null;
 
 export function BookingSection() {
   const [name, setName] = useState("");
@@ -68,36 +65,12 @@ export function BookingSection() {
     setSubmitted(false);
     setSelectedDate(null);
     setActiveFilter(null);
-    activeSliderId = null;
   };
 
   return (
-    // ПРИБРАНО justify-center і min-h-[100dvh], замінено на min-h-screen і padding
     <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
-      <style>{`
-        .slider-wrapper {
-          position: relative; width: 100%; height: 60px;
-          background: rgba(255, 255, 255, 0.05); border-radius: 9999px;
-          overflow: hidden; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);
-          touch-action: none; /* Забороняє скрол сторінки при тяганні слайдера */
-        }
-        .slider-text-base {
-          position: absolute; inset: 0; z-index: 2;
-          display: flex; align-items: center; justify-content: center; pointer-events: none;
-        }
-        .glass-fill {
-          position: absolute; left: 4px; top: 4px; bottom: 4px;
-          background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-          border-radius: 9999px; z-index: 5;
-        }
-        .thumb-element {
-          position: absolute; width: 52px; height: 52px; border-radius: 50%;
-          background: white; z-index: 40; display: flex; align-items: center;
-          justify-content: center; cursor: grab; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-      `}</style>
-      
       <div className="w-full max-w-3xl z-10 flex flex-col items-center">
+        {/* Заголовок повернуто до стандартного вигляду (без uppercase) */}
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
           Book en gratis prøvetime
         </h2>
@@ -107,13 +80,27 @@ export function BookingSection() {
         </div>
         
         <div className="relative w-full min-h-[650px]">
-          
+          {/* ФОРМА БРОНЮВАННЯ */}
           <div className={`w-full h-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col transition-all duration-500 ${submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-10'} relative`}>
             <div className="flex flex-col h-full justify-between gap-6">
               
               <div className="flex flex-col gap-3">
-                  <BookingSlider id="tue" beforeLabel="Tirsdag 15:00 - 16:00" afterLabel="Tirsdag valgt" activeColor="#22c55e" icon={<Calendar className="w-4 h-4" />} isActive={activeFilter === 'tuesday'} onComplete={() => { setActiveFilter('tuesday'); setSelectedDate(null); }} isFormSubmitted={submitted} />
-                  <BookingSlider id="fri" beforeLabel="Fredag 16:00 - 17:30" afterLabel="Fredag valgt" activeColor="#22c55e" icon={<Calendar className="w-4 h-4" />} isActive={activeFilter === 'friday'} onComplete={() => { setActiveFilter('friday'); setSelectedDate(null); }} isFormSubmitted={submitted} />
+                  <BookingButton 
+                    label="Tirsdag 15:00 - 16:00" 
+                    activeLabel="Tirsdag valgt"
+                    activeColor="#22c55e" 
+                    icon={<Calendar className="w-5 h-5" />} 
+                    isActive={activeFilter === 'tuesday'} 
+                    onClick={() => { setActiveFilter('tuesday'); setSelectedDate(null); }} 
+                  />
+                  <BookingButton 
+                    label="Fredag 16:00 - 17:30" 
+                    activeLabel="Fredag valgt"
+                    activeColor="#22c55e" 
+                    icon={<Calendar className="w-5 h-5" />} 
+                    isActive={activeFilter === 'friday'} 
+                    onClick={() => { setActiveFilter('friday'); setSelectedDate(null); }} 
+                  />
               </div>
 
               <div className="w-full pt-2 text-center flex-1 flex flex-col justify-center">
@@ -150,124 +137,76 @@ export function BookingSection() {
               </div>
 
               <div className="flex flex-col gap-3">
-                {/* Додано text-base для запобігання зуму на iPhone */}
                 <input type="text" placeholder="Navn" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
                 <input type="email" placeholder="E-post" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
                 <input type="tel" placeholder="Telefon" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
                 
-                <BookingSlider id="submit" beforeLabel={!selectedDate ? "Velg dato" : isSubmitting ? "Sender..." : "Skyv for å booke"} afterLabel="Bestiller..." activeColor="#22c55e" icon={<ArrowRight className="w-5 h-5" />} disabled={!selectedDate || isSubmitting} onComplete={executeSubmit} isFormSubmitted={submitted} />
+                <button 
+                  disabled={!selectedDate || isSubmitting}
+                  onClick={executeSubmit}
+                  className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300
+                  ${!selectedDate || isSubmitting 
+                    ? 'bg-white/5 text-white/20 border border-white/10 cursor-not-allowed' 
+                    : 'bg-white text-[#22c55e] border border-white shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95'}`}
+                >
+                  {isSubmitting ? "Sender..." : !selectedDate ? "Vennligst velg dato" : "Book prøvetime nå"}
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
 
+          {/* ЕКРАН УСПІХУ (Текст повернуто до стандартного) */}
           <div className={`w-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
                 <div className="flex flex-col items-center justify-center flex-1">
                   <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
-                  <h3 className="text-6xl md:text-7xl font-black text-white uppercase leading-none mb-4 tracking-tighter">Takk!</h3>
-                  <p className="text-white/80 font-extrabold text-xl uppercase mb-8">Din prøvetime er booket:</p>
+                  <h3 className="text-6xl md:text-7xl font-black text-white leading-none mb-4 tracking-tighter">
+                    Takk!
+                  </h3>
+                  <p className="text-white/80 font-bold text-xl mb-8">Din prøvetime er booket:</p>
                   <div className="bg-white/10 rounded-[32px] py-8 px-10 border border-white/20 backdrop-blur-xl w-full max-w-md">
-                    <span className="text-white font-black text-2xl md:text-3xl block mb-2 uppercase">{finalDetails.day}</span>
-                    <span className="text-white/90 font-bold text-xl block uppercase tracking-widest leading-none">kl. {finalDetails.time}</span>
+                    <span className="text-white font-black text-2xl md:text-3xl block mb-2">{finalDetails.day}</span>
+                    <span className="text-white/90 font-bold text-xl block tracking-widest leading-none">kl. {finalDetails.time}</span>
                   </div>
                 </div>
                 
                 <div className="w-full mt-6">
-                  <BookingSlider 
-                    id="reset"
-                    beforeLabel="Bestill en ny time"
-                    afterLabel="Vennligst vent..."
-                    activeColor="#22c55e"
-                    icon={<Check className="w-5 h-5" />}
-                    onComplete={handleReset}
-                    isFormSubmitted={submitted}
-                  />
+                  <button 
+                    onClick={handleReset}
+                    className="h-14 w-full bg-white text-[#22c55e] rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-transform"
+                  >
+                    <Check className="w-5 h-5" />
+                    Bestill en ny time
+                  </button>
                 </div>
           </div>
-
         </div>
       </div>
     </section>
   );
 }
 
-function BookingSlider({ id, beforeLabel, afterLabel, activeColor, icon, onComplete, isActive = false, disabled = false, isFormSubmitted }: any) {
-  const [position, setPosition] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const posRef = useRef(0);
-
-  useEffect(() => {
-    if (!isFormSubmitted) {
-      if (!isActive || id === 'submit' || id === 'reset') {
-        setPosition(0);
-        posRef.current = 0;
-      }
-    }
-  }, [isFormSubmitted, isActive, id]);
-
-  const handleStart = (e: any) => { 
-      if (!disabled && activeSliderId === null) { 
-          setIsDragging(true); 
-          activeSliderId = id; 
-      } 
-  };
-
-  useEffect(() => {
-    const handleMove = (e: any) => {
-      if (!isDragging || activeSliderId !== id || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const x = clientX - rect.left - 28;
-      const max = rect.width - 60;
-      const newPos = Math.max(0, Math.min(x, max));
-      posRef.current = newPos; 
-      setPosition(newPos);
-    };
-
-    const handleEnd = () => {
-      if (!isDragging || activeSliderId !== id) return;
-      setIsDragging(false); 
-      activeSliderId = null;
-      const max = containerRef.current!.offsetWidth - 60;
-      
-      if (posRef.current >= max * 0.9) { 
-          setPosition(max); 
-          onComplete(); 
-      } else if (!isActive) { 
-          setPosition(0); 
-          posRef.current = 0; 
-      }
-    };
-
-    if (isDragging) {
-        window.addEventListener("mousemove", handleMove); 
-        window.addEventListener("mouseup", handleEnd);
-        window.addEventListener("touchmove", handleMove); 
-        window.addEventListener("touchend", handleEnd);
-    }
-    
-    return () => {
-      window.removeEventListener("mousemove", handleMove); 
-      window.removeEventListener("mouseup", handleEnd);
-      window.removeEventListener("touchmove", handleMove); 
-      window.removeEventListener("touchend", handleEnd);
-    };
-  }, [isDragging, id, onComplete, isActive]);
-
-  const textStyle = { fontWeight: 800, textTransform: 'uppercase' as const, fontSize: '10px', letterSpacing: '1px' };
-
+function BookingButton({ label, activeLabel, activeColor, icon, isActive, onClick, disabled }: any) {
   return (
-    <div ref={containerRef} className={`slider-wrapper ${disabled ? 'opacity-20 grayscale pointer-events-none' : 'cursor-grab active:cursor-grabbing'}`}>
-      <div className="slider-text-base absolute inset-0 flex items-center justify-center pointer-events-none">
-        <span style={{...textStyle, color: 'white'}}>{beforeLabel}</span>
-      </div>
-      <div className="glass-fill" style={{ width: position + 52, transition: isDragging ? 'none' : '0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }} />
-      <div className="slider-text-active absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-        <span style={{ color: activeColor, opacity: position > 100 ? 1 : 0, transition: '0.2s', ...textStyle }}>{afterLabel}</span>
-      </div>
-      <div className="thumb-element" onMouseDown={handleStart} onTouchStart={handleStart} style={{ left: position + 4, transition: isDragging ? 'none' : '0.4s', color: activeColor }}>
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`relative w-full h-[60px] rounded-full border transition-all duration-300 flex items-center justify-center gap-3 px-6 overflow-hidden group
+      ${isActive 
+        ? 'bg-white text-black border-white shadow-[0_0_25px_rgba(255,255,255,0.2)]' 
+        : 'bg-white/5 text-white border-white/10 hover:bg-white/10 active:scale-95'
+      } ${disabled ? 'opacity-20 grayscale cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+      <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} style={{ color: isActive ? activeColor : 'inherit' }}>
         {icon}
       </div>
-    </div>
+      <span className="font-black uppercase text-[11px] tracking-[1.5px] whitespace-nowrap">
+        {isActive ? activeLabel : label}
+      </span>
+      {isActive && (
+        <div className="absolute inset-0 bg-white/20 blur-xl pointer-events-none" />
+      )}
+    </button>
   );
 }
