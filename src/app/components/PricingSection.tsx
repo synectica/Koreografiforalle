@@ -105,14 +105,21 @@ export function PricingSection({ lang }: { lang: string }) {
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
+                      const ua = navigator.userAgent;
+                      const isSamsung = /SamsungBrowser/i.test(ua);
+                      const isiOS = /iPhone|iPad|iPod/i.test(ua);
+                      
                       const phone = "4798148210";
                       const vippsUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
+                      // ВАРІАНТИ ЗАТРИМКИ:
+                      // Samsung та iPhone блокують переходи, якщо затримка велика.
+                      // Ставимо 1 сек для них, 3 сек для Chrome/PC.
+                      const delay = (isSamsung || isiOS) ? 1000 : 3000;
+
                       setTimeout(() => {
-                        // Симуляція реального кліку по лінку (це обходить захист Samsung Internet / Safari)
                         const a = document.createElement('a');
                         a.href = vippsUrl;
-                        // На мобільних відкриваємо в тому ж вікні для спрацювання редиректу в додаток
                         if (!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))) {
                            a.target = "_blank";
                         }
@@ -120,7 +127,7 @@ export function PricingSection({ lang }: { lang: string }) {
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                      }, 3000);
+                      }, delay);
 
                       setTimeout(() => { resetCard(index); }, 8000);
                     }}
