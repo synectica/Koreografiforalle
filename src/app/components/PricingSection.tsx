@@ -107,24 +107,28 @@ export function PricingSection({ lang }: { lang: string }) {
                       
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                       const priceValue = parseInt(plan.price);
-                      // Використовуємо 47 префікс для надійності
                       const phone = "4798148210"; 
 
-                      // Отримуємо URL (v=1 це найнадійніший формат для Vipps Business)
-                      const vippsUrl = !isNaN(priceValue)
+                      // Спроба використати Deep Link, який примусово відкриває додаток
+                      const mobileDeepLink = !isNaN(priceValue)
+                        ? `vipps://qr?token=28.2.01.031.${phone}?v=2&a=${priceValue * 100}`
+                        : `vipps://qr?token=28.2.01.031.${phone}?v=1`;
+
+                      const webQrUrl = !isNaN(priceValue)
                         ? `https://qr.vipps.no/28/2/01/031/${phone}?v=2&a=${priceValue * 100}`
                         : `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
-                      // ПОЧЕКАТИ 3 СЕКУНДИ ПЕРЕД ПЕРЕХОДОМ
+                      // Очікуємо 3 секунди
                       setTimeout(() => { 
                         if (isMobile) {
-                          window.location.assign(vippsUrl);
+                          window.location.href = mobileDeepLink;
+                          // Резервний варіант, якщо vipps:// не спрацював за 500мс
+                          setTimeout(() => { window.location.assign(webQrUrl); }, 500);
                         } else {
-                          window.open(vippsUrl, '_blank');
+                          window.open(webQrUrl, '_blank');
                         }
                       }, 3000);
 
-                      // Повернення картки в робочий стан через 6 секунд
                       setTimeout(() => { resetCard(index); }, 6000);
                     }}
                   />
@@ -188,7 +192,6 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
         onValueChange(100); 
         setTimeout(() => {
             onComplete();
-            // ПОВЕРНУТИ СЛАЙДЕР НА ПОЧАТОК
             setPosition(0);
             positionRef.current = 0;
             onValueChange(0);
