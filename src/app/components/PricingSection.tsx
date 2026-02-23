@@ -105,15 +105,35 @@ export function PricingSection({ lang }: { lang: string }) {
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
-                      // Fix: Deep Link vipps://
-                      const bizPhone = "98148210"; 
+                      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                       const priceValue = parseInt(plan.price);
                       
-                      const url = !isNaN(priceValue) 
-                        ? `vipps://send?t=${bizPhone}&a=${priceValue}` 
-                        : `vipps://send?t=${bizPhone}`;
+                      // Базовий URL для QR-коду вашого бізнесу
+                      // 47 - код Норвегії, 98148210 - ваш номер
+                      const baseUrl = "https://qr.vipps.no/28/2/01/031/4798148210";
+                      
+                      let finalUrl = "";
 
-                      setTimeout(() => { window.location.assign(url); }, 1500);
+                      if (!isNaN(priceValue)) {
+                        // Якщо є фіксована ціна (110 або 165)
+                        // v=2 означає фіксовану суму, a=сума в копійках (øre)
+                        finalUrl = `${baseUrl}?v=2&a=${priceValue * 100}`;
+                      } else {
+                        // Якщо "Avtale" (NaN)
+                        // v=1 дозволяє користувачу самому ввести суму
+                        finalUrl = `${baseUrl}?v=1`;
+                      }
+
+                      setTimeout(() => { 
+                        if (isMobile) {
+                            // На мобільному це відкриє додаток Vipps
+                            window.location.href = finalUrl; 
+                        } else {
+                            // На комп'ютері відкриє нову вкладку з QR-кодом для сканування
+                            window.open(finalUrl, '_blank');
+                        }
+                      }, 1500);
+
                       setTimeout(() => { resetCard(index); }, 5000);
                     }}
                   />
@@ -177,7 +197,7 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
         onValueChange(100); 
         setTimeout(() => {
             onComplete();
-            // СКИДАННЯ СЛАЙДЕРА НА ПОЧАТОК (ВЛІВО) ПІСЛЯ ЗАВЕРШЕННЯ
+            // СКИДАННЯ СЛАЙДЕРА НА ПОЧАТОК (ВЛІВО)
             setPosition(0);
             positionRef.current = 0;
             onValueChange(0);
