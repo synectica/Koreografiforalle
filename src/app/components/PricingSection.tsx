@@ -50,6 +50,20 @@ export function PricingSection({ lang }: { lang: string }) {
           justify-content: center; cursor: grab; box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
           touch-action: none;
         }
+        .vipps-btn {
+          background-color: #f97316;
+          color: white;
+          padding: 16px 32px;
+          border-radius: 16px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+          transition: transform 0.2s ease;
+        }
+        .vipps-btn:active {
+          transform: scale(0.95);
+        }
       `}</style>
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
@@ -64,6 +78,15 @@ export function PricingSection({ lang }: { lang: string }) {
             const currentVal = sliderVals[index];
             const cardOpacity = currentVal / 100;
 
+            // Визначаємо браузер для логіки "TAKK"
+            const getIsStrict = () => {
+                if (typeof window === "undefined") return false;
+                const ua = navigator.userAgent;
+                return /SamsungBrowser|iPhone|iPad|iPod/i.test(ua);
+            };
+            const isStrict = getIsStrict();
+            const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
+
             return (
               <div 
                 key={index} 
@@ -77,15 +100,25 @@ export function PricingSection({ lang }: { lang: string }) {
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
-                    <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">Åpner Vipps...</p>
-                    {/* Резервна кнопка для "тугих" браузерів */}
-                    <button 
-                      onClick={() => window.location.href = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`}
-                      className="mt-8 text-[10px] underline opacity-50 text-black uppercase font-bold tracking-widest"
-                    >
-                      Klikk her якщо додаток не відкрився
-                    </button>
+                    <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none mb-10">TAKK!</h3>
+                    
+                    {isStrict ? (
+                      /* ДЛЯ SAMSUNG ТА IPHONE: Центральна кнопка-імітація */
+                      <div className="flex flex-col items-center">
+                        <button 
+                          onClick={() => window.location.href = vippsUrl}
+                          className="vipps-btn text-xl"
+                        >
+                          ÅPNE VIPPS
+                        </button>
+                        <p className="text-black text-[10px] font-bold uppercase tracking-widest mt-4 opacity-40">
+                          Trykk для å betale
+                        </p>
+                      </div>
+                    ) : (
+                      /* ДЛЯ CHROME: Автоматичний текст */
+                      <p className="text-black text-lg font-bold uppercase tracking-widest">Åpner Vipps...</p>
+                    )}
                   </div>
                 )}
 
@@ -104,7 +137,7 @@ export function PricingSection({ lang }: { lang: string }) {
                   <ManualSlider 
                     id={`slider-card-${index}`}
                     beforeLabel={plan.price === "Avtale" ? "Betal - Vipps" : `Betal ${plan.price} - Vipps`}
-                    afterLabel="Gå до betaling"
+                    afterLabel="Gå til betaling"
                     color="#f97316" 
                     icon={<CreditCard className="w-5 h-5"/>} 
                     isLightMode={currentVal > 50}
@@ -112,21 +145,14 @@ export function PricingSection({ lang }: { lang: string }) {
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
-                      const ua = navigator.userAgent;
-                      const isSamsung = /SamsungBrowser/i.test(ua);
-                      const isiOS = /iPhone|iPad|iPod/i.test(ua);
-                      const phone = "4798148210";
-                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
+                      if (!isStrict) {
+                        // Chrome: затримка 3 секунди
+                        setTimeout(() => {
+                          window.location.href = vippsUrl;
+                        }, 3000);
+                      }
 
-                      // Для Samsung та iPhone робимо перехід МИТТЄВО (затримка 100мс лише для рендеру екрану TAKK)
-                      // Для Chrome залишаємо 2 сек.
-                      const delay = (isSamsung || isiOS) ? 100 : 2000;
-
-                      setTimeout(() => {
-                        window.location.href = vippsUrl;
-                      }, delay);
-
-                      setTimeout(() => { resetCard(index); }, 8000);
+                      setTimeout(() => { resetCard(index); }, 12000); // Довше тримаємо екран, щоб встигли натиснути
                     }}
                   />
                 </div>
@@ -138,8 +164,8 @@ export function PricingSection({ lang }: { lang: string }) {
         <div className="mt-12 w-full max-w-[340px]">
            <ManualSlider 
              id="slider-booking-footer"
-             beforeLabel="Meld deg på prøвetime" 
-             afterLabel="Gå до booking"
+             beforeLabel="Meld deg på prøvetime" 
+             afterLabel="Gå til booking"
              color="#22c55e" 
              icon={<CreditCard className="w-5 h-5"/>} 
              isLightMode={false}
