@@ -54,7 +54,7 @@ export function PricingSection({ lang }: { lang: string }) {
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize">Priser</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize text-white">Priser</h2>
           <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөte.</p>
         </div>
 
@@ -106,26 +106,18 @@ export function PricingSection({ lang }: { lang: string }) {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                      const priceValue = parseInt(plan.price);
-                      const phone = "4798148210"; 
+                      
+                      // ВИКОРИСТОВУЄМО ТВОЮ СТРУКТУРУ ПОСИЛАННЯ (Приватна особа)
+                      // Номер Галіни: 4798148210
+                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
 
-                      // Спроба використати Deep Link, який примусово відкриває додаток
-                      const mobileDeepLink = !isNaN(priceValue)
-                        ? `vipps://qr?token=28.2.01.031.${phone}?v=2&a=${priceValue * 100}`
-                        : `vipps://qr?token=28.2.01.031.${phone}?v=1`;
-
-                      const webQrUrl = !isNaN(priceValue)
-                        ? `https://qr.vipps.no/28/2/01/031/${phone}?v=2&a=${priceValue * 100}`
-                        : `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
-
-                      // Очікуємо 3 секунди
+                      // ПОЧЕКАТИ 3 СЕКУНДИ ПЕРЕД ПЕРЕХОДОМ
                       setTimeout(() => { 
                         if (isMobile) {
-                          window.location.href = mobileDeepLink;
-                          // Резервний варіант, якщо vipps:// не спрацював за 500мс
-                          setTimeout(() => { window.location.assign(webQrUrl); }, 500);
+                          // На iPhone/Android це посилання має автоматично "підхопити" додаток Vipps
+                          window.location.href = vippsUrl;
                         } else {
-                          window.open(webQrUrl, '_blank');
+                          window.open(vippsUrl, '_blank');
                         }
                       }, 3000);
 
