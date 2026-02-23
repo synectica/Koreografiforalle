@@ -31,18 +31,11 @@ export function PricingSection({ lang }: { lang: string }) {
   const handlePayment = (index: number) => {
     setSuccessStates(prev => ({ ...prev, [index]: true }));
 
-    // ЛОГІКА ДЛЯ CHROME ANDROID (Не чіпаємо, як ти і просив)
     if (browserInfo.isChromeAndroid) {
       setTimeout(() => {
         window.location.href = vippsUrl;
       }, 3000);
     } 
-    // ДЛЯ SAMSUNG ТА IOS: Автоматично не переходимо, бо буде заглушка. 
-    // Людина натисне на велику кнопку на екрані TAKK.
-
-    setTimeout(() => {
-      // Скидаємо стан через 20 секунд, щоб екран інструкції не зникав швидко
-    }, 20000);
   };
 
   const resetCard = (index: number) => {
@@ -96,7 +89,6 @@ export function PricingSection({ lang }: { lang: string }) {
                 
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-                    {/* СТРІЛКА ТІЛЬКИ ДЛЯ SAMSUNG */}
                     {browserInfo.isSamsung && (
                       <div className="samsung-hint-arrow flex flex-col items-end">
                         <ArrowUpRight size={48} strokeWidth={3} />
@@ -115,11 +107,6 @@ export function PricingSection({ lang }: { lang: string }) {
                         >
                           ÅPNE VIPPS APP
                         </button>
-                        <p className="mt-6 text-black/40 text-[10px] font-bold uppercase tracking-widest max-w-[200px]">
-                          {browserInfo.isSamsung 
-                            ? "Dersom appen ikke åpner seg, bruk Vipps-ikonet øverst i nettleseren" 
-                            : "Klikk på knappen для å fullføre betalingen"}
-                        </p>
                       </div>
                     ) : (
                       <p className="text-black text-lg font-bold uppercase tracking-widest mt-8">ÅPNER VIPPS...</p>
