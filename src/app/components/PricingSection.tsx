@@ -76,9 +76,9 @@ export function PricingSection({ lang }: { lang: string }) {
               >
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
+                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
                     <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black font-bold text-xl mt-6 uppercase opacity-70 italic tracking-widest">Åpner Vipps...</p>
+                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">Åpner Vipps...</p>
                   </div>
                 )}
 
@@ -105,24 +105,29 @@ export function PricingSection({ lang }: { lang: string }) {
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
-                      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                      const userAgent = navigator.userAgent || navigator.vendor;
+                      const isiOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+                      const isAndroid = /Android/i.test(userAgent);
                       
-                      // Твій робочий формат лінку для приватної особи
-                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
+                      const phone = "4798148210";
+                      const webUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
+                      // Прямий deep-link для iOS
+                      const iosDeepLink = `vipps://qr?token=28.2.01.031.${phone}`;
 
-                      // Чекаємо 3 секунди, поки горить серце
                       setTimeout(() => { 
-                        if (isMobile) {
-                          // На телефоні це посилання ПРИМУСОВО відкриває додаток Vipps
-                          window.location.href = vippsUrl;
+                        if (isiOS) {
+                          // iPhone краще реагує на прямий протокол vipps://
+                          window.location.replace(iosDeepLink);
+                          // Якщо через 1.5с не вилетіло з браузера — відкриваємо веб-версію
+                          setTimeout(() => { if (document.hasFocus()) window.location.href = webUrl; }, 1500);
+                        } else if (isAndroid) {
+                          window.location.href = webUrl;
                         } else {
-                          // На компі відкриває в новій вкладці для сканування
-                          window.open(vippsUrl, '_blank');
+                          window.open(webUrl, '_blank');
                         }
                       }, 3000);
 
-                      // Скидаємо "TAKK!" через 7 секунд
-                      setTimeout(() => { resetCard(index); }, 7000);
+                      setTimeout(() => { resetCard(index); }, 7500);
                     }}
                   />
                 </div>
