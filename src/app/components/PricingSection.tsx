@@ -1,24 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { CreditCard, Heart, ArrowRight, ArrowUpRight } from "lucide-react";
+import React, { useState } from "react";
+import { CreditCard, Heart, ArrowRight } from "lucide-react";
 
 export function PricingSection({ lang }: { lang: string }) {
   const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({ 0: false, 1: false, 2: false });
-  const [browserInfo, setBrowserInfo] = useState({ isChromeAndroid: false, isSamsung: false, isiOS: false });
-
-  useEffect(() => {
-    const ua = navigator.userAgent;
-    const isAndroid = /Android/i.test(ua);
-    const isChrome = /Chrome/i.test(ua) && !/SamsungBrowser/i.test(ua);
-    const isSamsung = /SamsungBrowser/i.test(ua);
-    const isiOS = /iPhone|iPad|iPod/i.test(ua);
-
-    setBrowserInfo({
-      isChromeAndroid: isAndroid && isChrome,
-      isSamsung: isSamsung,
-      isiOS: isiOS
-    });
-  }, []);
 
   const pricingData = [
     { name: "60 Minutter", price: "110", info: "Tirsdager", description: "Nybegynnere & Grunnleggende" },
@@ -26,57 +11,61 @@ export function PricingSection({ lang }: { lang: string }) {
     { name: "Privat / Gruppe", price: "Avtale", info: "Individuell", description: "Skreddersydd opplegg" }
   ];
 
-  const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
-
   const handlePayment = (index: number) => {
     setSuccessStates(prev => ({ ...prev, [index]: true }));
-
-    // ЛОГІКА ДЛЯ CHROME ANDROID (Не чіпаємо, як ти і просив)
-    if (browserInfo.isChromeAndroid) {
-      setTimeout(() => {
-        window.location.href = vippsUrl;
-      }, 3000);
-    } 
-    // ДЛЯ SAMSUNG ТА IOS: Автоматично не переходимо, бо буде заглушка. 
-    // Людина натисне на велику кнопку на екрані TAKK.
+    
+    const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
+    window.location.href = vippsUrl;
 
     setTimeout(() => {
-      // Скидаємо стан через 20 секунд, щоб екран інструкції не зникав швидко
-    }, 20000);
+      setSuccessStates(prev => ({ ...prev, [index]: false }));
+    }, 10000);
   };
 
-  const resetCard = (index: number) => {
-    setSuccessStates(prev => ({ ...prev, [index]: false }));
+  const handleBookingScroll = () => {
+    document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent font-sans text-white">
       <style>{`
         .btn-premium {
-          width: 100%; height: 64px; border-radius: 9999px;
-          display: flex; align-items: center; justify-content: center;
-          gap: 12px; font-weight: 800; text-transform: uppercase;
-          letter-spacing: 1.5px; font-size: 13px; transition: all 0.2s ease;
-          border: none; cursor: pointer;
+          width: 100%;
+          height: 64px;
+          border-radius: 9999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          font-size: 13px;
+          transition: all 0.2s ease;
+          position: relative;
+          border: none;
+          cursor: pointer;
         }
-        .btn-white-vipps { background-color: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
-        .btn-white-vipps:active { transform: scale(0.98); box-shadow: inset 4px 4px 12px rgba(0, 0, 0, 0.3); }
-        
-        .btn-booking { background-color: #22c55e; color: white; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2); }
-        
-        .samsung-hint-arrow {
-          position: absolute; top: 20px; right: 20px;
-          animation: point-up 1s infinite; color: #f97316;
+        /* БІЛА КНОПКА VIPPS */
+        .btn-white-vipps {
+          background-color: #ffffff;
+          color: #000000;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        @keyframes point-up {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(10px, -10px); }
+        /* ЕФЕКТ ВНУТРІШНЬОЇ ТІНІ ПРИ НАТИСКАННІ */
+        .btn-white-vipps:active {
+          transform: scale(0.98);
+          background-color: #ffffff;
+          box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.2);
         }
-        .big-vipps-trigger {
-          background: #f97316; color: white; padding: 20px 40px;
-          border-radius: 20px; font-weight: 900; font-size: 18px;
-          box-shadow: 0 10px 30px rgba(249, 115, 22, 0.4);
-          margin-top: 20px;
+        .btn-booking {
+          background-color: #22c55e;
+          color: white;
+          box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2);
+        }
+        .btn-booking:active {
+          transform: scale(0.96);
+          box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.2);
         }
       `}</style>
 
@@ -89,48 +78,17 @@ export function PricingSection({ lang }: { lang: string }) {
         <div className="w-full max-w-5xl bg-white/5 backdrop-blur-3xl rounded-[50px] border border-white/20 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
           {pricingData.map((plan, index) => {
             const isSuccess = successStates[index];
-            const isStrict = browserInfo.isSamsung || browserInfo.isiOS;
 
             return (
-              <div key={index} className={`relative flex-1 min-h-[520px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}>
-                
+              <div 
+                key={index} 
+                className={`relative flex-1 min-h-[500px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}
+              >
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-                    {/* СТРІЛКА ТІЛЬКИ ДЛЯ SAMSUNG */}
-                    {browserInfo.isSamsung && (
-                      <div className="samsung-hint-arrow flex flex-col items-end">
-                        <ArrowUpRight size={48} strokeWidth={3} />
-                        <span className="text-[10px] font-black text-black mt-2">TRYKK PÅ VIPPS-IKONET HER</span>
-                      </div>
-                    )}
-
-                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
-                    <h3 className="text-6xl font-black tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    
-                    {isStrict ? (
-                      <div className="mt-8 flex flex-col items-center">
-                        <button 
-                          onClick={() => window.location.href = vippsUrl}
-                          className="big-vipps-trigger"
-                        >
-                          ÅPNE VIPPS APP
-                        </button>
-                        <p className="mt-6 text-black/40 text-[10px] font-bold uppercase tracking-widest max-w-[200px]">
-                          {browserInfo.isSamsung 
-                            ? "Dersom appen ikke åpner seg, bruk Vipps-ikonet øverst i nettleseren" 
-                            : "Klikk på knappen для å fullføre betalingen"}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-black text-lg font-bold uppercase tracking-widest mt-8">ÅPNER VIPPS...</p>
-                    )}
-
-                    <button 
-                      onClick={() => resetCard(index)}
-                      className="absolute bottom-8 text-[10px] text-black/20 font-bold uppercase tracking-widest hover:text-black/60 transition-colors"
-                    >
-                      Lukk
-                    </button>
+                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-8" />
+                    <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
+                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">ÅPNER VIPPS...</p>
                   </div>
                 )}
 
@@ -163,7 +121,7 @@ export function PricingSection({ lang }: { lang: string }) {
 
         <div className="mt-12 w-full max-w-[340px] px-4">
            <button 
-             onClick={() => document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" })}
+             onClick={handleBookingScroll}
              className="btn-premium btn-booking"
            >
              <span>Meld deg på prøvetime</span>
