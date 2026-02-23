@@ -55,7 +55,7 @@ export function PricingSection({ lang }: { lang: string }) {
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize text-white">Priser</h2>
-          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөте.</p>
+          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөte.</p>
         </div>
 
         <div className="w-full max-w-5xl bg-white/5 backdrop-blur-3xl rounded-[50px] border border-white/20 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
@@ -78,7 +78,14 @@ export function PricingSection({ lang }: { lang: string }) {
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
                     <h3 className="text-7xl font-bold tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">ÅPNER VIPPS...</p>
+                    <p className="text-black text-lg font-bold uppercase tracking-widest mt-6">Åpner Vipps...</p>
+                    {/* Резервна кнопка для "тугих" браузерів */}
+                    <button 
+                      onClick={() => window.location.href = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`}
+                      className="mt-8 text-[10px] underline opacity-50 text-black uppercase font-bold tracking-widest"
+                    >
+                      Klikk her якщо додаток не відкрився
+                    </button>
                   </div>
                 )}
 
@@ -97,7 +104,7 @@ export function PricingSection({ lang }: { lang: string }) {
                   <ManualSlider 
                     id={`slider-card-${index}`}
                     beforeLabel={plan.price === "Avtale" ? "Betal - Vipps" : `Betal ${plan.price} - Vipps`}
-                    afterLabel="Gå til betaling"
+                    afterLabel="Gå до betaling"
                     color="#f97316" 
                     icon={<CreditCard className="w-5 h-5"/>} 
                     isLightMode={currentVal > 50}
@@ -109,20 +116,15 @@ export function PricingSection({ lang }: { lang: string }) {
                       const isSamsung = /SamsungBrowser/i.test(ua);
                       const isiOS = /iPhone|iPad|iPod/i.test(ua);
                       const phone = "4798148210";
+                      const vippsUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
 
-                      let finalUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
+                      // Для Samsung та iPhone робимо перехід МИТТЄВО (затримка 100мс лише для рендеру екрану TAKK)
+                      // Для Chrome залишаємо 2 сек.
+                      const delay = (isSamsung || isiOS) ? 100 : 2000;
 
-                      // ДЛЯ SAMSUNG INTERNET: Використовуємо системний Intent
-                      if (isSamsung) {
-                        finalUrl = `intent://qr.vipps.no/28/2/01/031/${phone}?v=1#Intent;scheme=https;package=no.vipps.vipps;end;`;
-                      } 
-                      // ДЛЯ IPHONE (Safari): Спробуємо прямий протокол
-                      else if (isiOS) {
-                        finalUrl = `vipps://qr?token=28.2.01.031.${phone}`;
-                      }
-
-                      // Миттєвий перехід без затримок для Samsung/iOS
-                      window.location.href = finalUrl;
+                      setTimeout(() => {
+                        window.location.href = vippsUrl;
+                      }, delay);
 
                       setTimeout(() => { resetCard(index); }, 8000);
                     }}
@@ -136,8 +138,8 @@ export function PricingSection({ lang }: { lang: string }) {
         <div className="mt-12 w-full max-w-[340px]">
            <ManualSlider 
              id="slider-booking-footer"
-             beforeLabel="Meld deg på prøvetime" 
-             afterLabel="Gå til booking"
+             beforeLabel="Meld deg på prøвetime" 
+             afterLabel="Gå до booking"
              color="#22c55e" 
              icon={<CreditCard className="w-5 h-5"/>} 
              isLightMode={false}
