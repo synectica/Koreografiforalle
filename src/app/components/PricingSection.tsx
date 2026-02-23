@@ -106,28 +106,24 @@ export function PricingSection({ lang }: { lang: string }) {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
                       
                       const userAgent = navigator.userAgent || navigator.vendor;
-                      const isiOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-                      const isAndroid = /Android/i.test(userAgent);
+                      const isiOS = /iPad|iPhone|iPod/.test(userAgent);
                       
                       const phone = "4798148210";
-                      const webUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
-                      // Прямий deep-link для iOS
-                      const iosDeepLink = `vipps://qr?token=28.2.01.031.${phone}`;
+                      const targetUrl = `https://qr.vipps.no/28/2/01/031/${phone}?v=1`;
+
+                      // ДЛЯ IPHONE (iOS) - мінімальна затримка для стабільності
+                      // ДЛЯ ANDROID та PC - твої 3 секунди
+                      const delay = isiOS ? 500 : 3000;
 
                       setTimeout(() => { 
                         if (isiOS) {
-                          // iPhone краще реагує на прямий протокол vipps://
-                          window.location.replace(iosDeepLink);
-                          // Якщо через 1.5с не вилетіло з браузера — відкриваємо веб-версію
-                          setTimeout(() => { if (document.hasFocus()) window.location.href = webUrl; }, 1500);
-                        } else if (isAndroid) {
-                          window.location.href = webUrl;
+                          window.location.href = targetUrl;
                         } else {
-                          window.open(webUrl, '_blank');
+                          window.location.assign(targetUrl);
                         }
-                      }, 3000);
+                      }, delay);
 
-                      setTimeout(() => { resetCard(index); }, 7500);
+                      setTimeout(() => { resetCard(index); }, 8000);
                     }}
                   />
                 </div>
