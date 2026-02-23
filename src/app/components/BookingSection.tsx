@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Heart, Calendar, ArrowRight, Check } from "lucide-react";
 
+// Глобальна змінна для блокування одночасного перетягування
 let activeSliderId: string | null = null;
 
 export function BookingSection() {
@@ -49,7 +50,6 @@ export function BookingSection() {
     if (!selectedDate || isSubmitting) return;
     setIsSubmitting(true);
     const isTuesday = selectedDate.getDay() === 2;
-    // ТУТ ЗМІНЕНО ЧАС
     const timeRange = isTuesday ? "15:00 - 16:00" : "16:00 - 17:30";
     const formattedDay = `${isTuesday ? "Tirsdag" : "Fredag"} ${selectedDate.toLocaleDateString('no-NO')}`;
     setFinalDetails({ day: formattedDay, time: timeRange });
@@ -72,12 +72,14 @@ export function BookingSection() {
   };
 
   return (
-    <section id="booking" className="relative w-full flex flex-col items-center justify-center min-h-[100dvh] py-12 px-4 bg-transparent overflow-visible">
+    // ПРИБРАНО justify-center і min-h-[100dvh], замінено на min-h-screen і padding
+    <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
       <style>{`
         .slider-wrapper {
           position: relative; width: 100%; height: 60px;
           background: rgba(255, 255, 255, 0.05); border-radius: 9999px;
           overflow: hidden; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);
+          touch-action: none; /* Забороняє скрол сторінки при тяганні слайдера */
         }
         .slider-text-base {
           position: absolute; inset: 0; z-index: 2;
@@ -111,7 +113,6 @@ export function BookingSection() {
               
               <div className="flex flex-col gap-3">
                   <BookingSlider id="tue" beforeLabel="Tirsdag 15:00 - 16:00" afterLabel="Tirsdag valgt" activeColor="#22c55e" icon={<Calendar className="w-4 h-4" />} isActive={activeFilter === 'tuesday'} onComplete={() => { setActiveFilter('tuesday'); setSelectedDate(null); }} isFormSubmitted={submitted} />
-                  {/* ТУТ ЗМІНЕНО ЧАС */}
                   <BookingSlider id="fri" beforeLabel="Fredag 16:00 - 17:30" afterLabel="Fredag valgt" activeColor="#22c55e" icon={<Calendar className="w-4 h-4" />} isActive={activeFilter === 'friday'} onComplete={() => { setActiveFilter('friday'); setSelectedDate(null); }} isFormSubmitted={submitted} />
               </div>
 
@@ -149,9 +150,11 @@ export function BookingSection() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <input type="text" placeholder="Navn" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white outline-none focus:border-white/40 transition-all" />
-                <input type="email" placeholder="E-post" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white outline-none focus:border-white/40 transition-all" />
-                <input type="tel" placeholder="Telefon" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white outline-none focus:border-white/40 transition-all" />
+                {/* Додано text-base для запобігання зуму на iPhone */}
+                <input type="text" placeholder="Navn" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
+                <input type="email" placeholder="E-post" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
+                <input type="tel" placeholder="Telefon" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all" />
+                
                 <BookingSlider id="submit" beforeLabel={!selectedDate ? "Velg dato" : isSubmitting ? "Sender..." : "Skyv for å booke"} afterLabel="Bestiller..." activeColor="#22c55e" icon={<ArrowRight className="w-5 h-5" />} disabled={!selectedDate || isSubmitting} onComplete={executeSubmit} isFormSubmitted={submitted} />
               </div>
             </div>
@@ -202,7 +205,12 @@ function BookingSlider({ id, beforeLabel, afterLabel, activeColor, icon, onCompl
     }
   }, [isFormSubmitted, isActive, id]);
 
-  const handleStart = () => { if (!disabled && activeSliderId === null) { setIsDragging(true); activeSliderId = id; } };
+  const handleStart = (e: any) => { 
+      if (!disabled && activeSliderId === null) { 
+          setIsDragging(true); 
+          activeSliderId = id; 
+      } 
+  };
 
   useEffect(() => {
     const handleMove = (e: any) => {
@@ -212,20 +220,37 @@ function BookingSlider({ id, beforeLabel, afterLabel, activeColor, icon, onCompl
       const x = clientX - rect.left - 28;
       const max = rect.width - 60;
       const newPos = Math.max(0, Math.min(x, max));
-      posRef.current = newPos; setPosition(newPos);
+      posRef.current = newPos; 
+      setPosition(newPos);
     };
+
     const handleEnd = () => {
       if (!isDragging || activeSliderId !== id) return;
-      setIsDragging(false); activeSliderId = null;
+      setIsDragging(false); 
+      activeSliderId = null;
       const max = containerRef.current!.offsetWidth - 60;
-      if (posRef.current >= max * 0.9) { setPosition(max); onComplete(); }
-      else if (!isActive) { setPosition(0); posRef.current = 0; }
+      
+      if (posRef.current >= max * 0.9) { 
+          setPosition(max); 
+          onComplete(); 
+      } else if (!isActive) { 
+          setPosition(0); 
+          posRef.current = 0; 
+      }
     };
-    window.addEventListener("mousemove", handleMove); window.addEventListener("mouseup", handleEnd);
-    window.addEventListener("touchmove", handleMove); window.addEventListener("touchend", handleEnd);
+
+    if (isDragging) {
+        window.addEventListener("mousemove", handleMove); 
+        window.addEventListener("mouseup", handleEnd);
+        window.addEventListener("touchmove", handleMove); 
+        window.addEventListener("touchend", handleEnd);
+    }
+    
     return () => {
-      window.removeEventListener("mousemove", handleMove); window.removeEventListener("mouseup", handleEnd);
-      window.removeEventListener("touchmove", handleMove); window.removeEventListener("touchend", handleEnd);
+      window.removeEventListener("mousemove", handleMove); 
+      window.removeEventListener("mouseup", handleEnd);
+      window.removeEventListener("touchmove", handleMove); 
+      window.removeEventListener("touchend", handleEnd);
     };
   }, [isDragging, id, onComplete, isActive]);
 

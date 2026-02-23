@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Award, MapPin, Activity, Music, Move, X, Smile } from 'lucide-react';
+import { Award, MapPin, Activity, Music, Move, X } from 'lucide-react';
 
 export function BioSection() {
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -10,25 +10,22 @@ export function BioSection() {
       title: "Ved barren",
       subtitle: "Teknikk & Balanse",
       color: "#22c55e",
-      video: "https://res.cloudinary.com/dt4imocd3/video/upload/v1738366453/Koreografi_Musikalitet_msc0p0.mp4",
-      whatItGives: "Utvikling av nevromuskulær kontakt. Fokus på holdning, balanse og teknisk presisjon.",
-      result: "Kroppen blir lydig, bevegelsene bevisste og dansen emosjonell."
+      whatItGives: "Bygger fundamentet gjennom presis teknisk trening ved barren. Vi utvikler dyp muskulær kontakt, finpusser kroppsholdningen og styrker kjernemuskulaturen som er essensiell for all dans.",
+      result: "En sterk, disiplinert og justert kropp med betydelig forbedret balanse, stabilitet og leddmobilitet. Du oppnår den nødvendige kontrollen for å utføre bevegelser med eleganse."
     },
     senter: {
       title: "Senter",
       subtitle: "Flyt & Estetikk",
       color: "#FBBC05",
-      video: "", 
-      whatItGives: "Koordinasjon og estetisk utførelse uten støtte fra barren.",
-      result: "Grasiøse bevegelser og evnen til å tolke musikk gjennom dans."
+      whatItGives: "Utfordrer balansen og koordinasjonen uten støtte. Her overføres teknikken fra barren til fri bevegelse i rommet. Fokus flyttes til romfølelse, dynamikk og evnen til å binde sammen bevegelser.",
+      result: "Økt bevegelsesfrihet, estetisk uttrykk og selvtillit i rommet. Du utvikler evnen til å danse med hele kroppen, bruke pusten aktivt og formidle følelser gjennom musikalitet."
     },
     gulv: {
       title: "Gulvarbeid",
       subtitle: "Styrke & Tøying",
       color: "#EA4335",
-      video: "",
-      whatItGives: "Bruk av gravitasjon for dype tøyninger og sømløse overganger.",
-      result: "En smidig kropp, sunne ledd og frihet i bevegelse."
+      whatItGives: "Bruker gulvet som en partner for å utforske tyngdekraft og smidighet. Vi jobber med dype, trygge tøyninger for å øke fleksibiliteten, samt sømløse overganger mellom nivåer.",
+      result: "Forbedret fleksibilitet, sunnere ledd og en mer jordet bevegelseskvalitet. Kroppen blir mykere, men samtidig sterkere og mer motstandsdyktig for komplekse sekvenser."
     }
   };
 
@@ -37,11 +34,11 @@ export function BioSection() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
         .font-bebas-bio { font-family: 'Bebas Neue', sans-serif; }
-        .bio-img { width: 100%; height: 100%; object-fit: cover; transition: all 0.5s ease; }
+        .bio-img { width: 100%; height: 100%; object-fit: cover; transition: all 0.5s ease; transform: scale(1.2); }
         
         @media (max-width: 767px) {
           .bio-photo-container { height: 350px; }
-          .bio-img { transform: scale(1.8) translateY(-25%); transform-origin: top; }
+          .bio-img { transform: scale(1.2); transform-origin: top center; } 
         }
 
         @keyframes gentle-bounce {
@@ -54,10 +51,16 @@ export function BioSection() {
 
         .photo-popup {
           position: absolute; inset: 0; z-index: 30;
-          background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px);
-          display: flex; flex-direction: column; padding: 1rem;
+          background: rgba(0, 0, 0, 0.92);
+          backdrop-filter: blur(15px);
+          display: flex; 
+          flex-direction: column; 
+          justify-content: center;
+          align-items: center;
+          padding: 1.5rem; /* Зменшив паддінг */
           color: white; animation: fadeIn 0.3s ease forwards;
         }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
 
@@ -68,39 +71,41 @@ export function BioSection() {
 
         <div className="w-full bg-white/5 backdrop-blur-2xl rounded-[30px] md:rounded-[40px] border border-white/10 shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[450px]">
           
-          <div className="w-full md:w-[40%] h-[350px] md:h-auto relative border-b md:border-b-0 md:border-r border-white/5 shrink-0 overflow-hidden">
-            <img src="https://res.cloudinary.com/dt4imocd3/image/upload/v1768882046/copy_of_img-20250904-wa0003_vd4ktj_2aeeb9.webp" alt="Galyna Gerasymenko" className="bio-img" />
+          <div className="w-full md:w-[40%] h-[350px] md:h-auto relative border-b md:border-b-0 md:border-r border-white/5 shrink-0 overflow-hidden bio-photo-container">
+            
+            <img 
+              src="https://cdn.jsdelivr.net/gh/synectica/assets/mama%20for%20KFA.webp" 
+              alt="Galyna Gerasymenko" 
+              className="bio-img absolute inset-0 w-full h-full object-cover" 
+              loading="eager"
+            />
             
             {!activeTab && (
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent z-10 flex flex-col justify-end p-6 md:hidden">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent z-10 flex flex-col justify-end p-6 md:hidden pointer-events-none">
                 <h3 className="font-bebas-bio text-3xl text-white uppercase leading-none">Galyna Gerasymenko</h3>
                 <p className="font-bebas-bio text-sm text-white/60 uppercase tracking-widest mt-1">Koreograf & Mentor</p>
               </div>
             )}
 
             {activeTab && (
-              <div className="photo-popup text-left justify-start">
-                <button onClick={() => setActiveTab(null)} className="absolute top-3 right-3 p-1.5 bg-white/10 rounded-full hover:bg-white/20 transition-all z-40">
-                  <X className="w-4 h-4" />
-                </button>
-                
-                {/* Оптимізована висота відео для запобігання прокрутці */}
-                <div className="w-full aspect-[16/10] bg-black rounded-xl overflow-hidden mb-3 border border-white/10 shadow-2xl shrink-0">
-                  {content[activeTab as keyof typeof content].video && (
-                    <video key={content[activeTab as keyof typeof content].video} autoPlay loop muted playsInline className="w-full h-full object-cover">
-                      <source src={content[activeTab as keyof typeof content].video} type="video/mp4" />
-                    </video>
-                  )}
-                </div>
-
-                <div className="shrink-0">
-                  <h5 className="font-bebas-bio text-2xl uppercase tracking-widest leading-none mb-2" style={{ color: content[activeTab as keyof typeof content].color }}>
-                    {content[activeTab as keyof typeof content].title}
-                  </h5>
-                  <div className="space-y-2 text-[10px] md:text-xs leading-snug">
-                    <p><span className="font-bold uppercase tracking-tighter mr-1 italic opacity-70">Hva det gir:</span>{content[activeTab as keyof typeof content].whatItGives}</p>
-                    <p><span className="text-[#22c55e] font-bold uppercase tracking-tighter mr-1 italic">Resultat:</span>{content[activeTab as keyof typeof content].result}</p>
-                  </div>
+              <div className="photo-popup">
+                {/* ХРЕСТИК ТУТ ПРИБРАНО, ВІН ТЕПЕР ВНИЗУ */}
+                <div className="w-full h-full flex flex-col justify-center">
+                    <h5 className="font-bebas-bio text-2xl md:text-4xl uppercase tracking-widest leading-none mb-4 text-center" style={{ color: content[activeTab as keyof typeof content].color }}>
+                        {content[activeTab as keyof typeof content].title}
+                    </h5>
+                    
+                    {/* Зменшений шрифт text-[11px] і leading-snug для компактності */}
+                    <div className="space-y-4 text-[11px] md:text-base leading-snug text-white/90 text-left">
+                        <div>
+                            <span className="font-bold uppercase tracking-wider mr-2 italic opacity-70 block mb-1 text-[10px] md:text-sm">Hva det gir:</span>
+                            <p>{content[activeTab as keyof typeof content].whatItGives}</p>
+                        </div>
+                        <div>
+                            <span className="font-bold uppercase tracking-wider mr-2 italic block mb-1 text-[10px] md:text-sm" style={{ color: content[activeTab as keyof typeof content].color }}>Resultat:</span>
+                            <p>{content[activeTab as keyof typeof content].result}</p>
+                        </div>
+                    </div>
                 </div>
               </div>
             )}
@@ -158,7 +163,7 @@ function IconBox({ icon, title, sub, onClick, active, color, animClass }: any) {
       <div 
         className={`mb-2 w-11 h-11 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 border-2 relative
           ${active 
-            ? 'bg-white border-white shadow-[0_0_25px_rgba(255,255,255,0.6)]' 
+            ? 'bg-white border-white shadow-[0_0_25px_rgba(255,255,255,0.6)]' // Білий фон при активності
             : `bg-white/5 border-white/10 ${animClass} hover:border-white/40`
           }
         `}
@@ -166,13 +171,14 @@ function IconBox({ icon, title, sub, onClick, active, color, animClass }: any) {
            boxShadow: !active ? `0 0 10px ${color}11` : `0 0 30px ${color}44` 
         }}
       >
+        {/* ЯКЩО АКТИВНО - ПОКАЗУЄМО ХРЕСТИК (X). ЯКЩО НІ - ІКОНКУ */}
         {active ? (
-          <Smile className="w-6 h-6 md:w-9 md:h-9 text-black animate-in zoom-in duration-300" />
+            <X className="w-5 h-5 md:w-8 md:h-8 text-black animate-in zoom-in duration-300" />
         ) : (
-          React.cloneElement(icon, { 
-            className: "w-5 h-5 md:w-8 md:h-8 transition-colors",
-            style: { color: color }
-          })
+            React.cloneElement(icon, { 
+                className: "w-5 h-5 md:w-8 md:h-8 transition-colors",
+                style: { color: color }
+            })
         )}
       </div>
       <h5 className={`text-[10px] md:text-lg uppercase mb-1 tracking-widest transition-colors ${active ? 'text-white font-bold' : 'text-white/60'}`}>{title}</h5>

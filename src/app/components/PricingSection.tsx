@@ -101,13 +101,19 @@ export function PricingSection({ lang }: { lang: string }) {
                     color="#f97316" 
                     icon={<CreditCard className="w-5 h-5"/>} 
                     isLightMode={currentVal > 50}
-                    onValueChange={(v) => setSliderVals(prev => ({ ...prev, [index]: v }))}
+                    onValueChange={(v: number) => setSliderVals(prev => ({ ...prev, [index]: v }))}
                     onComplete={() => {
                       setSuccessStates(prev => ({ ...prev, [index]: true }));
-                      const bizPhone = "4798148210";
+                      
+                      // Fix: Deep Link vipps://
+                      const bizPhone = "98148210"; 
                       const priceValue = parseInt(plan.price);
-                      const url = !isNaN(priceValue) ? `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=2&a=${priceValue * 100}` : `https://qr.vipps.no/28/2/01/031/${bizPhone}?v=1`;
-                      setTimeout(() => { window.location.assign(url); }, 3000);
+                      
+                      const url = !isNaN(priceValue) 
+                        ? `vipps://send?t=${bizPhone}&a=${priceValue}` 
+                        : `vipps://send?t=${bizPhone}`;
+
+                      setTimeout(() => { window.location.assign(url); }, 1500);
                       setTimeout(() => { resetCard(index); }, 5000);
                     }}
                   />
@@ -117,7 +123,6 @@ export function PricingSection({ lang }: { lang: string }) {
           })}
         </div>
 
-        {/* ОСЬ ЦЯ ОДНА ПРАВКА: Обмеження ширини футер-слайдера */}
         <div className="mt-12 w-full max-w-[340px]">
            <ManualSlider 
              id="slider-booking-footer"
@@ -167,7 +172,17 @@ function ManualSlider({ id, beforeLabel, afterLabel, color, icon, onComplete, on
       if (!isDragging || activeSliderId !== id) return;
       setIsDragging(false); activeSliderId = null;
       const maxPath = containerRef.current!.offsetWidth - 64;
-      if (positionRef.current >= maxPath * 0.95) { setPosition(maxPath); onValueChange(100); setTimeout(onComplete, 200); }
+      if (positionRef.current >= maxPath * 0.95) { 
+        setPosition(maxPath); 
+        onValueChange(100); 
+        setTimeout(() => {
+            onComplete();
+            // СКИДАННЯ СЛАЙДЕРА НА ПОЧАТОК (ВЛІВО) ПІСЛЯ ЗАВЕРШЕННЯ
+            setPosition(0);
+            positionRef.current = 0;
+            onValueChange(0);
+        }, 200); 
+      }
       else { setPosition(0); positionRef.current = 0; onValueChange(0); }
     };
     if (isDragging) {
