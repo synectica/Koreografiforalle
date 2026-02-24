@@ -41,12 +41,10 @@ export function Hero() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [isRedOverlayVisible]);
 
-  /** * МАТЕМАТИКА МАСШТАБУВАННЯ:
-   * Щоб зменшити елемент у 1.5 раза (до 66.6% від оригіналу), 
-   * коефіцієнт скролу має бути ~0.333 
-   * (1 - 0.333 = 0.666 або 1/1.5)
+  /** * ТЕПЕР РІВНО В 2 РАЗИ:
+   * 1 - (1 * 0.5) = 0.5 (тобто 50% від початкового розміру)
    */
-  const textScale = 1 - (scrollProgress * 0.333);
+  const textScale = 1 - (scrollProgress * 0.5);
 
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
@@ -61,14 +59,13 @@ export function Hero() {
           transition: top 0.1s linear, transform 0.1s linear; will-change: top, transform;
         }
 
-        /* БАЗОВІ РОЗМІРИ (МОБІЛЬНІ) */
+        /* РОЗМІРИ ЯК У ВАШОМУ КОДІ */
         .hero-title { font-size: 10.8vw !important; line-height: 0.8; display: block; width: 100%; font-style: italic !important; text-align: center; }
         .hero-subtitle { font-size: 3.3vw !important; letter-spacing: 0.49em !important; display: block; width: 100%; margin-right: -0.49em; text-align: center; }
         
-        /* ДЕСКТОП: РОЗМІРИ ЗМЕНШЕНО В 2 РАЗИ */
         @media (min-width: 1024px) {
-          .hero-title { font-size: 5.4vw !important; }    /* Було 10.8vw */
-          .hero-subtitle { font-size: 1.65vw !important; } /* Було 3.3vw */
+          .hero-title { font-size: 5.4vw !important; }
+          .hero-subtitle { font-size: 1.65vw !important; }
         }
 
         .hero-spiral-button {
@@ -104,7 +101,6 @@ export function Hero() {
         </p>
       </div>
 
-      {/* STICKY TITLE з новою логікою масштабування */}
       <div className="sticky-title-container" style={{ 
         top: `calc(35% - ${scrollProgress * 35}% + ${scrollProgress * 20}px)`, 
         transform: `scale(${textScale})`, 
@@ -116,11 +112,9 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Spacer */}
       <div className="relative z-[10] text-center w-full flex flex-col items-center px-4 mb-4 opacity-0 pointer-events-none">
         <div className="w-full max-w-6xl">
           <h1 className="hero-title font-bebas font-bold uppercase text-white">KOREOGRAFI FOR ALLE</h1>
-          <p className="hero-subtitle font-bebas opacity-90 uppercase mt-3">med GALYNA GERASYMENKO</p>
         </div>
       </div>
 
@@ -137,9 +131,7 @@ export function Hero() {
               onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: "smooth" })}
               style={{ '--btn-gradient': 'conic-gradient(from 0deg, #0047AB, #00BFFF, #008000, #0047AB)' } as any}
             >
-              <div className="relative z-10 flex items-center justify-center">
-                <span className="font-black uppercase text-[11px] tracking-[2px]">BESTILL PRØVETIME</span>
-              </div>
+              <span className="font-black uppercase text-[11px] tracking-[2px]">BESTILL PRØVETIME</span>
             </button>
 
             <button 
@@ -147,9 +139,7 @@ export function Hero() {
               onClick={() => document.querySelector('#pricing')?.scrollIntoView({ behavior: "smooth" })}
               style={{ '--btn-gradient': 'conic-gradient(from 0deg, #FF0000, #FF69B4, #f97316, #FF0000)' } as any}
             >
-              <div className="relative z-10 flex items-center justify-center">
-                <span className="font-black uppercase text-[11px] tracking-[2px]">GÅ TIL BETALING</span>
-              </div>
+              <span className="font-black uppercase text-[11px] tracking-[2px]">GÅ TIL BETALING</span>
             </button>
           </div>
         </div>
