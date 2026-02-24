@@ -41,7 +41,12 @@ export function Hero() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [isRedOverlayVisible]);
 
-  const textScale = 1 - (scrollProgress * 0.5);
+  /** * МАТЕМАТИКА МАСШТАБУВАННЯ:
+   * Щоб зменшити елемент у 1.5 раза (до 66.6% від оригіналу), 
+   * коефіцієнт скролу має бути ~0.333 
+   * (1 - 0.333 = 0.666 або 1/1.5)
+   */
+  const textScale = 1 - (scrollProgress * 0.333);
 
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
@@ -56,54 +61,32 @@ export function Hero() {
           transition: top 0.1s linear, transform 0.1s linear; will-change: top, transform;
         }
 
+        /* БАЗОВІ РОЗМІРИ (МОБІЛЬНІ) */
         .hero-title { font-size: 10.8vw !important; line-height: 0.8; display: block; width: 100%; font-style: italic !important; text-align: center; }
         .hero-subtitle { font-size: 3.3vw !important; letter-spacing: 0.49em !important; display: block; width: 100%; margin-right: -0.49em; text-align: center; }
         
+        /* ДЕСКТОП: РОЗМІРИ ЗМЕНШЕНО В 2 РАЗИ */
         @media (min-width: 1024px) {
-          .hero-title { font-size: 8.5rem !important; }
-          .hero-subtitle { font-size: 2.6rem !important; }
+          .hero-title { font-size: 5.4vw !important; }    /* Було 10.8vw */
+          .hero-subtitle { font-size: 1.65vw !important; } /* Було 3.3vw */
         }
 
-        /* ТОЧНА КОПІЯ LED КНОПКИ З POSTER SECTION */
         .hero-spiral-button {
-          position: relative;
-          background: #000;
-          border: none;
-          border-radius: 9999px;
-          overflow: hidden;
-          transition: all 0.4s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1;
-          cursor: pointer;
+          position: relative; background: #000; border: none; border-radius: 9999px;
+          overflow: hidden; transition: all 0.4s ease; display: flex;
+          align-items: center; justify-content: center; z-index: 1; cursor: pointer;
           text-decoration: none;
         }
 
         .hero-spiral-button::before {
-          content: "";
-          position: absolute;
-          inset: -200%;
-          z-index: -1;
-          background: var(--btn-gradient);
-          filter: blur(40px);
+          content: ""; position: absolute; inset: -200%; z-index: -1;
+          background: var(--btn-gradient); filter: blur(40px);
           animation: led-rotate 10s linear infinite;
         }
 
-        @keyframes led-rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .hero-spiral-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
-        }
-
-        .hero-spiral-button:active {
-          scale: 0.98;
-        }
-
+        @keyframes led-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .hero-spiral-button:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1); }
+        .hero-spiral-button:active { scale: 0.98; }
         .red-transition { transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
       `}</style>
 
@@ -121,7 +104,12 @@ export function Hero() {
         </p>
       </div>
 
-      <div className="sticky-title-container" style={{ top: `calc(35% - ${scrollProgress * 35}% + ${scrollProgress * 20}px)`, transform: `scale(${textScale})`, transformOrigin: "top center" }}>
+      {/* STICKY TITLE з новою логікою масштабування */}
+      <div className="sticky-title-container" style={{ 
+        top: `calc(35% - ${scrollProgress * 35}% + ${scrollProgress * 20}px)`, 
+        transform: `scale(${textScale})`, 
+        transformOrigin: "top center" 
+      }}>
         <div className="w-full max-w-6xl px-4">
           <h1 className="hero-title font-bebas font-bold uppercase text-white italic">KOREOGRAFI FOR ALLE</h1>
           <p className="hero-subtitle font-bebas opacity-90 uppercase mt-3">med GALYNA GERASYMENKO</p>
@@ -144,29 +132,23 @@ export function Hero() {
           </div>
 
           <div className="flex flex-col md:flex-row gap-6 justify-center items-center w-full max-w-2xl">
-            {/* КНОПКА 1 (СИНЬО-ЗЕЛЕНА) */}
             <button 
               className="hero-spiral-button w-full h-16 text-white"
               onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: "smooth" })}
               style={{ '--btn-gradient': 'conic-gradient(from 0deg, #0047AB, #00BFFF, #008000, #0047AB)' } as any}
             >
               <div className="relative z-10 flex items-center justify-center">
-                <span className="font-black uppercase text-[11px] tracking-[2px]">
-                  BESTILL PRØVETIME
-                </span>
+                <span className="font-black uppercase text-[11px] tracking-[2px]">BESTILL PRØVETIME</span>
               </div>
             </button>
 
-            {/* КНОПКА 2 (ЧЕРВОНО-ПОМАРАНЧЕВА) */}
             <button 
               className="hero-spiral-button w-full h-16 text-white"
               onClick={() => document.querySelector('#pricing')?.scrollIntoView({ behavior: "smooth" })}
               style={{ '--btn-gradient': 'conic-gradient(from 0deg, #FF0000, #FF69B4, #f97316, #FF0000)' } as any}
             >
               <div className="relative z-10 flex items-center justify-center">
-                <span className="font-black uppercase text-[11px] tracking-[2px]">
-                  GÅ TIL BETALING
-                </span>
+                <span className="font-black uppercase text-[11px] tracking-[2px]">GÅ TIL BETALING</span>
               </div>
             </button>
           </div>
