@@ -40,19 +40,33 @@ export function BioSection() {
             height: 100%; 
             object-fit: cover; 
             transition: all 0.5s ease; 
-            
-            /* МАСШТАБ 1.5, ЗСУВ ВПРАВО 12% ТА ОПУЩЕНО ДО -10% ВГОРУ */
             transform: scale(1.5) translateX(12%) translateY(-10%);
-            
-            /* ОБРОБКА: Затемнення, Різкість, Колір */
             filter: brightness(0.85) contrast(1.1) saturate(1.05);
             transform-origin: center center;
+            /* Покращення для стабільності картинки */
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         
         @media (max-width: 767px) {
           .bio-photo-container { height: 350px; }
-          /* Корекція для мобілок: також трохи нижче */
           .bio-img { transform: scale(1.5) translateX(8%) translateY(-5%); }
+        }
+
+        /* FIX ДЛЯ СКЛА (ПРИБИРАЄ ГЛЮКИ ТА СМУГИ) */
+        .glass-container {
+          position: relative;
+          background: rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 40px;
+          overflow: hidden;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          /* Магія проти артефактів */
+          transform: translateZ(0);
+          will-change: backdrop-filter;
+          isolation: isolate;
         }
 
         .photo-popup {
@@ -81,7 +95,8 @@ export function BioSection() {
           Instruktøren bak konseptet
         </h2>
 
-        <div className="w-full bg-white/5 backdrop-blur-2xl rounded-[40px] border border-white/10 shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+        {/* ОСНОВНИЙ КОНТЕЙНЕР З ФІКСОМ СКЛА */}
+        <div className="glass-container flex flex-col md:flex-row min-h-[500px]">
           
           {/* PHOTO SECTION */}
           <div className="w-full md:w-[42%] h-[350px] md:h-auto relative shrink-0 overflow-hidden bio-photo-container border-b md:border-b-0 md:border-r border-white/5">

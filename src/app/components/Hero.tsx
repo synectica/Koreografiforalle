@@ -9,10 +9,14 @@ export function Hero() {
   useEffect(() => {
     const handleScroll = () => {
       const maxScroll = 500;
-      const progress = Math.min(window.scrollY / maxScroll, 1);
-      setScrollProgress(progress);
+      // Використовуємо requestAnimationFrame для синхронізації з частотою оновлення екрану
+      window.requestAnimationFrame(() => {
+        const progress = Math.min(window.scrollY / maxScroll, 1);
+        setScrollProgress(progress);
+      });
     };
-    window.addEventListener("scroll", handleScroll);
+    // Додаємо passive: true для кращої продуктивності скролу
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -41,7 +45,12 @@ export function Hero() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [isRedOverlayVisible]);
 
+  // Масштабування
   const textScale = 1 - (scrollProgress * 0.6);
+  
+  // Розрахунок позиції через translateY (замість top) для плавності
+  // Починаємо з 35vh (35%) і піднімаємо вгору
+  const translateY = (35 * (1 - scrollProgress)) + (scrollProgress * 20 / 10); // 20px адаптовано під vh або px
 
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
@@ -51,9 +60,19 @@ export function Hero() {
         .fixed-bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; z-index: 1; pointer-events: none; }
         
         .sticky-title-container {
-          position: fixed; left: 0; width: 100%; z-index: 40; pointer-events: none;
-          display: flex; flex-direction: column; align-items: center;
-          transition: top 0.1s linear, transform 0.1s linear; will-change: top, transform;
+          position: fixed; 
+          left: 0; 
+          width: 100%; 
+          z-index: 40; 
+          pointer-events: none;
+          display: flex; 
+          flex-direction: column; 
+          align-items: center;
+          /* Прибираємо transition для top, залишаємо тільки чистий transform */
+          will-change: transform;
+          /* Апаратне прискорення */
+          transform-style: preserve-3d;
+          -webkit-font-smoothing: antialiased;
         }
 
         .hero-title { font-size: 10.8vw !important; line-height: 0.8; display: block; width: 100%; font-style: italic !important; text-align: center; }
@@ -64,7 +83,6 @@ export function Hero() {
           .hero-subtitle { font-size: 1.65vw !important; }
         }
 
-        /* ЦУКЕРКОВИЙ СТИЛЬ КНОПОК */
         .hero-spiral-button {
           position: relative;
           background: #000;
@@ -78,14 +96,12 @@ export function Hero() {
           z-index: 1;
           cursor: pointer;
           text-decoration: none;
-          /* Глибока внутрішня тінь для об'єму */
           box-shadow: 
             inset 0 -8px 12px rgba(0, 0, 0, 0.5),
             inset 0 4px 8px rgba(255, 255, 255, 0.2),
             0 10px 30px var(--btn-shadow);
         }
 
-        /* Глянцевий відблиск зверху (як на льодянику) */
         .hero-spiral-button::after {
           content: "";
           position: absolute;
@@ -141,10 +157,12 @@ export function Hero() {
         </p>
       </div>
 
+      {/* Оптимізований контейнер: top зафіксовано, рух через translateY */}
       <div className="sticky-title-container" style={{ 
-        top: `calc(35% - ${scrollProgress * 35}% + ${scrollProgress * 20}px)`, 
-        transform: `scale(${textScale})`, 
-        transformOrigin: "top center" 
+        top: 0,
+        transform: `translateY(${translateY}vh) scale(${textScale}) translateZ(0)`, 
+        transformOrigin: "top center",
+        backfaceVisibility: "hidden"
       }}>
         <div className="w-full max-w-6xl px-4">
           <h1 className="hero-title font-bebas font-bold uppercase text-white italic">KOREOGRAFI FOR ALLE</h1>
@@ -160,7 +178,6 @@ export function Hero() {
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 justify-center items-center w-full max-w-2xl">
-            {/* КНОПКА 1 (СИНЬО-ЗЕЛЕНА) */}
             <button 
               className="hero-spiral-button w-full h-16 text-white"
               onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: "smooth" })}
@@ -174,7 +191,6 @@ export function Hero() {
               </span>
             </button>
 
-            {/* КНОПКА 2 (ЧЕРВОНО-ПОМАРАНЧЕВА) */}
             <button 
               className="hero-spiral-button w-full h-16 text-white"
               onClick={() => document.querySelector('#pricing')?.scrollIntoView({ behavior: "smooth" })}
