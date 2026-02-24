@@ -8,7 +8,7 @@ import { PricingSection } from "./components/PricingSection";
 import { BookingSection } from "./components/BookingSection";
 import { ContactForm } from "./components/ContactForm";
 import { MapSection } from "./components/MapSection";
-import { PosterSection } from "./components/PosterSection"; // Імпорт на місці
+import { PosterSection } from "./components/PosterSection";
 
 function FlagSwitch({ lang, setLang }: { lang: string, setLang: (l: string) => void }) {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -115,6 +115,26 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap');
         .font-bebas { font-family: 'Bebas Neue', sans-serif; }
+        
+        /* Оновлені стилі для ВЕЛИКИХ логотипів */
+        .footer-logo {
+          height: 90px; /* Значно збільшено для десктопу (було 50px) */
+          width: auto;
+          object-fit: contain;
+          border-radius: 12px; /* Трохи більше закруглення для великого розміру */
+          opacity: 0.9;
+          transition: all 0.3s ease;
+        }
+        .footer-logo:hover { 
+           opacity: 1;
+           transform: scale(1.03);
+        }
+        @media (max-width: 768px) { 
+           .footer-logo { 
+               height: 65px; /* Збільшено для мобільного (було 40px) */
+               border-radius: 8px;
+           } 
+        }
       `}</style>
 
       <FlagSwitch lang={lang} setLang={setLang} />
@@ -133,21 +153,32 @@ export default function App() {
           <ContactForm />
           <MapSection />
           
-          {/* БЛОК ПОСТЕРА ТУТ */}
           <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <PosterSection /> 
         </div>
       </div>
 
-      <footer className="w-full py-8 text-center relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10"
-              style={{ paddingBottom: 'calc(2.1rem + env(safe-area-inset-bottom))' }}>
-        <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-2.5"> 
-          <p className="font-bebas text-white uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-50 text-[11px] sm:text-[14px] md:text-[18px] leading-none whitespace-nowrap">
-            Koreografi for alle med Galyna Gerasymenko — © {new Date().getFullYear()}
-          </p>
-          <p className="font-bebas text-white/30 uppercase tracking-[0.1em] text-[10px] md:text-[13px] leading-none">
-            Designed & Developed by <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Viktor Herasymenko</a>
-          </p>
+      {/* ФУТЕР: В ОДИН РЯДОК НА ВСІХ ПРИСТРОЯХ */}
+      <footer className="w-full py-12 text-left relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10"
+              style={{ paddingBottom: 'calc(3rem + env(safe-area-inset-bottom))' }}>
+        <div className="max-w-7xl mx-auto px-4 flex flex-row items-center justify-between gap-8">
+          
+          {/* ЛІВА ЧАСТИНА: ВЕЛИКІ ЛОГОТИПИ */}
+          <div className="flex flex-row items-center justify-start gap-4 md:gap-8 flex-shrink-0">
+            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png" alt="Møte" className="footer-logo" />
+            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/frivilliglogoforkfacopy.jpg" alt="Frivillig" className="footer-logo" />
+            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/Logo-RGB-hoyde-Bergenkommune%20copy.jpg" alt="Bergen" className="footer-logo" />
+          </div>
+
+          {/* ПРАВА ЧАСТИНА: ТЕКСТ (Вирівняно зліва) */}
+          <div className="flex flex-col items-start gap-2"> 
+            <p className="font-bebas text-white uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-60 text-[11px] sm:text-[14px] md:text-[16px] leading-tight">
+              Koreografi for alle med Galyna Gerasymenko — © {new Date().getFullYear()}
+            </p>
+            <p className="font-bebas text-white/40 uppercase tracking-[0.1em] text-[10px] md:text-[12px] leading-tight">
+              Designed & Developed by <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Viktor Herasymenko</a>
+            </p>
+          </div>
         </div>
       </footer>
     </main>
