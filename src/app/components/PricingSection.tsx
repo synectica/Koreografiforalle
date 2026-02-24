@@ -64,7 +64,6 @@ export function PricingSection({ lang }: { lang: string }) {
           position: relative; overflow: hidden;
           transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           z-index: 1;
-          backface-visibility: hidden;
         }
 
         .btn-candy::after {
@@ -77,27 +76,31 @@ export function PricingSection({ lang }: { lang: string }) {
 
         .btn-white-vipps {
           background: #ffffff; color: #000000;
-          box-shadow: 
-            inset 0 -6px 8px rgba(0, 0, 0, 0.1),
-            inset 0 4px 6px rgba(255, 255, 255, 1),
-            0 10px 20px rgba(0, 0, 0, 0.2);
+          box-shadow: inset 0 -6px 8px rgba(0, 0, 0, 0.1), inset 0 4px 6px rgba(255, 255, 255, 1), 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
         .btn-booking {
           background: #22c55e; color: #ffffff;
-          box-shadow: 
-            inset 0 -6px 8px rgba(0, 0, 0, 0.2),
-            inset 0 4px 6px rgba(255, 255, 255, 0.3),
-            0 12px 25px rgba(34, 197, 94, 0.4);
+          box-shadow: inset 0 -6px 8px rgba(0, 0, 0, 0.2), inset 0 4px 6px rgba(255, 255, 255, 0.3), 0 12px 25px rgba(34, 197, 94, 0.4);
         }
 
         .vipps-card-pila {
            width: 100%;
-           border-radius: 50px; /* Таке ж закруглення як у карток */
+           border-radius: 35px;
+           background: rgba(255, 255, 255, 0.05);
+           backdrop-filter: blur(32px);
+           -webkit-backdrop-filter: blur(32px);
+           border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
         @media (min-width: 768px) {
            .vipps-card-pila {
-              width: calc(100% / 3);
+              border-radius: 50px;
+              flex-direction: row;
+              justify-content: space-between;
+              padding-left: 3rem;
+              padding-right: 3rem;
+              height: 80px;
            }
         }
       `}</style>
@@ -117,7 +120,6 @@ export function PricingSection({ lang }: { lang: string }) {
             const isSuccess = successStates[index];
             return (
               <div key={index} className={`relative flex-1 min-h-[520px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}>
-                
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
@@ -126,20 +128,15 @@ export function PricingSection({ lang }: { lang: string }) {
                     <button onClick={() => resetCard(index)} className="absolute bottom-8 text-[10px] text-black/20 font-bold uppercase tracking-widest hover:text-black/60 transition-colors">Lukk</button>
                   </div>
                 )}
-
                 <div className="w-full flex flex-col items-center h-24 justify-center">
                   <span className="font-bold tracking-widest uppercase text-[10px] mb-2 text-[#f97316]">{plan.info}</span>
                   <h3 className="text-2xl font-bold tracking-tight mb-2 uppercase text-center">{plan.name}</h3>
                   <p className="text-[10px] uppercase opacity-60 tracking-widest font-bold text-center h-4">{plan.description}</p>
                 </div>
-
                 <div className="flex flex-col items-center py-6 min-h-[160px] justify-center">
                   <span className="text-7xl font-bold tracking-tighter leading-none">{plan.price}</span>
-                  <span className="text-lg font-bold uppercase tracking-widest mt-2 text-[#f97316]">
-                    {plan.price === "Avtale" ? "Pris" : "NOK"}
-                  </span>
+                  <span className="text-lg font-bold uppercase tracking-widest mt-2 text-[#f97316]">{plan.price === "Avtale" ? "Pris" : "NOK"}</span>
                 </div>
-
                 <div className="w-full h-24 flex flex-col justify-end px-2">
                   <button onClick={() => handlePayment(index)} className="btn-candy btn-white-vipps">
                     <CreditCard className="w-5 h-5 relative z-10" />
@@ -151,15 +148,17 @@ export function PricingSection({ lang }: { lang: string }) {
           })}
         </div>
 
-        {/* ПЛАШКА VIPPS: ЗАРУГЛЕНА ТА ВІДІРВАНА (Рівні відстані) */}
-        <div className="w-full max-w-5xl flex justify-center mt-12 mb-12">
-           <div className="vipps-card-pila bg-white/5 backdrop-blur-3xl border border-white/10 p-8 flex flex-col items-center justify-center shadow-2xl transition-transform hover:scale-[1.02]">
-              <p className="text-[10px] uppercase tracking-[3px] font-bold text-white/30 mb-3 text-center">Betaling fra PC?</p>
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-[#f97316] uppercase tracking-[2px] mb-1">Vipps Nummer</span>
+        {/* ПЛАШКА VIPPS: КОМПАКТНА НА МОБ ТА СТРІЧКА НА ДЕСКТОПІ */}
+        <div className="w-full max-w-5xl flex justify-center mt-12 mb-12 px-4 md:px-0">
+           <div className="vipps-card-pila p-5 md:p-0 flex flex-col items-center shadow-2xl transition-all hover:bg-white/10">
+              <p className="text-[10px] uppercase tracking-[3px] font-bold text-white/30 md:mb-0 mb-3 whitespace-nowrap">Betaling fra PC?</p>
+              
+              <div className="flex flex-col md:flex-row items-center md:gap-6">
+                <span className="text-[11px] font-bold text-[#f97316] uppercase tracking-[2px] md:mb-0 mb-1">Vipps Nummer</span>
                 <p className="text-2xl md:text-3xl font-black text-white tracking-[4px]">{vippsNumber}</p>
               </div>
-              <p className="text-[9px] uppercase mt-4 text-white/20 font-bold tracking-[3px] italic">Galyna Gerasymenko</p>
+
+              <p className="text-[9px] uppercase md:mt-0 mt-4 text-white/20 font-bold tracking-[3px] italic whitespace-nowrap">Galyna Gerasymenko</p>
            </div>
         </div>
 
@@ -167,7 +166,7 @@ export function PricingSection({ lang }: { lang: string }) {
         <div className="w-full max-w-[340px] px-4">
            <button 
              onClick={() => document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" })}
-             className="btn-candy btn-booking"
+             className="btn-candy btn-booking shadow-2xl hover:scale-[1.03]"
            >
              <span className="relative z-10">Meld deg på prøvetime</span>
              <ArrowRight className="w-5 h-5 relative z-10" />
