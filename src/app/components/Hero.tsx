@@ -41,10 +41,11 @@ export function Hero() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [isRedOverlayVisible]);
 
-  /** * ТЕПЕР РІВНО В 2 РАЗИ:
-   * 1 - (1 * 0.5) = 0.5 (тобто 50% від початкового розміру)
+  /** * МАСШТАБУВАННЯ: 
+   * Було 0.5 (зменшення до 50%).
+   * Стало 0.6 (зменшення до 40% - текст буде ще меншим у фіналі).
    */
-  const textScale = 1 - (scrollProgress * 0.5);
+  const textScale = 1 - (scrollProgress * 0.6);
 
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
@@ -59,7 +60,6 @@ export function Hero() {
           transition: top 0.1s linear, transform 0.1s linear; will-change: top, transform;
         }
 
-        /* РОЗМІРИ ЯК У ВАШОМУ КОДІ */
         .hero-title { font-size: 10.8vw !important; line-height: 0.8; display: block; width: 100%; font-style: italic !important; text-align: center; }
         .hero-subtitle { font-size: 3.3vw !important; letter-spacing: 0.49em !important; display: block; width: 100%; margin-right: -0.49em; text-align: center; }
         
@@ -88,7 +88,7 @@ export function Hero() {
       `}</style>
 
       <div className="fixed-bg-video">
-        <video ref={videoRef} muted autoPlay playsInline className="w-full h-full object-cover" style={{ filter: "brightness(0.35)", transform: "scale(1.45)" }}>
+        <video ref={videoRef} muted autoPlay playsInline className="w-full h-full object-cover" style={{ filter: "brightness(0.45)", transform: "scale(1.45)" }}>
           <source src="https://cdn.jsdelivr.net/gh/synectica/assets/KFA.mp4" type="video/mp4" />
         </video>
         <div className={`absolute inset-0 z-[3] bg-red-600 red-transition pointer-events-none ${isRedOverlayVisible ? 'opacity-100' : 'opacity-0'}`} />
