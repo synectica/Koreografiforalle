@@ -3,19 +3,18 @@ import React, { useEffect, useRef, useState } from "react";
 
 export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Сайт починається з червоного кольору (true)
   const [isRedOverlayVisible, setIsRedOverlayVisible] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const maxScroll = 500;
-      // Використовуємо requestAnimationFrame для синхронізації з частотою оновлення екрану
       window.requestAnimationFrame(() => {
         const progress = Math.min(window.scrollY / maxScroll, 1);
         setScrollProgress(progress);
       });
     };
-    // Додаємо passive: true для кращої продуктивності скролу
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -23,34 +22,43 @@ export function Hero() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    // Початкова точка відео
     video.currentTime = 3;
+
     const handleTimeUpdate = () => {
+      // Починаємо плавно зафарбовувати в червоний за 1 секунду до кінця (плавний перехід ДО 1.5с холду)
       if (video.currentTime >= video.duration - 1 && !isRedOverlayVisible) {
         setIsRedOverlayVisible(true);
       }
+
+      // Коли відео майже закінчилося — перекидаємо на початок
       if (video.currentTime >= video.duration - 0.1) {
         video.currentTime = 3;
         video.play();
-        setTimeout(() => setIsRedOverlayVisible(false), 3000);
+        // Фіксуємо "щільний" червоний на 1.5 секунди перед початком зникнення
+        setTimeout(() => setIsRedOverlayVisible(false), 1500);
       }
     };
+
     video.addEventListener("timeupdate", handleTimeUpdate);
+
     const startPlay = async () => {
       try {
         await video.play();
-        setTimeout(() => setIsRedOverlayVisible(false), 500);
-      } catch (e) { console.log("Autoplay blocked"); }
+        // При першому заході: тримаємо червоний 1.5с, потім запускаємо перехід у 0.5с
+        setTimeout(() => setIsRedOverlayVisible(false), 1500);
+      } catch (e) {
+        console.log("Autoplay blocked");
+      }
     };
+
     startPlay();
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [isRedOverlayVisible]);
 
-  // Масштабування
   const textScale = 1 - (scrollProgress * 0.6);
-  
-  // Розрахунок позиції через translateY (замість top) для плавності
-  // Починаємо з 35vh (35%) і піднімаємо вгору
-  const translateY = (35 * (1 - scrollProgress)) + (scrollProgress * 20 / 10); // 20px адаптовано під vh або px
+  const translateY = (35 * (1 - scrollProgress)) + (scrollProgress * 20 / 10);
 
   return (
     <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
@@ -60,18 +68,9 @@ export function Hero() {
         .fixed-bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; z-index: 1; pointer-events: none; }
         
         .sticky-title-container {
-          position: fixed; 
-          left: 0; 
-          width: 100%; 
-          z-index: 40; 
-          pointer-events: none;
-          display: flex; 
-          flex-direction: column; 
-          align-items: center;
-          /* Прибираємо transition для top, залишаємо тільки чистий transform */
-          will-change: transform;
-          /* Апаратне прискорення */
-          transform-style: preserve-3d;
+          position: fixed; left: 0; width: 100%; z-index: 40; pointer-events: none;
+          display: flex; flex-direction: column; align-items: center;
+          will-change: transform; transform-style: preserve-3d;
           -webkit-font-smoothing: antialiased;
         }
 
@@ -84,69 +83,37 @@ export function Hero() {
         }
 
         .hero-spiral-button {
-          position: relative;
-          background: #000;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 9999px;
-          overflow: hidden;
+          position: relative; background: #000; border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 9999px; overflow: hidden;
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1;
-          cursor: pointer;
-          text-decoration: none;
-          box-shadow: 
-            inset 0 -8px 12px rgba(0, 0, 0, 0.5),
-            inset 0 4px 8px rgba(255, 255, 255, 0.2),
-            0 10px 30px var(--btn-shadow);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 1; cursor: pointer; text-decoration: none;
+          box-shadow: inset 0 -8px 12px rgba(0, 0, 0, 0.5), inset 0 4px 8px rgba(255, 255, 255, 0.2), 0 10px 30px var(--btn-shadow);
         }
 
         .hero-spiral-button::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 10%;
-          right: 10%;
-          height: 45%;
+          content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 45%;
           background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
-          border-radius: 9999px;
-          pointer-events: none;
-          z-index: 2;
+          border-radius: 9999px; pointer-events: none; z-index: 2;
         }
 
         .hero-spiral-button::before {
-          content: "";
-          position: absolute;
-          inset: -200%;
-          z-index: -1;
-          background: var(--btn-gradient);
-          filter: blur(35px);
+          content: ""; position: absolute; inset: -200%; z-index: -1;
+          background: var(--btn-gradient); filter: blur(35px);
           animation: led-rotate 8s linear infinite;
         }
 
         @keyframes led-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .hero-spiral-button:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 
-            inset 0 -8px 12px rgba(0, 0, 0, 0.4),
-            inset 0 4px 8px rgba(255, 255, 255, 0.3),
-            0 15px 40px var(--btn-shadow);
-        }
-
-        .hero-spiral-button:active {
-          transform: translateY(1px) scale(0.97);
-          box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.8);
-        }
-
-        .red-transition { transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Налаштування переходу: 0.5 секунди (півсекунди) */
+        .red-transition { transition: opacity 0.5s ease-in-out; }
       `}</style>
 
       <div className="fixed-bg-video">
         <video ref={videoRef} muted autoPlay playsInline className="w-full h-full object-cover" style={{ filter: "brightness(0.45)", transform: "scale(1.45)" }}>
           <source src="https://cdn.jsdelivr.net/gh/synectica/assets/KFA.mp4" type="video/mp4" />
         </video>
+        {/* Червоний оверлей з оновленою транзицією */}
         <div className={`absolute inset-0 z-[3] bg-red-600 red-transition pointer-events-none ${isRedOverlayVisible ? 'opacity-100' : 'opacity-0'}`} />
         <div className="absolute inset-0 bg-black/40 z-[2]" />
       </div>
@@ -157,7 +124,6 @@ export function Hero() {
         </p>
       </div>
 
-      {/* Оптимізований контейнер: top зафіксовано, рух через translateY */}
       <div className="sticky-title-container" style={{ 
         top: 0,
         transform: `translateY(${translateY}vh) scale(${textScale}) translateZ(0)`, 
