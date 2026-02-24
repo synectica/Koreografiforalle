@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { CreditCard, Heart, ArrowRight } from "lucide-react";
 
-// Прибрав ArrowUpRight з імпортів, бо більше не використовується
-
 export function PricingSection({ lang }: { lang: string }) {
   const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({ 0: false, 1: false, 2: false });
   const [browserInfo, setBrowserInfo] = useState({ isChromeAndroid: false, isSamsung: false, isiOS: false });
@@ -31,16 +29,17 @@ export function PricingSection({ lang }: { lang: string }) {
   const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
 
   const handlePayment = (index: number) => {
-    // Показуємо стан "TAKK!"
+    // Активуємо екран подяки
     setSuccessStates(prev => ({ ...prev, [index]: true }));
 
+    // ЛОГІКА ОПЛАТИ (БЕЗ ЗМІН):
     if (browserInfo.isChromeAndroid) {
-      // Для Chrome Android залишаємо затримку 3с для візуального фідбеку
+      // Тільки для Chrome Android затримка 3с перед редиректом
       setTimeout(() => {
         window.location.href = vippsUrl;
       }, 3000);
     } else {
-      // Для iOS та Samsung переходимо ВІДРАЗУ, щоб браузер не заблокував вікно
+      // iOS, Samsung та інші - перехід ВІДРАЗУ
       window.location.href = vippsUrl;
     }
   };
@@ -52,25 +51,45 @@ export function PricingSection({ lang }: { lang: string }) {
   return (
     <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent font-sans text-white">
       <style>{`
-        .btn-premium {
+        .btn-candy {
           width: 100%; height: 64px; border-radius: 9999px;
           display: flex; align-items: center; justify-content: center;
           gap: 12px; font-weight: 800; text-transform: uppercase;
-          letter-spacing: 1.5px; font-size: 13px; transition: all 0.2s ease;
-          border: none; cursor: pointer;
+          letter-spacing: 1.5px; font-size: 13px; border: none; cursor: pointer;
+          position: relative; overflow: hidden;
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          z-index: 1;
         }
-        .btn-white-vipps { background-color: #ffffff; color: #000000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
-        .btn-white-vipps:active { transform: scale(0.98); box-shadow: inset 4px 4px 12px rgba(0, 0, 0, 0.3); }
-        
-        .btn-booking { background-color: #22c55e; color: white; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2); }
-        
-        /* Стилі для стрілки та анімації видалено */
+
+        .btn-candy::after {
+          content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 40%;
+          background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+          border-radius: 9999px; pointer-events: none; z-index: 2;
+        }
+
+        .btn-candy:active { transform: scale(0.96); }
+
+        .btn-white-vipps {
+          background: #ffffff; color: #000000;
+          box-shadow: 
+            inset 0 -6px 8px rgba(0, 0, 0, 0.1),
+            inset 0 4px 6px rgba(255, 255, 255, 1),
+            0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-booking {
+          background: #22c55e; color: #ffffff;
+          box-shadow: 
+            inset 0 -6px 8px rgba(0, 0, 0, 0.2),
+            inset 0 4px 6px rgba(255, 255, 255, 0.3),
+            0 12px 25px rgba(34, 197, 94, 0.4);
+        }
       `}</style>
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize text-white">Priser</h2>
-          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmөте.</p>
+          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmøte.</p>
         </div>
 
         <div className="w-full max-w-5xl bg-white/5 backdrop-blur-3xl rounded-[50px] border border-white/20 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
@@ -82,19 +101,12 @@ export function PricingSection({ lang }: { lang: string }) {
                 
                 {isSuccess && (
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-                    {/* Стрілка видалена звідси */}
-
-                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6" />
+                    <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
                     <h3 className="text-6xl font-black tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    
                     <p className="text-black text-sm font-bold uppercase tracking-widest mt-8 opacity-40">
                       {browserInfo.isChromeAndroid ? "ÅPNER VIPPS..." : "SENDER DEG TIL VIPPS"}
                     </p>
-
-                    <button 
-                      onClick={() => resetCard(index)}
-                      className="absolute bottom-8 text-[10px] text-black/20 font-bold uppercase tracking-widest hover:text-black/60 transition-colors"
-                    >
+                    <button onClick={() => resetCard(index)} className="absolute bottom-8 text-[10px] text-black/20 font-bold uppercase tracking-widest hover:text-black/60 transition-colors">
                       Lukk
                     </button>
                   </div>
@@ -114,12 +126,9 @@ export function PricingSection({ lang }: { lang: string }) {
                 </div>
 
                 <div className="w-full h-24 flex flex-col justify-end px-2">
-                  <button 
-                    onClick={() => handlePayment(index)}
-                    className="btn-premium btn-white-vipps"
-                  >
-                    <CreditCard className="w-5 h-5" />
-                    <span>{plan.price === "Avtale" ? "BETAL" : `BETAL ${plan.price}`}</span>
+                  <button onClick={() => handlePayment(index)} className="btn-candy btn-white-vipps">
+                    <CreditCard className="w-5 h-5 relative z-10" />
+                    <span className="relative z-10">{plan.price === "Avtale" ? "BETAL" : `BETAL ${plan.price}`}</span>
                   </button>
                 </div>
               </div>
@@ -130,10 +139,10 @@ export function PricingSection({ lang }: { lang: string }) {
         <div className="mt-12 w-full max-w-[340px] px-4">
            <button 
              onClick={() => document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" })}
-             className="btn-premium btn-booking"
+             className="btn-candy btn-booking"
            >
-             <span>Meld deg på prøvetime</span>
-             <ArrowRight className="w-5 h-5" />
+             <span className="relative z-10">Meld deg på prøвetime</span>
+             <ArrowRight className="w-5 h-5 relative z-10" />
            </button>
         </div>
       </div>

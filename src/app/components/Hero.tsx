@@ -41,10 +41,6 @@ export function Hero() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [isRedOverlayVisible]);
 
-  /** * МАСШТАБУВАННЯ: 
-   * Було 0.5 (зменшення до 50%).
-   * Стало 0.6 (зменшення до 40% - текст буде ще меншим у фіналі).
-   */
   const textScale = 1 - (scrollProgress * 0.6);
 
   return (
@@ -68,22 +64,66 @@ export function Hero() {
           .hero-subtitle { font-size: 1.65vw !important; }
         }
 
+        /* ЦУКЕРКОВИЙ СТИЛЬ КНОПОК */
         .hero-spiral-button {
-          position: relative; background: #000; border: none; border-radius: 9999px;
-          overflow: hidden; transition: all 0.4s ease; display: flex;
-          align-items: center; justify-content: center; z-index: 1; cursor: pointer;
+          position: relative;
+          background: #000;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 9999px;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1;
+          cursor: pointer;
           text-decoration: none;
+          /* Глибока внутрішня тінь для об'єму */
+          box-shadow: 
+            inset 0 -8px 12px rgba(0, 0, 0, 0.5),
+            inset 0 4px 8px rgba(255, 255, 255, 0.2),
+            0 10px 30px var(--btn-shadow);
+        }
+
+        /* Глянцевий відблиск зверху (як на льодянику) */
+        .hero-spiral-button::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 10%;
+          right: 10%;
+          height: 45%;
+          background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+          border-radius: 9999px;
+          pointer-events: none;
+          z-index: 2;
         }
 
         .hero-spiral-button::before {
-          content: ""; position: absolute; inset: -200%; z-index: -1;
-          background: var(--btn-gradient); filter: blur(40px);
-          animation: led-rotate 10s linear infinite;
+          content: "";
+          position: absolute;
+          inset: -200%;
+          z-index: -1;
+          background: var(--btn-gradient);
+          filter: blur(35px);
+          animation: led-rotate 8s linear infinite;
         }
 
         @keyframes led-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .hero-spiral-button:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1); }
-        .hero-spiral-button:active { scale: 0.98; }
+
+        .hero-spiral-button:hover {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 
+            inset 0 -8px 12px rgba(0, 0, 0, 0.4),
+            inset 0 4px 8px rgba(255, 255, 255, 0.3),
+            0 15px 40px var(--btn-shadow);
+        }
+
+        .hero-spiral-button:active {
+          transform: translateY(1px) scale(0.97);
+          box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.8);
+        }
+
         .red-transition { transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
       `}</style>
 
@@ -112,12 +152,6 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="relative z-[10] text-center w-full flex flex-col items-center px-4 mb-4 opacity-0 pointer-events-none">
-        <div className="w-full max-w-6xl">
-          <h1 className="hero-title font-bebas font-bold uppercase text-white">KOREOGRAFI FOR ALLE</h1>
-        </div>
-      </div>
-
       <div className="relative z-[10] flex-1 flex flex-col items-center px-4 justify-end pb-12">
         <div className="flex flex-col items-center gap-10 w-full">
           <div className="text-center text-sm md:text-lg text-white/80 leading-relaxed font-normal">
@@ -125,21 +159,33 @@ export function Hero() {
             <p>Eksisterende kunde? <span className="text-[#f97316] font-semibold">Betal direkte</span></p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6 justify-center items-center w-full max-w-2xl">
+          <div className="flex flex-col md:flex-row gap-8 justify-center items-center w-full max-w-2xl">
+            {/* КНОПКА 1 (СИНЬО-ЗЕЛЕНА) */}
             <button 
               className="hero-spiral-button w-full h-16 text-white"
               onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: "smooth" })}
-              style={{ '--btn-gradient': 'conic-gradient(from 0deg, #0047AB, #00BFFF, #008000, #0047AB)' } as any}
+              style={{ 
+                '--btn-gradient': 'conic-gradient(from 0deg, #0047AB, #00BFFF, #22c55e, #0047AB)',
+                '--btn-shadow': 'rgba(34, 197, 94, 0.3)'
+              } as any}
             >
-              <span className="font-black uppercase text-[11px] tracking-[2px]">BESTILL PRØVETIME</span>
+              <span className="relative z-10 font-black uppercase text-[12px] tracking-[2.5px] drop-shadow-md">
+                BESTILL PRØVETIME
+              </span>
             </button>
 
+            {/* КНОПКА 2 (ЧЕРВОНО-ПОМАРАНЧЕВА) */}
             <button 
               className="hero-spiral-button w-full h-16 text-white"
               onClick={() => document.querySelector('#pricing')?.scrollIntoView({ behavior: "smooth" })}
-              style={{ '--btn-gradient': 'conic-gradient(from 0deg, #FF0000, #FF69B4, #f97316, #FF0000)' } as any}
+              style={{ 
+                '--btn-gradient': 'conic-gradient(from 0deg, #FF0000, #FF69B4, #f97316, #FF0000)',
+                '--btn-shadow': 'rgba(249, 115, 22, 0.3)'
+              } as any}
             >
-              <span className="font-black uppercase text-[11px] tracking-[2px]">GÅ TIL BETALING</span>
+              <span className="relative z-10 font-black uppercase text-[12px] tracking-[2.5px] drop-shadow-md">
+                GÅ TIL BETALING
+              </span>
             </button>
           </div>
         </div>

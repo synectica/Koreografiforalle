@@ -3,9 +3,9 @@ import React from 'react';
 import { ExternalLink, MapPin } from 'lucide-react';
 
 export function MapSection() {
-  const displayAddress = "Thormøhlens Gate 27, 5006 Bergen";
-  // Коректне посилання для Google Maps
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayAddress)}`;
+  const displayAddress = "Wolffs gate 12, 5006 Bergen";
+  // Ваше пряме посилання на локацію
+  const googleMapsUrl = `https://www.google.no/maps/place/M%C3%B8llaren+Frivilligsentral/@60.3830593,5.3239127,17z/`;
 
   const handleOpenMap = () => {
     window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
@@ -28,28 +28,68 @@ export function MapSection() {
 
         .map-iframe-wrapper iframe {
           width: 100%; height: 100%; border: 0;
-          filter: grayscale(0.5) contrast(1.1) brightness(0.9);
+          filter: grayscale(0.5) contrast(1.1) brightness(0.8);
         }
 
-        /* Стиль кнопки в стилі "скло" */
-        .glass-button {
-          background: rgba(255, 255, 255, 0.1);
+        /* ЦУКЕРКОВИЙ СТИЛЬ КНОПКИ (CANDY GLASS) */
+        .btn-candy-map {
+          position: relative;
+          width: 100%;
+          height: 64px;
+          background: rgba(255, 255, 255, 0.15);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.2);
-          transition: all 0.3s ease;
+          border-radius: 9999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          color: white;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          font-size: 11px;
+          cursor: pointer;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          box-shadow: 
+            inset 0 -6px 10px rgba(0, 0, 0, 0.2),
+            inset 0 4px 8px rgba(255, 255, 255, 0.2),
+            0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
-        .glass-button:hover {
+        /* ГЛЯНЦЕВИЙ ВІДБЛИСК ЯК НА ЛЬОДЯНИКУ */
+        .btn-candy-map::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 10%;
+          right: 10%;
+          height: 40%;
+          background: linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 100%);
+          border-radius: 9999px;
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .btn-candy-map:hover {
+          transform: translateY(-4px) scale(1.02);
           background: rgba(255, 255, 255, 0.2);
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+          box-shadow: 
+            inset 0 -6px 10px rgba(0, 0, 0, 0.15),
+            inset 0 4px 8px rgba(255, 255, 255, 0.3),
+            0 15px 35px rgba(255, 255, 255, 0.1);
           border-color: rgba(255, 255, 255, 0.4);
         }
 
-        .glass-button:active {
-          transform: translateY(0);
-          scale: 0.98;
+        .btn-candy-map:active {
+          transform: translateY(1px) scale(0.97);
+          box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .icon-glow {
+          filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
         }
       `}</style>
 
@@ -71,7 +111,7 @@ export function MapSection() {
             <div className="map-iframe-wrapper">
               <iframe
                 title="Bergen Map"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(displayAddress)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(displayAddress)}&t=&z=17&ie=UTF8&iwloc=&output=embed`}
                 allowFullScreen
                 loading="lazy"
               ></iframe>
@@ -80,7 +120,7 @@ export function MapSection() {
 
           <div className="mt-8 flex flex-col items-center justify-center text-center px-4 pb-4">
             <p className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-              Thormøhlens Gate 27
+              Wolffs gate 12
             </p>
             <p className="text-white/50 text-base md:text-lg mt-1 font-medium">
               5006 Bergen, Norge
@@ -88,17 +128,17 @@ export function MapSection() {
           </div>
         </div>
 
-        {/* КНОПКА ЗАМІСТЬ СЛАЙДЕРА */}
+        {/* ЦУКЕРКОВА КНОПКА (CANDY BUTTON) */}
         <div className="w-full max-w-sm">
           <button 
             onClick={handleOpenMap}
-            className="glass-button w-full h-16 rounded-full flex items-center justify-center gap-4 text-white group"
+            className="btn-candy-map group"
           >
-            <MapPin className="w-5 h-5 transition-transform group-hover:scale-110" />
-            <span className="font-black uppercase text-[11px] tracking-[2px]">
+            <MapPin className="w-5 h-5 icon-glow transition-transform group-hover:scale-110 text-white" />
+            <span className="relative z-10">
               Åpne i Google Maps
             </span>
-            <ExternalLink className="w-4 h-4 opacity-50 transition-opacity group-hover:opacity-100" />
+            <ExternalLink className="w-4 h-4 opacity-40 transition-opacity group-hover:opacity-100" />
           </button>
         </div>
       </div>
