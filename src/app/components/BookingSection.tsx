@@ -43,7 +43,6 @@ export function BookingSection() {
     return { days: calendarDays, monthName: currentMonth.toLocaleString('no-NO', { month: 'long' }), year: y };
   }, [currentMonth]);
 
-  // СУВОРА ВАЛІДАЦІЯ
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isNameValid = name.trim().split(/\s+/).length >= 2; 
   const isPhoneValid = phone.replace(/\s/g, "").length >= 8;
@@ -86,6 +85,17 @@ export function BookingSection() {
 
   return (
     <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
+      
+      <style>{`
+        /* СТРОГА ОПТИМІЗАЦІЯ ХОДУ */
+        .optimized-gpu-layer {
+          transform: translate3d(0,0,0);
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          isolation: isolate;
+        }
+      `}</style>
+
       <div className="w-full max-w-3xl z-10 flex flex-col items-center">
         
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
@@ -96,7 +106,9 @@ export function BookingSection() {
           <p className="text-xl text-white/80 text-center font-normal">Velg en dato og fyll ut skjemaet</p>
         </div>
         
-        <div className="relative w-full min-h-[650px]">
+        <div className="relative w-full min-h-[650px] optimized-gpu-layer">
+          
+          {/* ФОРМА - ОРИГІНАЛЬНИЙ СТИЛЬ */}
           <div className={`w-full h-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col transition-all duration-500 ${submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-10'} relative`}>
             <div className="flex flex-col h-full justify-between gap-6">
               
@@ -159,14 +171,14 @@ export function BookingSection() {
                 <input type="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
                 <input type="tel" placeholder="+47 900 00 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
                 
-                {/* КНОПКА З КОЛЬОРОВИМ ТЕКСТОМ */}
+                {/* КНОПКА З ТВОЄЮ ЛОГІКОЮ КОЛЬОРІВ ТЕКСТУ */}
                 <button 
                   disabled={buttonState.disabled || isSubmitting}
                   onClick={executeSubmit}
                   className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300
                   ${buttonState.disabled || isSubmitting 
-                    ? 'bg-white/5 text-[#ef4444] border border-white/10 cursor-not-allowed' // ЧЕРВОНИЙ ТЕКСТ ЯКЩО НЕАКТИВНА
-                    : 'bg-white text-[#22c55e] border border-white shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95' // ЗЕЛЕНИЙ ТЕКСТ ЯКЩО АКТИВНА
+                    ? 'bg-white/5 text-[#ef4444] border border-white/10 cursor-not-allowed' 
+                    : 'bg-white text-[#22c55e] border border-white shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95' 
                   }`}
                 >
                   {isSubmitting ? "Sender..." : buttonState.label}
@@ -176,7 +188,7 @@ export function BookingSection() {
             </div>
           </div>
 
-          {/* SUCCESS SCREEN */}
+          {/* ЕКРАН УСПІХУ - ОРИГІНАЛЬНИЙ СТИЛЬ */}
           <div className={`w-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
                 <div className="flex flex-col items-center justify-center flex-1">
                   <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
