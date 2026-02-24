@@ -26,13 +26,11 @@ export function PricingSection({ lang }: { lang: string }) {
     { name: "Privat / Gruppe", price: "Avtale", info: "Individuell", description: "Skreddersydd opplegg" }
   ];
 
+  const vippsNumber = "981 48 210";
   const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
 
   const handlePayment = (index: number) => {
-    // Активуємо стан успіху
     setSuccessStates(prev => ({ ...prev, [index]: true }));
-
-    // ОПТИМІЗОВАНА ЗАТРИМКА: 500мс для всіх пристроїв для плавного переходу
     setTimeout(() => {
       window.location.href = vippsUrl;
     }, 500);
@@ -45,7 +43,6 @@ export function PricingSection({ lang }: { lang: string }) {
   return (
     <section id="pricing" className="py-20 md:py-24 px-4 relative flex flex-col items-center justify-center min-h-screen bg-transparent font-sans text-white">
       <style>{`
-        /* АПАРАТНЕ ПРИСКОРЕННЯ ТА ФІКС БЛЮРУ */
         .pricing-glass-card {
           background: rgba(255, 255, 255, 0.05);
           backdrop-filter: blur(24px);
@@ -54,7 +51,6 @@ export function PricingSection({ lang }: { lang: string }) {
           border-radius: 50px;
           overflow: hidden;
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-          /* Hardware Acceleration */
           transform: translateZ(0);
           will-change: transform, backdrop-filter;
           isolation: isolate;
@@ -95,35 +91,39 @@ export function PricingSection({ lang }: { lang: string }) {
             0 12px 25px rgba(34, 197, 94, 0.4);
         }
 
-        .success-overlay {
-          will-change: opacity, transform;
-          transform: translateZ(0);
+        .vipps-card-pila {
+           width: 100%;
+           border-radius: 50px; /* Таке ж закруглення як у карток */
+        }
+        @media (min-width: 768px) {
+           .vipps-card-pila {
+              width: calc(100% / 3);
+           }
         }
       `}</style>
 
       <div className="max-w-6xl w-full z-10 flex flex-col items-center">
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 relative">
+          <span className="absolute -top-6 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#f97316] text-[10px] font-black uppercase tracking-[2px] rounded-full shadow-lg">
+            Testperiode
+          </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight capitalize text-white">Priser</h2>
-          <p className="text-xl text-white/80 text-center font-normal">Betaling kan gjøres på forhånd eller etter timen ved oppmøte.</p>
+          <p className="text-xl text-white/80 text-center font-normal max-w-lg">Betaling kan gjøres på forhånd eller etter timen ved oppmøte.</p>
         </div>
 
+        {/* ОСНОВНИЙ БЛОК КАРТОК */}
         <div className="pricing-glass-card w-full max-w-5xl flex flex-col md:flex-row relative">
           {pricingData.map((plan, index) => {
             const isSuccess = successStates[index];
-
             return (
               <div key={index} className={`relative flex-1 min-h-[520px] flex flex-col items-center justify-between p-8 ${index !== pricingData.length - 1 ? 'border-b md:border-b-0 md:border-r border-white/10' : ''}`}>
                 
                 {isSuccess && (
-                  <div className="success-overlay absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+                  <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
                     <h3 className="text-6xl font-black tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black text-sm font-bold uppercase tracking-widest mt-8 opacity-40">
-                      {browserInfo.isChromeAndroid ? "ÅPNER VIPPS..." : "SENDER DEG TIL VIPPS"}
-                    </p>
-                    <button onClick={() => resetCard(index)} className="absolute bottom-8 text-[10px] text-black/20 font-bold uppercase tracking-widest hover:text-black/60 transition-colors">
-                      Lukk
-                    </button>
+                    <p className="text-black text-sm font-bold uppercase tracking-widest mt-8 opacity-40">SENDER DEG TIL VIPPS</p>
+                    <button onClick={() => resetCard(index)} className="absolute bottom-8 text-[10px] text-black/20 font-bold uppercase tracking-widest hover:text-black/60 transition-colors">Lukk</button>
                   </div>
                 )}
 
@@ -151,7 +151,20 @@ export function PricingSection({ lang }: { lang: string }) {
           })}
         </div>
 
-        <div className="mt-12 w-full max-w-[340px] px-4">
+        {/* ПЛАШКА VIPPS: ЗАРУГЛЕНА ТА ВІДІРВАНА (Рівні відстані) */}
+        <div className="w-full max-w-5xl flex justify-center mt-12 mb-12">
+           <div className="vipps-card-pila bg-white/5 backdrop-blur-3xl border border-white/10 p-8 flex flex-col items-center justify-center shadow-2xl transition-transform hover:scale-[1.02]">
+              <p className="text-[10px] uppercase tracking-[3px] font-bold text-white/30 mb-3 text-center">Betaling fra PC?</p>
+              <div className="flex flex-col items-center">
+                <span className="text-[11px] font-bold text-[#f97316] uppercase tracking-[2px] mb-1">Vipps Nummer</span>
+                <p className="text-2xl md:text-3xl font-black text-white tracking-[4px]">{vippsNumber}</p>
+              </div>
+              <p className="text-[9px] uppercase mt-4 text-white/20 font-bold tracking-[3px] italic">Galyna Gerasymenko</p>
+           </div>
+        </div>
+
+        {/* КНОПКА ЗАПИСУ */}
+        <div className="w-full max-w-[340px] px-4">
            <button 
              onClick={() => document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" })}
              className="btn-candy btn-booking"
