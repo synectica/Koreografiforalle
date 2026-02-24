@@ -156,7 +156,7 @@ export function PricingSection({ lang }: { lang: string }) {
              onClick={() => document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" })}
              className="btn-candy btn-booking"
            >
-             <span className="relative z-10">Meld deg på prøвetime</span>
+             <span className="relative z-10">Meld deg på prøvetime</span>
              <ArrowRight className="w-5 h-5 relative z-10" />
            </button>
         </div>
