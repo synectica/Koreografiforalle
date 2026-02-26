@@ -17,14 +17,22 @@ function FlagSwitch({ lang, setLang }: { lang: string, setLang: (l: string) => v
 
   const handleSwitch = () => {
     if (isAnimating) return;
+    
     const nextLang = isUkraine ? "no" : "ua";
+    
+    // 1. МИТТЄВА РЕАКЦІЯ: Змінюємо мову та запускаємо анімацію відразу
     setActiveOverlay(nextLang);
     setIsAnimating(true);
-    setTimeout(() => setLang(nextLang), 750);
+    
+    // Зміна контенту тепер відбувається через 200мс (достатньо, щоб око помітило початок анімації)
+    setTimeout(() => setLang(nextLang), 200);
+
+    // 2. ОПТИМІЗОВАНІ ТАЙМІНГИ: Завершуємо все значно швидше
     setTimeout(() => { 
       setIsAnimating(false); 
-      setTimeout(() => setActiveOverlay(""), 1200); 
-    }, 1600);
+      // Прибираємо оверлей відразу після завершення транзиції
+      setTimeout(() => setActiveOverlay(""), 600); 
+    }, 800);
   };
 
   const getOverlayBackground = () => {
@@ -35,17 +43,22 @@ function FlagSwitch({ lang, setLang }: { lang: string, setLang: (l: string) => v
 
   return (
     <>
+      {/* ОВЕРЛЕЙ: Скорочено час clip-path з 1.2s до 0.7s */}
       <div className="fixed inset-0 z-[12000] pointer-events-none"
         style={{
           opacity: isAnimating ? 1 : 0,
           clipPath: isAnimating ? 'circle(150% at calc(100% - 30px) 30px)' : 'circle(0% at calc(100% - 30px) 30px)',
-          transition: isAnimating ? 'clip-path 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.1s' : 'clip-path 1.0s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s 0.2s',
+          transition: isAnimating 
+            ? 'clip-path 0.7s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.1s' 
+            : 'clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s 0.2s',
           background: getOverlayBackground(),
         }}
       />
+      
       <div className="fixed top-5 right-5 z-[13000] cursor-pointer" onClick={handleSwitch}>
         <div className="w-[25.3px] h-[18.4px] relative [perspective:1000px]">
-          <div className={`w-full h-full transition-transform duration-[800ms] [transform-style:preserve-3d] ${!isUkraine ? '[transform:rotateY(180deg)]' : ''}`}>
+          {/* КАРТКА ПРАПОРА: Скорочено поворот з 800ms до 400ms */}
+          <div className={`w-full h-full transition-transform duration-[400ms] cubic-bezier(0.34, 1.56, 0.64, 1) [transform-style:preserve-3d] ${!isUkraine ? '[transform:rotateY(180deg)]' : ''}`}>
             <div className="absolute inset-0 [backface-visibility:hidden] rounded-[2px] overflow-hidden shadow-lg border border-white/10">
                 <div className="h-1/2 bg-[#0057B7]" /><div className="h-1/2 bg-[#FFD700]" />
             </div>
@@ -116,12 +129,11 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap');
         .font-bebas { font-family: 'Bebas Neue', sans-serif; }
         
-        /* Оновлені стилі для ВЕЛИКИХ логотипів */
         .footer-logo {
-          height: 90px; /* Значно збільшено для десктопу (було 50px) */
+          height: 90px;
           width: auto;
           object-fit: contain;
-          border-radius: 12px; /* Трохи більше закруглення для великого розміру */
+          border-radius: 12px;
           opacity: 0.9;
           transition: all 0.3s ease;
         }
@@ -131,7 +143,7 @@ export default function App() {
         }
         @media (max-width: 768px) { 
            .footer-logo { 
-               height: 65px; /* Збільшено для мобільного (було 40px) */
+               height: 65px;
                border-radius: 8px;
            } 
         }
@@ -158,18 +170,14 @@ export default function App() {
         </div>
       </div>
 
-      {/* ФУТЕР: В ОДИН РЯДОК НА ВСІХ ПРИСТРОЯХ */}
       <footer className="w-full py-12 text-left relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10"
               style={{ paddingBottom: 'calc(3rem + env(safe-area-inset-bottom))' }}>
         <div className="max-w-7xl mx-auto px-4 flex flex-row items-center justify-between gap-8">
-          
-          {/* ЛІВА ЧАСТИНА: ВЕЛИКІ ЛОГОТИПИ */}
           <div className="flex flex-row items-center justify-start gap-4 md:gap-8 flex-shrink-0">
             <img src="https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png" alt="Møte" className="footer-logo" />
             <img src="https://cdn.jsdelivr.net/gh/synectica/assets/frivilliglogoforkfacopy.jpg" alt="Frivillig" className="footer-logo" />
           </div>
 
-          {/* ПРАВА ЧАСТИНА: ТЕКСТ (Вирівняно зліва) */}
           <div className="flex flex-col items-start gap-2"> 
             <p className="font-bebas text-white uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-60 text-[11px] sm:text-[14px] md:text-[16px] leading-tight">
               Koreografi for alle med Galyna Gerasymenko — © {new Date().getFullYear()}
