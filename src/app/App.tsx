@@ -17,20 +17,12 @@ function FlagSwitch({ lang, setLang }: { lang: string, setLang: (l: string) => v
 
   const handleSwitch = () => {
     if (isAnimating) return;
-    
     const nextLang = isUkraine ? "no" : "ua";
-    
-    // 1. МИТТЄВА РЕАКЦІЯ: Змінюємо мову та запускаємо анімацію відразу
     setActiveOverlay(nextLang);
     setIsAnimating(true);
-    
-    // Зміна контенту тепер відбувається через 200мс (достатньо, щоб око помітило початок анімації)
     setTimeout(() => setLang(nextLang), 200);
-
-    // 2. ОПТИМІЗОВАНІ ТАЙМІНГИ: Завершуємо все значно швидше
     setTimeout(() => { 
       setIsAnimating(false); 
-      // Прибираємо оверлей відразу після завершення транзиції
       setTimeout(() => setActiveOverlay(""), 600); 
     }, 800);
   };
@@ -43,7 +35,6 @@ function FlagSwitch({ lang, setLang }: { lang: string, setLang: (l: string) => v
 
   return (
     <>
-      {/* ОВЕРЛЕЙ: Скорочено час clip-path з 1.2s до 0.7s */}
       <div className="fixed inset-0 z-[12000] pointer-events-none"
         style={{
           opacity: isAnimating ? 1 : 0,
@@ -54,10 +45,8 @@ function FlagSwitch({ lang, setLang }: { lang: string, setLang: (l: string) => v
           background: getOverlayBackground(),
         }}
       />
-      
       <div className="fixed top-5 right-5 z-[13000] cursor-pointer" onClick={handleSwitch}>
         <div className="w-[25.3px] h-[18.4px] relative [perspective:1000px]">
-          {/* КАРТКА ПРАПОРА: Скорочено поворот з 800ms до 400ms */}
           <div className={`w-full h-full transition-transform duration-[400ms] cubic-bezier(0.34, 1.56, 0.64, 1) [transform-style:preserve-3d] ${!isUkraine ? '[transform:rotateY(180deg)]' : ''}`}>
             <div className="absolute inset-0 [backface-visibility:hidden] rounded-[2px] overflow-hidden shadow-lg border border-white/10">
                 <div className="h-1/2 bg-[#0057B7]" /><div className="h-1/2 bg-[#FFD700]" />
@@ -79,74 +68,30 @@ export default function App() {
   useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) setInstagramUrl("instagram://user?username=vik_gerasymenko");
-
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                        (window.navigator as any).standalone === true ||
-                        window.location.search.includes('standalone=1');
-
-    if (isStandalone) {
-      setTimeout(() => {
-        const el = document.getElementById('pricing-anchor');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 2000); 
-    }
   }, []);
 
   const iconK = "https://ui-avatars.com/api/?name=K&background=EA4335&color=fff&size=512&font-size=0.7&bold=true";
   
-  const manifestData = {
-    name: "KOREOGRAFI-BETALING",
-    short_name: "BETALING",
-    id: "/?standalone=1",
-    start_url: "/?standalone=1",
-    display: "standalone",
-    background_color: "#0a0a0a",
-    theme_color: "#EA4335",
-    icons: [{ 
-      src: iconK, 
-      sizes: "512x512", 
-      type: "image/png",
-      purpose: "any maskable"
-    }]
-  };
-  const manifestString = `data:application/json,${encodeURIComponent(JSON.stringify(manifestData))}`;
-
   return (
     <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#22c55e]/30 scroll-smooth flex flex-col overflow-x-hidden">
       
-      <link rel="manifest" href={manifestString} />
-      <link rel="apple-touch-icon" href={iconK} />
-      <link rel="icon" type="image/png" href={iconK} />
-      
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      <meta name="apple-mobile-web-app-title" content="BETALING" />
-      <meta name="application-name" content="BETALING" />
-      <meta name="theme-color" content="#EA4335" />
-
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap');
         .font-bebas { font-family: 'Bebas Neue', sans-serif; }
         
+        /* ПОВЕРНУТО ОРИГІНАЛЬНИЙ ВИГЛЯД: без фільтрів */
         .footer-logo {
-          height: 90px;
+          height: 52px;
           width: auto;
           object-fit: contain;
-          border-radius: 12px;
-          opacity: 0.9;
-          transition: all 0.3s ease;
+          border-radius: 4px;
+          opacity: 1; /* Повна яскравість оригіналу */
+          transition: transform 0.3s ease;
         }
         .footer-logo:hover { 
-           opacity: 1;
-           transform: scale(1.03);
+          transform: translateY(-2px) scale(1.02);
         }
-        @media (max-width: 768px) { 
-           .footer-logo { 
-               height: 65px;
-               border-radius: 8px;
-           } 
-        }
+        @media (max-width: 768px) { .footer-logo { height: 40px; } }
       `}</style>
 
       <FlagSwitch lang={lang} setLang={setLang} />
@@ -164,26 +109,27 @@ export default function App() {
           <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <ContactForm />
           <MapSection />
-          
           <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <PosterSection /> 
         </div>
       </div>
 
-      <footer className="w-full py-12 text-left relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10"
-              style={{ paddingBottom: 'calc(3rem + env(safe-area-inset-bottom))' }}>
-        <div className="max-w-7xl mx-auto px-4 flex flex-row items-center justify-between gap-8">
-          <div className="flex flex-row items-center justify-start gap-4 md:gap-8 flex-shrink-0">
-            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png" alt="Møte" className="footer-logo" />
-            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/frivilliglogoforkfacopy.jpg" alt="Frivillig" className="footer-logo" />
+      <footer className="w-full py-4 relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10"
+              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+        <div className="max-w-7xl mx-auto px-4 flex flex-row items-center justify-between">
+          
+          {/* ЛОГОТИПИ: ОРИГІНАЛЬНІ КОЛЬОРИ ТА ФОНИ */}
+          <div className="flex flex-row items-center gap-5 md:gap-8">
+            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png" alt="KFA Logo" className="footer-logo" />
+            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/frivilliglogoforkfacopy.jpg" alt="Frivillig Logo" className="footer-logo" />
           </div>
 
-          <div className="flex flex-col items-start gap-2"> 
-            <p className="font-bebas text-white uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-60 text-[11px] sm:text-[14px] md:text-[16px] leading-tight">
-              Koreografi for alle med Galyna Gerasymenko — © {new Date().getFullYear()}
+          <div className="flex flex-col items-end text-right"> 
+            <p className="font-bebas text-white uppercase tracking-[0.1em] opacity-50 text-[10px] sm:text-[13px] leading-none whitespace-nowrap">
+              Koreografi for alle — © {new Date().getFullYear()}
             </p>
-            <p className="font-bebas text-white/40 uppercase tracking-[0.1em] text-[10px] md:text-[12px] leading-tight">
-              Designed & Developed by <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Viktor Herasymenko</a>
+            <p className="font-bebas text-white/30 uppercase tracking-[0.1em] text-[9px] sm:text-[11px] mt-1">
+              Dev by <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Viktor H.</a>
             </p>
           </div>
         </div>
