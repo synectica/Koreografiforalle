@@ -167,7 +167,6 @@ export default function App() {
           <div className="flex flex-row items-center justify-start gap-4 md:gap-8 flex-shrink-0">
             <img src="https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png" alt="Møte" className="footer-logo" />
             <img src="https://cdn.jsdelivr.net/gh/synectica/assets/frivilliglogoforkfacopy.jpg" alt="Frivillig" className="footer-logo" />
-            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/Logo-RGB-hoyde-Bergenkommune%20copy.jpg" alt="Bergen" className="footer-logo" />
           </div>
 
           {/* ПРАВА ЧАСТИНА: ТЕКСТ (Вирівняно зліва) */}
