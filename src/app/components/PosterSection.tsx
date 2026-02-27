@@ -11,16 +11,17 @@ export function PosterSection() {
       id: 1,
       title: "KFA PLAKAT - VERSJON 1",
       description: "Plakat for de som setter pris på en sunn og estetisk livsstil",
-      // Файли написані переважно капсом
+      // Точна назва КАПСОМ та з розширенням .jpeg
       preview: "/KOREOGRAFIFORALLEPLAKATA3FUNKY.jpeg",
-      pdf: "/plakat A3 KOREOGRAFI FOR ALLE.pdf",
+      // Додано %20 замість пробілів, щоб посилання працювало в браузері
+      pdf: "/plakat%20A3%20KOREOGRAFI%20FOR%20ALLE.pdf",
       fileName: "KFA_Poster_V1.pdf"
     },
     {
       id: 2,
       title: "KFA PLAKAT - VERSJON 2",
       description: "Bli en ambassadør for danseglede і ditt lokalsamhumun",
-      // Файли написані маленькими літерами
+      // Точні назви малими літерами
       preview: "/plakatkfaminimala3.jpg", 
       pdf: "/koreografiforalleplakatminimala3.pdf",
       fileName: "KFA_Poster_V2.pdf"
@@ -31,7 +32,6 @@ export function PosterSection() {
     <section id="poster" className="relative min-h-screen w-full bg-transparent flex flex-col items-center justify-center py-20 px-4 overflow-visible">
       
       <style>{`
-        /* КЕНДІ СТИЛЬ ДЛЯ ВСІХ КНОПОК */
         .btn-candy-spiral {
           position: relative;
           width: 100%;
@@ -72,7 +72,7 @@ export function PosterSection() {
         .modal-blur {
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          background: rgba(0,0,0,0.92);
+          background: rgba(0,0,0,0.95);
         }
 
         .icon-glow { filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); }
@@ -80,7 +80,6 @@ export function PosterSection() {
 
       <div className="w-full max-w-5xl mx-auto z-10 flex flex-col items-center">
         
-        {/* ЗАГОЛОВОК */}
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight drop-shadow-lg uppercase italic font-bebas">
             DU ER IDÉEN
@@ -90,10 +89,8 @@ export function PosterSection() {
           </p>
         </div>
 
-        {/* ЄДИНИЙ КОНТЕЙНЕР ДЛЯ ПЛАКАТІВ */}
         <div className="poster-main-frame w-full p-4 md:p-10 rounded-[40px] md:rounded-[50px] shadow-2xl relative mb-12">
           
-          {/* DESKTOP VIEW: ДВА ПОРУЧ */}
           <div className="hidden md:grid grid-cols-2 gap-10">
             {posters.map((p) => (
               <div key={p.id} className="group relative cursor-pointer" onClick={() => setSelectedPoster(p.id)}>
@@ -108,7 +105,6 @@ export function PosterSection() {
             ))}
           </div>
 
-          {/* MOBILE VIEW: ОДИН З ПЕРЕМИКАЧЕМ */}
           <div className="md:hidden flex flex-col items-center">
             <div 
               className="relative w-full max-w-[300px] aspect-[1/1.414] rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
@@ -133,7 +129,6 @@ export function PosterSection() {
             </div>
           </div>
 
-          {/* ЛОЗУНГ ТА КРОКИ */}
           <div className="mt-10 flex flex-col items-center justify-center text-center px-4">
             <p className="text-lg md:text-xl font-bold text-white tracking-tight uppercase italic font-bebas max-w-lg leading-tight">
               {selectedPoster 
@@ -151,7 +146,6 @@ export function PosterSection() {
           </div>
         </div>
 
-        {/* ГОЛОВНА КНОПКА */}
         <div className="w-full max-w-sm">
           <button 
             onClick={() => setSelectedPoster(posters[activeMobileIndex].id)}
@@ -168,13 +162,17 @@ export function PosterSection() {
 
       {/* МОДАЛЬНИЙ ПОПАП */}
       {selectedPoster && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="absolute inset-0 modal-blur" onClick={() => setSelectedPoster(null)} />
           
           <div className="relative bg-[#0a0a0a] w-full max-w-4xl max-h-[95vh] overflow-y-auto rounded-[40px] border border-white/10 p-6 md:p-10 flex flex-col md:flex-row gap-8 shadow-4xl">
             
-            <button onClick={() => setSelectedPoster(null)} className="absolute top-6 right-6 text-white/40 hover:text-white z-50 bg-white/5 p-2 rounded-full">
-              <X className="w-6 h-6" />
+            <button 
+              onClick={() => setSelectedPoster(null)} 
+              className="absolute top-4 right-4 md:top-6 md:right-6 z-[11000] bg-white text-black p-2 md:p-3 rounded-full shadow-2xl transition-transform active:scale-90"
+              aria-label="Close"
+            >
+              <X className="w-8 h-8 md:w-9 md:h-9 stroke-[3px]" />
             </button>
 
             <div className="w-full md:w-1/2">
