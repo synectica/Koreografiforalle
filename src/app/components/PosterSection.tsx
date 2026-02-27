@@ -11,17 +11,18 @@ export function PosterSection() {
       id: 1,
       title: "KFA PLAKAT - VERSJON 1",
       description: "Plakat for de som setter pris på en sunn og estetisk livsstil",
-      preview: "https://cdn.jsdelivr.net/gh/synectica/assets/WhatsApp%20Image%202026-02-21%20at%2012.43.59.jpeg",
-      pdf: "https://cdn.jsdelivr.net/gh/synectica/assets/plakat%20A3%20KOREOGRAFI%20FOR%20ALLE.pdf",
+      // Файли написані переважно капсом
+      preview: "/KOREOGRAFIFORALLEPLAKATA3FUNKY.jpeg",
+      pdf: "/plakat A3 KOREOGRAFI FOR ALLE.pdf",
       fileName: "KFA_Poster_V1.pdf"
     },
     {
       id: 2,
       title: "KFA PLAKAT - VERSJON 2",
-      description: "Bli en ambassadør for danseglede і ditt lokalsamfunn",
-      // Оновлені посилання для другого плаката
-      preview: "https://cdn.jsdelivr.net/gh/synectica/assets/plakatkfaminimala3.jpg", 
-      pdf: "https://cdn.jsdelivr.net/gh/synectica/assets/koreografiforalleplakatminimala3.pdf",
+      description: "Bli en ambassadør for danseglede і ditt lokalsamhumun",
+      // Файли написані маленькими літерами
+      preview: "/plakatkfaminimala3.jpg", 
+      pdf: "/koreografiforalleplakatminimala3.pdf",
       fileName: "KFA_Poster_V2.pdf"
     }
   ];
