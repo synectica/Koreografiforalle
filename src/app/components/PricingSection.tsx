@@ -4,21 +4,6 @@ import { CreditCard, Heart, ArrowRight } from "lucide-react";
 
 export function PricingSection({ lang }: { lang: string }) {
   const [successStates, setSuccessStates] = useState<{ [key: number]: boolean }>({ 0: false, 1: false, 2: false });
-  const [browserInfo, setBrowserInfo] = useState({ isChromeAndroid: false, isSamsung: false, isiOS: false });
-
-  useEffect(() => {
-    const ua = navigator.userAgent;
-    const isAndroid = /Android/i.test(ua);
-    const isChrome = /Chrome/i.test(ua) && !/SamsungBrowser/i.test(ua);
-    const isSamsung = /SamsungBrowser/i.test(ua);
-    const isiOS = /iPhone|iPad|iPod/i.test(ua);
-
-    setBrowserInfo({
-      isChromeAndroid: isAndroid && isChrome,
-      isSamsung: isSamsung,
-      isiOS: isiOS
-    });
-  }, []);
 
   const pricingData = [
     { name: "60 Minutter", price: "110", info: "Tirsdager", description: "Nybegynnere & Grunnleggende" },
@@ -27,13 +12,21 @@ export function PricingSection({ lang }: { lang: string }) {
   ];
 
   const vippsNumber = "981 48 210";
-  const vippsUrl = `https://qr.vipps.no/28/2/01/031/4798148210?v=1`;
+  // Формат deep link для прямого відкриття додатку Vipps на переказ за номером телефону (+47)
+  const vippsDeepLink = "vipps://send?phone=4798148210";
+  const vippsFallbackUrl = "https://www.vipps.no/";
 
   const handlePayment = (index: number) => {
     setSuccessStates(prev => ({ ...prev, [index]: true }));
-    
-    // МИТТЄВИЙ редирект без setTimeout, щоб мобільний браузер не блокував посилання
-    window.location.href = vippsUrl;
+
+    // Миттєво відкриваємо додаток через deep link
+    window.location.href = vippsDeepLink;
+
+    // Якщо через 1.5 секунди користувач досі на сторінці (додаток не відкрився або це ПК), 
+    // можна перенаправити на звичайний сайтове посилання або залишити екран подяки
+    setTimeout(() => {
+      // За бажанням тут можна додати перевірку або фолбек
+    }, 1500);
   };
 
   const resetCard = (index: number) => {
@@ -122,7 +115,7 @@ export function PricingSection({ lang }: { lang: string }) {
                   <div className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
                     <Heart className="w-16 h-16 text-[#f97316] fill-[#f97316] mb-6 animate-pulse" />
                     <h3 className="text-6xl font-black tracking-tighter text-black uppercase leading-none">TAKK!</h3>
-                    <p className="text-black text-sm font-bold uppercase tracking-widest mt-8 opacity-40">SENDER DEG TIL VIPPS</p>
+                    <p className="text-black text-sm font-bold uppercase tracking-widest mt-8 opacity-40">ÅPNER VIPPS PÅ TELEFONEN</p>
                     <button onClick={() => resetCard(index)} className="absolute bottom-8 text-[10px] text-black/20 font-bold uppercase tracking-widest hover:text-black/60 transition-colors">Lukk</button>
                   </div>
                 )}
