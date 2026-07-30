@@ -31,9 +31,9 @@ export function PricingSection({ lang }: { lang: string }) {
 
   const handlePayment = (index: number) => {
     setSuccessStates(prev => ({ ...prev, [index]: true }));
-    setTimeout(() => {
-      window.location.href = vippsUrl;
-    }, 500);
+    
+    // МИТТЄВИЙ редирект без setTimeout, щоб мобільний браузер не блокував посилання
+    window.location.href = vippsUrl;
   };
 
   const resetCard = (index: number) => {
@@ -93,7 +93,7 @@ export function PricingSection({ lang }: { lang: string }) {
 
         .vipps-card-pila {
            width: 100%;
-           border-radius: 50px; /* Таке ж закруглення як у карток */
+           border-radius: 50px;
         }
         @media (min-width: 768px) {
            .vipps-card-pila {
@@ -151,7 +151,7 @@ export function PricingSection({ lang }: { lang: string }) {
           })}
         </div>
 
-        {/* ПЛАШКА VIPPS: ЗАРУГЛЕНА ТА ВІДІРВАНА (Рівні відстані) */}
+        {/* ПЛАШКА VIPPS */}
         <div className="w-full max-w-5xl flex justify-center mt-12 mb-12">
            <div className="vipps-card-pila bg-white/5 backdrop-blur-3xl border border-white/10 p-8 flex flex-col items-center justify-center shadow-2xl transition-transform hover:scale-[1.02]">
               <p className="text-[10px] uppercase tracking-[3px] font-bold text-white/30 mb-3 text-center">Betaling fra PC?</p>
