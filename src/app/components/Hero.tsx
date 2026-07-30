@@ -1,177 +1,262 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Heart, Calendar, ArrowRight, Check } from "lucide-react";
 
-export function Hero() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  // Сайт починається з червоного кольору (true)
-  const [isRedOverlayVisible, setIsRedOverlayVisible] = useState(true);
-  const [scrollProgress, setScrollProgress] = useState(0);
+export function BookingSection() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [finalDetails, setFinalDetails] = useState({ day: "", time: "" });
+  
+  const [currentMonth, setCurrentMonth] = useState(new Date()); 
+  
+  const [activeFilter, setActiveFilter] = useState<"tuesday" | "friday" | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const maxScroll = 500;
-      window.requestAnimationFrame(() => {
-        const progress = Math.min(window.scrollY / maxScroll, 1);
-        setScrollProgress(progress);
-      });
+    const handleStorage = () => {
+      setName(localStorage.getItem("user_name") || "");
+      setEmail(localStorage.getItem("user_email") || "");
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("local-data-update", handleStorage);
+    handleStorage();
+    return () => window.removeEventListener("local-data-update", handleStorage);
   }, []);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  const handleChange = (field: "name" | "email", value: string) => {
+    localStorage.setItem(`user_${field}`, value);
+    if (field === "name") setName(value); else setEmail(value);
+    window.dispatchEvent(new Event("local-data-update"));
+  };
 
-    // Початкова точка відео
-    video.currentTime = 3;
+  const { days, monthName, year } = useMemo(() => {
+    const y = currentMonth.getFullYear();
+    const m = currentMonth.getMonth();
+    const firstDay = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const shift = firstDay === 0 ? 6 : firstDay - 1;
+    const calendarDays = [];
+    for (let i = 0; i < shift; i++) calendarDays.push(null);
+    for (let d = 1; d <= daysInMonth; d++) calendarDays.push(new Date(y, m, d));
+    return { days: calendarDays, monthName: currentMonth.toLocaleString('no-NO', { month: 'long' }), year: y };
+  }, [currentMonth]);
 
-    const handleTimeUpdate = () => {
-      // Починаємо плавно зафарбовувати в червоний за 1 секунду до кінця (плавний перехід ДО 1.5с холду)
-      if (video.currentTime >= video.duration - 1 && !isRedOverlayVisible) {
-        setIsRedOverlayVisible(true);
-      }
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isNameValid = name.trim().split(/\s+/).length >= 2; 
+  const isPhoneValid = phone.replace(/\s/g, "").length >= 8;
 
-      // Коли відео майже закінчилося — перекидаємо на початок
-      if (video.currentTime >= video.duration - 0.1) {
-        video.currentTime = 3;
-        video.play();
-        // Фіксуємо "щільний" червоний на 1.5 секунди перед початком зникнення
-        setTimeout(() => setIsRedOverlayVisible(false), 1500);
-      }
-    };
+  const getButtonState = () => {
+    if (!activeFilter) return { label: "Velg ukedag", disabled: true };
+    if (!selectedDate) return { label: "Velg dato i kalenderen", disabled: true };
+    if (!isNameValid) return { label: "Skriv fullt navn", disabled: true };
+    if (!isEmailValid) return { label: "Ugyldig e-post", disabled: true };
+    if (!isPhoneValid) return { label: "Oppgi telefonnummer", disabled: true };
+    return { label: "Book prøvetime nå", disabled: false };
+  };
 
-    video.addEventListener("timeupdate", handleTimeUpdate);
+  const buttonState = getButtonState();
 
-    const startPlay = async () => {
-      try {
-        await video.play();
-        // При першому заході: тримаємо червоний 1.5с, потім запускаємо перехід у 0.5с
-        setTimeout(() => setIsRedOverlayVisible(false), 1500);
-      } catch (e) {
-        console.log("Autoplay blocked");
-      }
-    };
+  const executeSubmit = async () => {
+    if (buttonState.disabled || isSubmitting) return;
+    setIsSubmitting(true);
+    const isTuesday = selectedDate!.getDay() === 2;
+    const timeRange = isTuesday ? "15:00 - 16:00" : "15:30 - 17:00";
+    const formattedDay = `${isTuesday ? "Tirsdag" : "Fredag"} ${selectedDate!.toLocaleDateString('no-NO')}`;
+    setFinalDetails({ day: formattedDay, time: timeRange });
 
-    startPlay();
-    return () => video.removeEventListener("timeupdate", handleTimeUpdate);
-  }, [isRedOverlayVisible]);
+    try {
+      await fetch("https://hook.eu1.make.com/r5j6ds9yaef9sct9a8cyg1hkvkwnh501", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "booking", name, email, phone, date: formattedDay, time: timeRange, recipient: "vikgerasimenco@gmail.com" }),
+      });
+      setSubmitted(true);
+    } catch (error) { setSubmitted(true); } finally { setIsSubmitting(false); }
+  };
 
-  const textScale = 1 - (scrollProgress * 0.6);
-  const translateY = (35 * (1 - scrollProgress)) + (scrollProgress * 20 / 10);
+  const handleReset = () => {
+    setSubmitted(false);
+    setSelectedDate(null);
+    setActiveFilter(null);
+    setPhone("");
+  };
 
   return (
-    <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
+    <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
+      
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-        .font-bebas { font-family: 'Bebas Neue', sans-serif; }
-        .fixed-bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; z-index: 1; pointer-events: none; }
-        
-        .sticky-title-container {
-          position: fixed; left: 0; width: 100%; z-index: 40; pointer-events: none;
-          display: flex; flex-direction: column; align-items: center;
-          will-change: transform; transform-style: preserve-3d;
-          -webkit-font-smoothing: antialiased;
+        .optimized-gpu-layer {
+          transform: translate3d(0,0,0);
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          isolation: isolate;
         }
 
-        .hero-title { font-size: 10.8vw !important; line-height: 0.8; display: block; width: 100%; font-style: italic !important; text-align: center; }
-        .hero-subtitle { font-size: 3.3vw !important; letter-spacing: 0.49em !important; display: block; width: 100%; margin-right: -0.49em; text-align: center; }
-        
-        @media (min-width: 1024px) {
-          .hero-title { font-size: 5.4vw !important; }
-          .hero-subtitle { font-size: 1.65vw !important; }
+        @keyframes softGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
 
-        .hero-spiral-button {
-          position: relative; background: #000; border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 9999px; overflow: hidden;
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 1; cursor: pointer; text-decoration: none;
-          box-shadow: inset 0 -8px 12px rgba(0, 0, 0, 0.5), inset 0 4px 8px rgba(255, 255, 255, 0.2), 0 10px 30px var(--btn-shadow);
+        .light-frosted-glass {
+          background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(34,197,94,0.15) 50%, rgba(255,255,255,0.6) 100%);
+          background-size: 200% 200%;
+          animation: softGradient 8s ease infinite;
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
         }
-
-        .hero-spiral-button::after {
-          content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 45%;
-          background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
-          border-radius: 9999px; pointer-events: none; z-index: 2;
-        }
-
-        .hero-spiral-button::before {
-          content: ""; position: absolute; inset: -200%; z-index: -1;
-          background: var(--btn-gradient); filter: blur(35px);
-          animation: led-rotate 8s linear infinite;
-        }
-
-        @keyframes led-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* Налаштування переходу: 0.5 секунди (півсекунди) */
-        .red-transition { transition: opacity 0.5s ease-in-out; }
       `}</style>
 
-      <div className="fixed-bg-video">
-        <video ref={videoRef} muted autoPlay playsInline className="w-full h-full object-cover" style={{ filter: "brightness(0.45)", transform: "scale(1.45)" }}>
-          <source src="https://cdn.jsdelivr.net/gh/synectica/assets/KFA.mp4" type="video/mp4" />
-        </video>
-        {/* Червоний оверлей з оновленою транзицією */}
-        <div className={`absolute inset-0 z-[3] bg-red-600 red-transition pointer-events-none ${isRedOverlayVisible ? 'opacity-100' : 'opacity-0'}`} />
-        <div className="absolute inset-0 bg-black/40 z-[2]" />
-      </div>
-
-      <div className="relative z-[10] flex-[0.8] flex flex-col justify-center items-center px-4">
-        <p className="font-bebas text-lg md:text-2xl tracking-[0.2em] opacity-60 uppercase text-center">
-          Velkommen til et signaturkurs i koreografi <br className="hidden md:block"/> for nybegynnere og profesjonelle
-        </p>
-      </div>
-
-      <div className="sticky-title-container" style={{ 
-        top: 0,
-        transform: `translateY(${translateY}vh) scale(${textScale}) translateZ(0)`, 
-        transformOrigin: "top center",
-        backfaceVisibility: "hidden"
-      }}>
-        <div className="w-full max-w-6xl px-4">
-          <h1 className="hero-title font-bebas font-bold uppercase text-white italic">KOREOGRAFI FOR ALLE</h1>
-          <p className="hero-subtitle font-bebas opacity-90 uppercase mt-3">med GALYNA GERASYMENKO</p>
+      <div className="w-full max-w-3xl z-10 flex flex-col items-center">
+        
+        <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
+          Book en gratis prøvetime
+        </h2>
+        
+        <div className={`transition-opacity duration-500 mb-6 ${submitted ? 'opacity-0' : 'opacity-100'}`}>
+          <p className="text-xl text-white/90 text-center font-medium drop-shadow-md">Velg en dato og fyll ut skjemaet</p>
         </div>
-      </div>
+        
+        <div className="relative w-full min-h-[650px] optimized-gpu-layer">
+          
+          {/* ФОРМА */}
+          <div className={`w-full h-full light-frosted-glass rounded-[40px] p-6 md:p-10 flex flex-col transition-all duration-500 ${submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-10'} relative`}>
+            <div className="flex flex-col h-full justify-between gap-6 relative z-10">
+              
+              <div className="flex flex-col gap-3">
+                  <BookingButton 
+                    label="Tirsdag 15:00 - 16:00" 
+                    activeLabel="Tirsdag valgt"
+                    activeColor="#22c55e" 
+                    icon={<Calendar className="w-5 h-5" />} 
+                    isActive={activeFilter === 'tuesday'} 
+                    onClick={() => { setActiveFilter('tuesday'); setSelectedDate(null); }} 
+                  />
+                  <BookingButton 
+                    label="Fredag 15:30 - 17:00" 
+                    activeLabel="Fredag valgt"
+                    activeColor="#22c55e" 
+                    icon={<Calendar className="w-5 h-5" />} 
+                    isActive={activeFilter === 'friday'} 
+                    onClick={() => { setActiveFilter('friday'); setSelectedDate(null); }} 
+                  />
+              </div>
 
-      <div className="relative z-[10] flex-1 flex flex-col items-center px-4 justify-end pb-12">
-        <div className="flex flex-col items-center gap-10 w-full">
-          <div className="text-center text-sm md:text-lg text-white/80 leading-relaxed font-normal">
-            <p>Er du ny? <span className="text-[#22c55e] font-semibold">Book prøvetime</span></p>
-            <p>Eksisterende kunde? <span className="text-[#f97316] font-semibold">Betal direkte</span></p>
+              {/* КАЛЕНДАР */}
+              <div className="w-full mt-2 p-5 rounded-[24px] text-center flex-1 flex flex-col justify-center bg-white/40 border border-white/60 shadow-sm">
+                  <div className="flex justify-between items-center w-full px-2 mb-4">
+                      <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="text-black hover:opacity-50 p-1 transition-opacity"><ChevronLeft/></button>
+                      <span className="font-black text-base text-black capitalize tracking-widest">{monthName} {year}</span>
+                      <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="text-black hover:opacity-50 p-1 transition-opacity"><ChevronRight/></button>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø'].map(d => (
+                      <div key={d} className="text-[11px] font-black uppercase text-black/70 text-center">{d}</div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                      {days.map((dateObj, i) => {
+                          if (!dateObj) return <div key={i} className="h-10" />;
+                          const isAvailable = (dateObj.getDay() === 2 && activeFilter === 'tuesday') || (dateObj.getDay() === 5 && activeFilter === 'friday');
+                          const isSelected = selectedDate?.toDateString() === dateObj.toDateString();
+                          const isToday = dateObj.toDateString() === new Date().toDateString();
+
+                          return (
+                              <div key={i} className="flex items-center justify-center h-10">
+                                  <button type="button" disabled={!isAvailable} onClick={() => setSelectedDate(dateObj)}
+                                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all relative
+                                          ${isSelected ? 'bg-[#22c55e] text-white shadow-md scale-110' : 
+                                            isToday ? 'bg-transparent text-black ring-2 ring-black' : 
+                                            isAvailable ? 'text-black border border-black/20 hover:bg-black/10 hover:border-black/40' : 'text-black/40'}`}>
+                                      {dateObj.getDate()}
+                                  </button>
+                              </div>
+                          );
+                      })}
+                  </div>
+                  
+                  {/* ПОВІДОМЛЕННЯ ПРО ГРАФІК */}
+                  <div className="mt-5 pt-3 border-t border-black/20">
+                      <p className="text-black text-[11px] font-black uppercase tracking-[1.5px]">
+                         Tidsplanen gjelder fra 7. august 2026
+                      </p>
+                  </div>
+              </div>
+
+              {/* ПОЛЯ ВВОДУ */}
+              <div className="flex flex-col gap-3 mt-2">
+                <input type="text" placeholder="Galyna Gerasymenko" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
+                <input type="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
+                <input type="tel" placeholder="+47 900 00 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
+                
+                <button 
+                  disabled={buttonState.disabled || isSubmitting}
+                  onClick={executeSubmit}
+                  className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300 mt-2
+                  ${buttonState.disabled || isSubmitting 
+                    ? 'bg-black/10 text-red-600 border border-black/10 cursor-not-allowed' 
+                    : 'bg-black text-white hover:scale-[1.02] active:scale-95 shadow-xl' 
+                  }`}
+                >
+                  {isSubmitting ? "Sender..." : buttonState.label}
+                  <ArrowRight className={`w-5 h-5 transition-colors ${buttonState.disabled ? 'text-red-600' : 'text-[#22c55e]'}`} />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-8 justify-center items-center w-full max-w-2xl">
-            <button 
-              className="hero-spiral-button w-full h-16 text-white"
-              onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: "smooth" })}
-              style={{ 
-                '--btn-gradient': 'conic-gradient(from 0deg, #0047AB, #00BFFF, #22c55e, #0047AB)',
-                '--btn-shadow': 'rgba(34, 197, 94, 0.3)'
-              } as any}
-            >
-              <span className="relative z-10 font-black uppercase text-[12px] tracking-[2.5px] drop-shadow-md">
-                BESTILL PRØVETIME
-              </span>
-            </button>
-
-            <button 
-              className="hero-spiral-button w-full h-16 text-white"
-              onClick={() => document.querySelector('#pricing')?.scrollIntoView({ behavior: "smooth" })}
-              style={{ 
-                '--btn-gradient': 'conic-gradient(from 0deg, #FF0000, #FF69B4, #f97316, #FF0000)',
-                '--btn-shadow': 'rgba(249, 115, 22, 0.3)'
-              } as any}
-            >
-              <span className="relative z-10 font-black uppercase text-[12px] tracking-[2.5px] drop-shadow-md">
-                GÅ TIL BETALING
-              </span>
-            </button>
+          {/* ЕКРАН УСПІХУ */}
+          <div className={`w-full light-frosted-glass rounded-[40px] p-6 md:p-10 flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
+                <div className="flex flex-col items-center justify-center flex-1 relative z-10 w-full">
+                  <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
+                  <h3 className="text-6xl md:text-7xl font-black text-black leading-none mb-4 tracking-tighter">
+                    Takk!
+                  </h3>
+                  <p className="text-black font-bold text-xl mb-8">Din prøvetime er booket:</p>
+                  <div className="bg-white/60 rounded-[32px] py-8 px-10 border border-white/80 shadow-sm w-full max-w-md">
+                    <span className="text-black font-black text-2xl md:text-3xl block mb-2">{finalDetails.day}</span>
+                    <span className="text-black/90 font-bold text-xl block tracking-widest leading-none">kl. {finalDetails.time}</span>
+                  </div>
+                </div>
+                
+                <div className="w-full mt-6 relative z-10">
+                  <button 
+                    onClick={handleReset}
+                    className="h-14 w-full bg-black text-white rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
+                  >
+                    <Check className="w-5 h-5 text-[#22c55e]" />
+                    Bestill en ny time
+                  </button>
+                </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function BookingButton({ label, activeLabel, activeColor, icon, isActive, onClick, disabled }: any) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`relative w-full h-[60px] rounded-full border transition-all duration-300 flex items-center justify-center gap-3 px-6 overflow-hidden group
+      ${isActive 
+        ? 'bg-white text-black border-white shadow-[0_5px_15px_rgba(0,0,0,0.1)]' 
+        : 'bg-white/40 text-black border-white/60 hover:bg-white/60 active:scale-95'
+      } ${disabled ? 'opacity-40 grayscale cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+      <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} style={{ color: isActive ? activeColor : 'inherit' }}>
+        {icon}
+      </div>
+      <span className="font-black uppercase text-[11px] tracking-[1.5px] whitespace-nowrap">
+        {isActive ? activeLabel : label}
+      </span>
+    </button>
   );
 }
