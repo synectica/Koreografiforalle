@@ -62,7 +62,7 @@ export function BookingSection() {
     if (buttonState.disabled || isSubmitting) return;
     setIsSubmitting(true);
     const isTuesday = selectedDate!.getDay() === 2;
-    const timeRange = isTuesday ? "15:00 - 16:00" : "16:00 - 17:30";
+    const timeRange = isTuesday ? "15:00 - 16:00" : "15:30 - 17:00";
     const formattedDay = `${isTuesday ? "Tirsdag" : "Fredag"} ${selectedDate!.toLocaleDateString('no-NO')}`;
     setFinalDetails({ day: formattedDay, time: timeRange });
 
@@ -87,12 +87,27 @@ export function BookingSection() {
     <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
       
       <style>{`
-        /* СТРОГА ОПТИМІЗАЦІЯ ХОДУ */
         .optimized-gpu-layer {
           transform: translate3d(0,0,0);
           -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
           isolation: isolate;
+        }
+
+        @keyframes softGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .light-frosted-glass {
+          background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(34,197,94,0.15) 50%, rgba(255,255,255,0.6) 100%);
+          background-size: 200% 200%;
+          animation: softGradient 8s ease infinite;
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
         }
       `}</style>
 
@@ -103,14 +118,14 @@ export function BookingSection() {
         </h2>
         
         <div className={`transition-opacity duration-500 mb-6 ${submitted ? 'opacity-0' : 'opacity-100'}`}>
-          <p className="text-xl text-white/80 text-center font-normal">Velg en dato og fyll ut skjemaet</p>
+          <p className="text-xl text-white/90 text-center font-medium drop-shadow-md">Velg en dato og fyll ut skjemaet</p>
         </div>
         
         <div className="relative w-full min-h-[650px] optimized-gpu-layer">
           
-          {/* ФОРМА - ОРИГІНАЛЬНИЙ СТИЛЬ */}
-          <div className={`w-full h-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col transition-all duration-500 ${submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-10'} relative`}>
-            <div className="flex flex-col h-full justify-between gap-6">
+          {/* ФОРМА */}
+          <div className={`w-full h-full light-frosted-glass rounded-[40px] p-6 md:p-10 flex flex-col transition-all duration-500 ${submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-10'} relative`}>
+            <div className="flex flex-col h-full justify-between gap-6 relative z-10">
               
               <div className="flex flex-col gap-3">
                   <BookingButton 
@@ -122,7 +137,7 @@ export function BookingSection() {
                     onClick={() => { setActiveFilter('tuesday'); setSelectedDate(null); }} 
                   />
                   <BookingButton 
-                    label="Fredag 16:00 - 17:30" 
+                    label="Fredag 15:30 - 17:00" 
                     activeLabel="Fredag valgt"
                     activeColor="#22c55e" 
                     icon={<Calendar className="w-5 h-5" />} 
@@ -132,15 +147,15 @@ export function BookingSection() {
               </div>
 
               {/* КАЛЕНДАР */}
-              <div className="w-full pt-2 text-center flex-1 flex flex-col justify-center">
+              <div className="w-full mt-2 p-5 rounded-[24px] text-center flex-1 flex flex-col justify-center bg-white/40 border border-white/60 shadow-sm">
                   <div className="flex justify-between items-center w-full px-2 mb-4">
-                      <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="text-white hover:opacity-50 transition-opacity"><ChevronLeft/></button>
-                      <span className="font-bold text-sm text-white capitalize tracking-widest">{monthName} {year}</span>
-                      <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="text-white hover:opacity-50 transition-opacity"><ChevronRight/></button>
+                      <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="text-black hover:opacity-50 p-1 transition-opacity"><ChevronLeft/></button>
+                      <span className="font-black text-base text-black capitalize tracking-widest">{monthName} {year}</span>
+                      <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="text-black hover:opacity-50 p-1 transition-opacity"><ChevronRight/></button>
                   </div>
                   <div className="grid grid-cols-7 gap-1 mb-2">
                     {['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø'].map(d => (
-                      <div key={d} className="text-[10px] font-black uppercase text-white/30 text-center">{d}</div>
+                      <div key={d} className="text-[11px] font-black uppercase text-black/70 text-center">{d}</div>
                     ))}
                   </div>
                   <div className="grid grid-cols-7 gap-1">
@@ -153,61 +168,67 @@ export function BookingSection() {
                           return (
                               <div key={i} className="flex items-center justify-center h-10">
                                   <button type="button" disabled={!isAvailable} onClick={() => setSelectedDate(dateObj)}
-                                      className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all relative
-                                          ${isSelected ? 'bg-[#22c55e] text-white shadow-none' : 
-                                            isToday ? 'bg-white text-black ring-2 ring-white/50' : 
-                                            isAvailable ? 'text-white border border-white/20 hover:bg-white/10' : 'text-white/10'}`}>
+                                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all relative
+                                          ${isSelected ? 'bg-[#22c55e] text-white shadow-md scale-110' : 
+                                            isToday ? 'bg-transparent text-black ring-2 ring-black' : 
+                                            isAvailable ? 'text-black border border-black/20 hover:bg-black/10 hover:border-black/40' : 'text-black/40'}`}>
                                       {dateObj.getDate()}
                                   </button>
                               </div>
                           );
                       })}
                   </div>
+                  
+                  {/* ПОВІДОМЛЕННЯ ПРО ГРАФІК */}
+                  <div className="mt-5 pt-3 border-t border-black/20">
+                      <p className="text-black text-[11px] font-black uppercase tracking-[1.5px]">
+                         Tidsplanen gjelder fra 7. august 2026
+                      </p>
+                  </div>
               </div>
 
               {/* ПОЛЯ ВВОДУ */}
-              <div className="flex flex-col gap-3">
-                <input type="text" placeholder="Galyna Gerasymenko" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
-                <input type="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
-                <input type="tel" placeholder="+47 900 00 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/5 border border-white/10 rounded-full text-white text-base outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
+              <div className="flex flex-col gap-3 mt-2">
+                <input type="text" placeholder="Galyna Gerasymenko" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
+                <input type="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
+                <input type="tel" placeholder="+47 900 00 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
                 
-                {/* КНОПКА З ТВОЄЮ ЛОГІКОЮ КОЛЬОРІВ ТЕКСТУ */}
                 <button 
                   disabled={buttonState.disabled || isSubmitting}
                   onClick={executeSubmit}
-                  className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300
+                  className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300 mt-2
                   ${buttonState.disabled || isSubmitting 
-                    ? 'bg-white/5 text-[#ef4444] border border-white/10 cursor-not-allowed' 
-                    : 'bg-white text-[#22c55e] border border-white shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-95' 
+                    ? 'bg-black/10 text-red-600 border border-black/10 cursor-not-allowed' 
+                    : 'bg-black text-white hover:scale-[1.02] active:scale-95 shadow-xl' 
                   }`}
                 >
                   {isSubmitting ? "Sender..." : buttonState.label}
-                  <ArrowRight className={`w-5 h-5 transition-colors ${buttonState.disabled ? 'text-[#ef4444]' : 'text-[#22c55e]'}`} />
+                  <ArrowRight className={`w-5 h-5 transition-colors ${buttonState.disabled ? 'text-red-600' : 'text-[#22c55e]'}`} />
                 </button>
               </div>
             </div>
           </div>
 
-          {/* ЕКРАН УСПІХУ - ОРИГІНАЛЬНИЙ СТИЛЬ */}
-          <div className={`w-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
-                <div className="flex flex-col items-center justify-center flex-1">
+          {/* ЕКРАН УСПІХУ */}
+          <div className={`w-full light-frosted-glass rounded-[40px] p-6 md:p-10 flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
+                <div className="flex flex-col items-center justify-center flex-1 relative z-10 w-full">
                   <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
-                  <h3 className="text-6xl md:text-7xl font-black text-white leading-none mb-4 tracking-tighter">
+                  <h3 className="text-6xl md:text-7xl font-black text-black leading-none mb-4 tracking-tighter">
                     Takk!
                   </h3>
-                  <p className="text-white/80 font-bold text-xl mb-8">Din prøvetime er booket:</p>
-                  <div className="bg-white/10 rounded-[32px] py-8 px-10 border border-white/20 backdrop-blur-xl w-full max-w-md">
-                    <span className="text-white font-black text-2xl md:text-3xl block mb-2">{finalDetails.day}</span>
-                    <span className="text-white/90 font-bold text-xl block tracking-widest leading-none">kl. {finalDetails.time}</span>
+                  <p className="text-black font-bold text-xl mb-8">Din prøvetime er booket:</p>
+                  <div className="bg-white/60 rounded-[32px] py-8 px-10 border border-white/80 shadow-sm w-full max-w-md">
+                    <span className="text-black font-black text-2xl md:text-3xl block mb-2">{finalDetails.day}</span>
+                    <span className="text-black/90 font-bold text-xl block tracking-widest leading-none">kl. {finalDetails.time}</span>
                   </div>
                 </div>
                 
-                <div className="w-full mt-6">
+                <div className="w-full mt-6 relative z-10">
                   <button 
                     onClick={handleReset}
-                    className="h-14 w-full bg-white text-[#22c55e] rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-transform"
+                    className="h-14 w-full bg-black text-white rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
                   >
-                    <Check className="w-5 h-5" />
+                    <Check className="w-5 h-5 text-[#22c55e]" />
                     Bestill en ny time
                   </button>
                 </div>
@@ -226,9 +247,9 @@ function BookingButton({ label, activeLabel, activeColor, icon, isActive, onClic
       onClick={onClick}
       className={`relative w-full h-[60px] rounded-full border transition-all duration-300 flex items-center justify-center gap-3 px-6 overflow-hidden group
       ${isActive 
-        ? 'bg-white text-black border-white shadow-[0_0_25px_rgba(255,255,255,0.2)]' 
-        : 'bg-white/5 text-white border-white/10 hover:bg-white/10 active:scale-95'
-      } ${disabled ? 'opacity-20 grayscale cursor-not-allowed' : 'cursor-pointer'}`}
+        ? 'bg-white text-black border-white shadow-[0_5px_15px_rgba(0,0,0,0.1)]' 
+        : 'bg-white/40 text-black border-white/60 hover:bg-white/60 active:scale-95'
+      } ${disabled ? 'opacity-40 grayscale cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} style={{ color: isActive ? activeColor : 'inherit' }}>
         {icon}
@@ -236,9 +257,6 @@ function BookingButton({ label, activeLabel, activeColor, icon, isActive, onClic
       <span className="font-black uppercase text-[11px] tracking-[1.5px] whitespace-nowrap">
         {isActive ? activeLabel : label}
       </span>
-      {isActive && (
-        <div className="absolute inset-0 bg-white/20 blur-xl pointer-events-none" />
-      )}
     </button>
   );
 }
