@@ -21,8 +21,8 @@ export function PricingSection({ lang }: { lang: string }) {
   }, []);
 
   const pricingData = [
-    { name: "60 Minutter", price: "110", info: "Tirsdager", description: "Nybegynnere & Grunnleggende" },
-    { name: "90 Minutter", price: "165", info: "Fredager", description: "Viderekomne & Teknikk" },
+    { name: "60 Minutter", price: "150", info: "Tirsdager", description: "Profesjonelle" },
+    { name: "90 Minutter", price: "200", info: "Fredager", description: "Nybegynnere & Grunnleggende" },
     { name: "Privat / Gruppe", price: "Avtale", info: "Individuell", description: "Skreddersydd opplegg" }
   ];
 
