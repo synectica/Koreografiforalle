@@ -58,7 +58,7 @@ export function StudioInfo({ lang }: { lang: string }) {
   const t = T[l];
 
   return (
-    <section id="info" className="relative w-full flex flex-col items-center py-0 px-4">
+    <section id="info" className="relative z-10 w-full flex flex-col items-center py-0 px-4">
       <div className="w-full max-w-5xl flex flex-col items-center gap-8 md:gap-12">
 
         {/* HVA DU TRENGER */}
