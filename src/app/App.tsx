@@ -106,22 +106,27 @@ function FlagFace({ l }: { l: Lang }) {
   );
 }
 
+const FLAGS: { l: Lang; label: string }[] = [
+  { l: "no", label: "Norsk" },
+  { l: "en", label: "English" },
+  { l: "ua", label: "Українська" },
+];
+
 function FlagSwitch({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<Lang | "">("");
-  // двосторонній значок: на видимому боці — поточна мова, на прихованому — наступна; кожне перемикання крутить на 180°
-  const [faces, setFaces] = useState<[Lang, Lang]>([lang, NEXT[lang]]);
-  const [rot, setRot] = useState(0);
+  const [origin, setOrigin] = useState({ x: 0, y: 30 });       // звідки розходиться хвиля — центр натиснутого прапорця
+  const [spin, setSpin] = useState<Record<string, number>>({ no: 0, en: 0, ua: 0 }); // оберт кожного прапорця
 
-  const handleSwitch = () => {
+  const handleSwitch = (l: Lang, el: HTMLElement) => {
     if (isAnimating) return;
-    const nextLang = NEXT[lang];
-    const hidden = (rot / 180) % 2 === 0 ? 1 : 0;
-    setFaces((f) => { const n: [Lang, Lang] = [f[0], f[1]]; n[hidden] = nextLang; return n; });
-    setRot((r) => r + 180);
-    setActiveOverlay(nextLang);
+    setSpin((s) => ({ ...s, [l]: s[l] + 360 }));          // прапорець крутиться при натисканні
+    if (l === lang) return;                               // та сама мова — лише оберт
+    const r = el.getBoundingClientRect();
+    setOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    setActiveOverlay(l);
     setIsAnimating(true);
-    setTimeout(() => setLang(nextLang), 170);
+    setTimeout(() => setLang(l), 170);
     setTimeout(() => {
       setIsAnimating(false);
       setTimeout(() => setActiveOverlay(""), 300);
@@ -135,27 +140,45 @@ function FlagSwitch({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void 
     return "transparent";
   };
 
+  const at = `${origin.x}px ${origin.y}px`;
+
   return (
     <>
       <div className="fixed inset-0 z-[12000] pointer-events-none"
         style={{
           opacity: isAnimating ? 1 : 0,
-          clipPath: isAnimating ? 'circle(150% at calc(100% - 30px) 30px)' : 'circle(0% at calc(100% - 30px) 30px)',
+          clipPath: isAnimating ? `circle(150% at ${at})` : `circle(0% at ${at})`,
           transition: isAnimating ? 'clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.05s' : 'clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s 0.05s',
           background: getOverlayBackground(),
         }}
       />
-      <div className="fixed top-5 right-5 z-[13000] cursor-pointer" onClick={handleSwitch} role="button" aria-label="Language: NO / EN / UA">
-        <div className="w-[25.3px] h-[18.4px] relative [perspective:1000px]">
-          <div className="w-full h-full transition-transform duration-[250ms] [transform-style:preserve-3d]" style={{ transform: `rotateY(${rot}deg)` }}>
-            <div className={`absolute inset-0 [backface-visibility:hidden] rounded-[2px] overflow-hidden shadow-lg border border-white/10 ${faces[0] === "no" ? "bg-[#BA0C2F]" : ""}`}>
-              <FlagFace l={faces[0]} />
-            </div>
-            <div className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-[2px] overflow-hidden shadow-lg border border-white/10 ${faces[1] === "no" ? "bg-[#BA0C2F]" : ""}`}>
-              <FlagFace l={faces[1]} />
-            </div>
-          </div>
-        </div>
+      {/* три прапорці поруч: NO · EN · UA */}
+      <div
+        className="fixed z-[13000] flex items-center gap-1"
+        style={{ top: "calc(max(env(safe-area-inset-top, 0px), 0px) + 12px)", right: "12px" }}
+        role="group"
+        aria-label="Language: NO / EN / UA"
+      >
+        {FLAGS.map(({ l, label }) => (
+          <button
+            key={l}
+            type="button"
+            onClick={(e) => handleSwitch(l, e.currentTarget)}
+            aria-label={label}
+            aria-pressed={lang === l}
+            className="p-1.5 cursor-pointer transition-all duration-300 active:scale-90"
+            style={{ opacity: lang === l ? 1 : 0.55, transform: lang === l ? "scale(1.08)" : "scale(1)" }}
+          >
+            <span className="block w-[25.3px] h-[18.4px] relative [perspective:600px]">
+              <span
+                className={`block w-full h-full relative rounded-[2px] overflow-hidden shadow-lg border ${lang === l ? "border-white/80" : "border-white/10"} ${l === "no" ? "bg-[#BA0C2F]" : ""}`}
+                style={{ transform: `rotateY(${spin[l]}deg)`, transition: "transform 0.45s ease" }}
+              >
+                <FlagFace l={l} />
+              </span>
+            </span>
+          </button>
+        ))}
       </div>
     </>
   );
@@ -215,6 +238,8 @@ export default function App() {
 
       <div className="relative z-10 flex-grow">
         <Hero lang={lang} />
+        {/* усі блоки після Hero — над фіксованим фоном Hero (z-index:1), інакше на телефонах частина блоків може не відмальовуватись */}
+        <div className="relative z-20">
         <BioSection lang={lang} />
 
         <div className="max-w-7xl mx-auto space-y-12 md:space-y-20 pb-6 px-4 md:px-10">
@@ -230,6 +255,7 @@ export default function App() {
           <StudioInfo lang={lang} />
           <MapSection lang={lang} />
           <GallerySection lang={lang} />
+        </div>
         </div>
       </div>
 
