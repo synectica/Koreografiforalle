@@ -1,16 +1,18 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Heart, Calendar, ArrowRight, Check } from "lucide-react";
+import { trackEvent } from "./track"; // [GOOGLE ADS] події конверсій
+import { tr, locale } from "./i18n";
 
-export function BookingSection() {
+export function BookingSection({ lang = "no" }: { lang?: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [finalDetails, setFinalDetails] = useState({ day: "", time: "" });
-  
-  const [currentMonth, setCurrentMonth] = useState(new Date()); 
-  
+
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
   const [activeFilter, setActiveFilter] = useState<"tuesday" | "friday" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -40,20 +42,20 @@ export function BookingSection() {
     const calendarDays = [];
     for (let i = 0; i < shift; i++) calendarDays.push(null);
     for (let d = 1; d <= daysInMonth; d++) calendarDays.push(new Date(y, m, d));
-    return { days: calendarDays, monthName: currentMonth.toLocaleString('no-NO', { month: 'long' }), year: y };
-  }, [currentMonth]);
+    return { days: calendarDays, monthName: currentMonth.toLocaleString(locale(lang), { month: 'long' }), year: y };
+  }, [currentMonth, lang]);
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isNameValid = name.trim().split(/\s+/).length >= 2; 
+  const isNameValid = name.trim().split(/\s+/).length >= 2;
   const isPhoneValid = phone.replace(/\s/g, "").length >= 8;
 
   const getButtonState = () => {
-    if (!activeFilter) return { label: "Velg ukedag", disabled: true };
-    if (!selectedDate) return { label: "Velg dato i kalenderen", disabled: true };
-    if (!isNameValid) return { label: "Skriv fullt navn", disabled: true };
-    if (!isEmailValid) return { label: "Ugyldig e-post", disabled: true };
-    if (!isPhoneValid) return { label: "Oppgi telefonnummer", disabled: true };
-    return { label: "Book prøvetime nå", disabled: false };
+    if (!activeFilter) return { label: tr(lang, "Velg ukedag", "Choose a weekday", "Оберіть день тижня"), disabled: true };
+    if (!selectedDate) return { label: tr(lang, "Velg dato i kalenderen", "Choose a date in the calendar", "Оберіть дату в календарі"), disabled: true };
+    if (!isNameValid) return { label: tr(lang, "Skriv fullt navn", "Enter your full name", "Введіть повне ім'я"), disabled: true };
+    if (!isEmailValid) return { label: tr(lang, "Ugyldig e-post", "Invalid e-mail", "Невірна електронна пошта"), disabled: true };
+    if (!isPhoneValid) return { label: tr(lang, "Oppgi telefonnummer", "Enter your phone number", "Вкажіть номер телефону"), disabled: true };
+    return { label: tr(lang, "Book prøvetime nå", "Book trial class now", "Забронювати пробне заняття"), disabled: false };
   };
 
   const buttonState = getButtonState();
@@ -64,14 +66,20 @@ export function BookingSection() {
     const isTuesday = selectedDate!.getDay() === 2;
     const timeRange = isTuesday ? "15:00 - 16:00" : "15:30 - 17:00";
     const formattedDay = `${isTuesday ? "Tirsdag" : "Fredag"} ${selectedDate!.toLocaleDateString('no-NO')}`;
-    setFinalDetails({ day: formattedDay, time: timeRange });
+    // на екрані — мовою сайту; у Make (лист) іде норвезька
+    const shownDay = tr(lang, formattedDay,
+      `${isTuesday ? "Tuesday" : "Friday"} ${selectedDate!.toLocaleDateString('en-GB')}`,
+      `${isTuesday ? "Вівторок" : "П'ятниця"} ${selectedDate!.toLocaleDateString('uk-UA')}`);
+    setFinalDetails({ day: shownDay, time: timeRange });
 
     try {
-      await fetch("https://hook.eu1.make.com/r5j6ds9yaef9sct9a8cyg1hkvkwnh501", {
+      const res = await fetch("https://hook.eu1.make.com/r5j6ds9yaef9sct9a8cyg1hkvkwnh501", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "booking", name, email, phone, date: formattedDay, time: timeRange, recipient: "vikgerasimenco@gmail.com" }),
       });
+      // [GOOGLE ADS] основна конверсія — лише коли сервер справді прийняв запит (інакше Ads рахує хибні ліди)
+      if (res.ok) trackEvent("generate_lead", { form: "booking", day: isTuesday ? "tuesday" : "friday" });
       setSubmitted(true);
     } catch (error) { setSubmitted(true); } finally { setIsSubmitting(false); }
   };
@@ -84,8 +92,8 @@ export function BookingSection() {
   };
 
   return (
-    <section id="booking" className="relative w-full flex flex-col items-center min-h-screen py-20 px-4 bg-transparent overflow-hidden">
-      
+    <section id="booking" className="relative w-full flex flex-col items-center py-6 md:py-12 px-4 bg-transparent overflow-hidden">
+
       <style>{`
         .optimized-gpu-layer {
           transform: translate3d(0,0,0);
@@ -112,37 +120,38 @@ export function BookingSection() {
       `}</style>
 
       <div className="w-full max-w-3xl z-10 flex flex-col items-center">
-        
+
+        {/* [SEO/ADS] заголовок збігається з оголошенням: "gratis prøvetime" + "Bergen" (було: "Book en gratis prøvetime") */}
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
-          Book en gratis prøvetime
+          {tr(lang, "Book gratis prøvetime i Bergen", "Book a free trial class in Bergen", "Забронюйте безкоштовне пробне заняття в Бергені")}
         </h2>
-        
+
         <div className={`transition-opacity duration-500 mb-6 ${submitted ? 'opacity-0' : 'opacity-100'}`}>
-          <p className="text-xl text-white/90 text-center font-medium drop-shadow-md">Velg en dato og fyll ut skjemaet</p>
+          <p className="text-xl text-white/90 text-center font-medium drop-shadow-md">{tr(lang, "Velg en dato og fyll ut skjemaet", "Choose a date and fill in the form", "Оберіть дату та заповніть форму")}</p>
         </div>
-        
+
         <div className="relative w-full min-h-[650px] optimized-gpu-layer">
-          
+
           {/* ФОРМА */}
           <div className={`w-full h-full light-frosted-glass rounded-[40px] p-6 md:p-10 flex flex-col transition-all duration-500 ${submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-10'} relative`}>
             <div className="flex flex-col h-full justify-between gap-6 relative z-10">
-              
+
               <div className="flex flex-col gap-3">
-                  <BookingButton 
-                    label="Tirsdag 15:00 - 16:00" 
-                    activeLabel="Tirsdag valgt"
-                    activeColor="#22c55e" 
-                    icon={<Calendar className="w-5 h-5" />} 
-                    isActive={activeFilter === 'tuesday'} 
-                    onClick={() => { setActiveFilter('tuesday'); setSelectedDate(null); }} 
+                  <BookingButton
+                    label={tr(lang, "Tirsdag 15:00 - 16:00", "Tuesday 15:00 - 16:00", "Вівторок 15:00 - 16:00")}
+                    activeLabel={tr(lang, "Tirsdag valgt", "Tuesday selected", "Вівторок обрано")}
+                    activeColor="#22c55e"
+                    icon={<Calendar className="w-5 h-5" />}
+                    isActive={activeFilter === 'tuesday'}
+                    onClick={() => { setActiveFilter('tuesday'); setSelectedDate(null); }}
                   />
-                  <BookingButton 
-                    label="Fredag 15:30 - 17:00" 
-                    activeLabel="Fredag valgt"
-                    activeColor="#22c55e" 
-                    icon={<Calendar className="w-5 h-5" />} 
-                    isActive={activeFilter === 'friday'} 
-                    onClick={() => { setActiveFilter('friday'); setSelectedDate(null); }} 
+                  <BookingButton
+                    label={tr(lang, "Fredag 15:30 - 17:00", "Friday 15:30 - 17:00", "П'ятниця 15:30 - 17:00")}
+                    activeLabel={tr(lang, "Fredag valgt", "Friday selected", "П'ятницю обрано")}
+                    activeColor="#22c55e"
+                    icon={<Calendar className="w-5 h-5" />}
+                    isActive={activeFilter === 'friday'}
+                    onClick={() => { setActiveFilter('friday'); setSelectedDate(null); }}
                   />
               </div>
 
@@ -154,7 +163,7 @@ export function BookingSection() {
                       <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="text-black hover:opacity-50 p-1 transition-opacity"><ChevronRight/></button>
                   </div>
                   <div className="grid grid-cols-7 gap-1 mb-2">
-                    {['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø'].map(d => (
+                    {tr(lang, ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø'], ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'], ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']).map(d => (
                       <div key={d} className="text-[11px] font-black uppercase text-black/70 text-center">{d}</div>
                     ))}
                   </div>
@@ -169,8 +178,8 @@ export function BookingSection() {
                               <div key={i} className="flex items-center justify-center h-10">
                                   <button type="button" disabled={!isAvailable} onClick={() => setSelectedDate(dateObj)}
                                       className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all relative
-                                          ${isSelected ? 'bg-[#22c55e] text-white shadow-md scale-110' : 
-                                            isToday ? 'bg-transparent text-black ring-2 ring-black' : 
+                                          ${isSelected ? 'bg-[#22c55e] text-white shadow-md scale-110' :
+                                            isToday ? 'bg-transparent text-black ring-2 ring-black' :
                                             isAvailable ? 'text-black border border-black/20 hover:bg-black/10 hover:border-black/40' : 'text-black/40'}`}>
                                       {dateObj.getDate()}
                                   </button>
@@ -178,11 +187,11 @@ export function BookingSection() {
                           );
                       })}
                   </div>
-                  
+
                   {/* ПОВІДОМЛЕННЯ ПРО ГРАФІК */}
                   <div className="mt-5 pt-3 border-t border-black/20">
                       <p className="text-black text-[11px] font-black uppercase tracking-[1.5px]">
-                         Tidsplanen gjelder fra 7. august 2026
+                         {tr(lang, "Tidsplanen gjelder fra 7. august 2026", "The schedule applies from 7 August 2026", "Розклад діє з 7 серпня 2026")}
                       </p>
                   </div>
               </div>
@@ -190,19 +199,19 @@ export function BookingSection() {
               {/* ПОЛЯ ВВОДУ */}
               <div className="flex flex-col gap-3 mt-2">
                 <input type="text" placeholder="Galyna Gerasymenko" value={name} onChange={(e) => handleChange("name", e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
-                <input type="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
+                <input type="email" placeholder={tr(lang, "navn@eksempel.no", "name@example.com", "name@example.com")} value={email} onChange={(e) => handleChange("email", e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
                 <input type="tel" placeholder="+47 900 00 000" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-14 px-6 bg-white/70 border border-white/80 rounded-full text-black font-semibold text-base outline-none focus:border-black/50 transition-all placeholder:text-black/60 shadow-inner" />
-                
-                <button 
+
+                <button
                   disabled={buttonState.disabled || isSubmitting}
                   onClick={executeSubmit}
                   className={`h-14 w-full rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 transition-all duration-300 mt-2
-                  ${buttonState.disabled || isSubmitting 
-                    ? 'bg-black/10 text-red-600 border border-black/10 cursor-not-allowed' 
-                    : 'bg-black text-white hover:scale-[1.02] active:scale-95 shadow-xl' 
+                  ${buttonState.disabled || isSubmitting
+                    ? 'bg-black/10 text-red-600 border border-black/10 cursor-not-allowed'
+                    : 'bg-black text-white hover:scale-[1.02] active:scale-95 shadow-xl'
                   }`}
                 >
-                  {isSubmitting ? "Sender..." : buttonState.label}
+                  {isSubmitting ? tr(lang, "Sender...", "Sending...", "Надсилання...") : buttonState.label}
                   <ArrowRight className={`w-5 h-5 transition-colors ${buttonState.disabled ? 'text-red-600' : 'text-[#22c55e]'}`} />
                 </button>
               </div>
@@ -214,22 +223,22 @@ export function BookingSection() {
                 <div className="flex flex-col items-center justify-center flex-1 relative z-10 w-full">
                   <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
                   <h3 className="text-6xl md:text-7xl font-black text-black leading-none mb-4 tracking-tighter">
-                    Takk!
+                    {tr(lang, "Takk!", "Thank you!", "Дякуємо!")}
                   </h3>
-                  <p className="text-black font-bold text-xl mb-8">Din prøvetime er booket:</p>
+                  <p className="text-black font-bold text-xl mb-8">{tr(lang, "Din prøvetime er booket:", "Your trial class is booked:", "Ваше пробне заняття заброньовано:")}</p>
                   <div className="bg-white/60 rounded-[32px] py-8 px-10 border border-white/80 shadow-sm w-full max-w-md">
                     <span className="text-black font-black text-2xl md:text-3xl block mb-2">{finalDetails.day}</span>
-                    <span className="text-black/90 font-bold text-xl block tracking-widest leading-none">kl. {finalDetails.time}</span>
+                    <span className="text-black/90 font-bold text-xl block tracking-widest leading-none">{tr(lang, "kl.", "at", "о")} {finalDetails.time}</span>
                   </div>
                 </div>
-                
+
                 <div className="w-full mt-6 relative z-10">
-                  <button 
+                  <button
                     onClick={handleReset}
                     className="h-14 w-full bg-black text-white rounded-full font-black uppercase text-xs tracking-[2px] flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
                   >
                     <Check className="w-5 h-5 text-[#22c55e]" />
-                    Bestill en ny time
+                    {tr(lang, "Bestill en ny time", "Book another class", "Забронювати ще одне заняття")}
                   </button>
                 </div>
           </div>
@@ -246,8 +255,8 @@ function BookingButton({ label, activeLabel, activeColor, icon, isActive, onClic
       disabled={disabled}
       onClick={onClick}
       className={`relative w-full h-[60px] rounded-full border transition-all duration-300 flex items-center justify-center gap-3 px-6 overflow-hidden group
-      ${isActive 
-        ? 'bg-white text-black border-white shadow-[0_5px_15px_rgba(0,0,0,0.1)]' 
+      ${isActive
+        ? 'bg-white text-black border-white shadow-[0_5px_15px_rgba(0,0,0,0.1)]'
         : 'bg-white/40 text-black border-white/60 hover:bg-white/60 active:scale-95'
       } ${disabled ? 'opacity-40 grayscale cursor-not-allowed' : 'cursor-pointer'}`}
     >
