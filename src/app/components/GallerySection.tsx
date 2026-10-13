@@ -9,14 +9,15 @@ import { trackEvent } from "./track"; // [GOOGLE ADS] події
 // Фото має бути горизонтальне 16:9 — на телефоні воно саме обріжеться під вертикальну картку,
 // на комп'ютері показується повністю (16:9). Перелистування — курсором (перетягнути) або пальцем.
 // Натискання на фото відкриває його на весь екран (хрестик, стрілки, Esc, свайп).
-// Зараз у `src` — GIF із плавним переливанням градієнтів (public/studio-1..4.gif), поверх нього великий номер.
-// Коли будуть фото — заміни шлях і постав SHOW_NUMBERS = false.
+// Зараз замість фото — плавний градієнт, що переливається (чистий CSS, без файлів: швидко і без GIF).
+// Коли будуть фото: додай файли у public/ у форматі WebP (напр. /studio-1.webp), впиши шлях у `src`
+// і постав SHOW_NUMBERS = false.
 const SHOW_NUMBERS = true;
 const slides = [
-  { id: 1, src: "/studio-1.gif", alt: "Dansestudio i Bergen – salen sett fra inngangen" },
-  { id: 2, src: "/studio-2.gif", alt: "Dansestudio i Bergen – speilvegg og gulv" },
-  { id: 3, src: "/studio-3.gif", alt: "Dansestudio i Bergen – lokalet under en time" },
-  { id: 4, src: "/studio-4.gif", alt: "Dansestudio i Bergen – garderobe og oppholdsrom" },
+  { id: 1, src: "", grad: ["#ff7a59", "#ff3d71", "#7b4dff"], alt: "Dansestudio i Bergen – salen sett fra inngangen" },
+  { id: 2, src: "", grad: ["#22c55e", "#00bfff", "#0047ab"], alt: "Dansestudio i Bergen – speilvegg og gulv" },
+  { id: 3, src: "", grad: ["#fbbc05", "#f97316", "#ea4335"], alt: "Dansestudio i Bergen – lokalet under en time" },
+  { id: 4, src: "", grad: ["#7b4dff", "#ff69b4", "#fbbc05"], alt: "Dansestudio i Bergen – garderobe og oppholdsrom" },
 ];
 
 const TXT = {
@@ -26,9 +27,13 @@ const TXT = {
 } as const;
 
 function Slide({ s }: { s: (typeof slides)[number] }) {
-  const [failed, setFailed] = useState(false); // якщо файлу немає — чорний слайд
+  const [failed, setFailed] = useState(false); // якщо файлу фото немає — лишається градієнт
+  const g = s.grad;
   return (
-    <div role="img" aria-label={s.alt} className="relative w-full h-full bg-black flex items-center justify-center">
+    <div role="img" aria-label={s.alt} className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
+      <style>{`@keyframes kfaGrad { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }`}</style>
+      {/* градієнт, що плавно переливається (CSS — без GIF) */}
+      <div className="absolute inset-0" style={{ background: `linear-gradient(120deg, ${g[0]}, ${g[1]}, ${g[2]}, ${g[0]})`, backgroundSize: "300% 300%", animation: "kfaGrad 8s ease-in-out infinite" }} />
       {s.src && !failed && (
         <img src={s.src} alt="" draggable={false} loading="lazy" decoding="async" onError={() => setFailed(true)} className="absolute inset-0 w-full h-full object-cover" />
       )}

@@ -93,6 +93,12 @@ function InstallApp({ lang = "no" }: { lang?: string }) {
   );
 }
 
+// Картинка у сучасному форматі WebP; якщо .webp-файлу ще немає в репозиторії assets — автоматично береться старий PNG/JPG.
+function WebpImg({ base, fallbackExt, alt, className }: { base: string; fallbackExt: string; alt: string; className?: string }) {
+  const [src, setSrc] = useState(`${base}.webp`);
+  return <img src={src} alt={alt} className={className} loading="lazy" decoding="async" onError={() => { const old = `${base}.${fallbackExt}`; if (src !== old) setSrc(old); }} />;
+}
+
 // порядок перемикання: NO → EN → UA → NO
 const NEXT: Record<Lang, Lang> = { no: "en", en: "ua", ua: "no" };
 
@@ -268,8 +274,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-2.5">
           {/* ЛОГОТИПИ (повернуто) */}
           <div className="flex flex-row items-center justify-center gap-5 md:gap-8 mb-1">
-            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png" alt="Koreografi for alle – logo" className="footer-logo" loading="lazy" decoding="async" />
-            <img src="https://cdn.jsdelivr.net/gh/synectica/assets/frivilliglogoforkfacopy.jpg" alt="Møllaren Frivilligsentral – logo" className="footer-logo" loading="lazy" decoding="async" />
+            <WebpImg base="https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa" fallbackExt="png" alt="Koreografi for alle – logo" className="footer-logo" />
+            <WebpImg base="https://cdn.jsdelivr.net/gh/synectica/assets/frivilliglogoforkfacopy" fallbackExt="jpg" alt="Møllaren Frivilligsentral – logo" className="footer-logo" />
           </div>
           <p className="font-bebas text-white uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-50 text-[8px] sm:text-[11px] md:text-[16px] leading-none whitespace-nowrap">
             Koreografi for alle {tr(lang, "med", "with", "з")} Galyna Gerasymenko — © {new Date().getFullYear()}
