@@ -8,6 +8,63 @@ export function Hero({ lang = "no" }: { lang?: string }) {
   // Сайт починається з червоного кольору (true)
   const [isRedOverlayVisible, setIsRedOverlayVisible] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const barRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const addrRef = useRef<HTMLDivElement>(null);
+  const descRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [addrTop, setAddrTop] = useState<number | string>("55%");
+
+  // адреса стоїть рівно посередині між низом логотипа (у початковому положенні) і верхом опису кнопок
+  useEffect(() => {
+    const place = () => {
+      const logo = logoRef.current, desc = descRef.current, sec = sectionRef.current, addr = addrRef.current;
+      if (!logo || !desc || !sec || !addr) return;
+      const secTop = sec.getBoundingClientRect().top;
+      const logoTop0 = parseFloat(getComputedStyle(logo).top) + window.innerHeight * 0.35; // початкове положення логотипа (translateY 35vh)
+      const logoBottom = logoTop0 + logo.offsetHeight;
+      const descTop = desc.getBoundingClientRect().top - secTop;
+      const ah = addr.offsetHeight;
+      const mid = (logoBottom + descTop) / 2 - ah / 2;
+      setAddrTop(Math.round(Math.max(logoBottom + 8, Math.min(mid, descTop - ah - 8))));
+    };
+    place();
+    window.addEventListener("resize", place);
+    (document as any).fonts?.ready?.then(place);
+    const t = setTimeout(place, 600);
+    return () => { window.removeEventListener("resize", place); clearTimeout(t); };
+  }, [lang]);
+
+  // висота логотипа у «стиснутому» вигляді (scale 0.4) → висота смужки; від неї центрується і прапорець мови
+  useEffect(() => {
+    const measure = () => {
+      const el = logoRef.current;
+      if (!el) return;
+      const hgt = Math.round(el.offsetHeight * 0.4);
+      if (hgt > 0) document.documentElement.style.setProperty("--bar-row-h", `${hgt}px`);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    (document as any).fonts?.ready?.then(measure);
+    const t = setTimeout(measure, 600);
+    return () => { window.removeEventListener("resize", measure); clearTimeout(t); };
+  }, [lang]);
+  const [pinned, setPinned] = useState<number>(-1);   // який заголовок зараз «застиг» угорі (−1 = логотип)
+  const dirRef = useRef<1 | -1>(1);                   // напрямок скролу: звідки «в'їжджає» нова назва
+
+  // заголовки блоків, що по черзі застигають угорі на місці логотипа: [селектор, індекс, коротка назва]
+  const PINS: [string, number, string][] = [
+    ["#bio h2", 0, tr(lang, "Instruktøren", "The instructor", "Інструкторка")],
+    ["#pricing h2", 0, tr(lang, "Priser", "Prices", "Ціни")],
+    ["#booking h2", 0, tr(lang, "Book prøvetime", "Book a trial", "Запис")],
+    ["#contact h2", 0, tr(lang, "Kontakt", "Contact", "Контакти")],
+    ["#info h2", 0, tr(lang, "Hva du trenger", "What to bring", "Що взяти")],
+    ["#info h2", 1, tr(lang, "Slik finner du oss", "How to find us", "Як знайти двері")],
+    ["#location h2", 0, tr(lang, "Finn oss", "Find us", "Де ми")],
+    ["#studio h2", 0, tr(lang, "Dansestudio", "Dance studio", "Студія")],
+  ];
+  const pinsRef = useRef(PINS);
+  pinsRef.current = PINS;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +72,16 @@ export function Hero({ lang = "no" }: { lang?: string }) {
       window.requestAnimationFrame(() => {
         const progress = Math.min(window.scrollY / maxScroll, 1);
         setScrollProgress(progress);
+        // Заголовок блоку, що виїжджає знизу, піднімається під червону смужку і «застигає» на місці логотипа;
+        // коли під смужку заїжджає наступний — він замінює попередній.
+        const barBottom = barRef.current?.getBoundingClientRect().bottom ?? 90;
+        let current = -1;
+        pinsRef.current.forEach(([sel, idx], i) => {
+          const el = document.querySelectorAll(sel)[idx] as HTMLElement | undefined;
+          if (el && el.getBoundingClientRect().top <= barBottom - 6) current = i;
+        });
+        if (window.scrollY <= 200) current = -1;
+        setPinned((prev) => { if (prev !== current) dirRef.current = current > prev ? 1 : -1; return current; });
       });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -63,7 +130,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
   const translateY = 35 * (1 - scrollProgress);
 
   return (
-    <section className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
+    <section ref={sectionRef} className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden bg-black text-white">
       <style>{`
         .font-bebas { font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace; }
         .fixed-bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; z-index: 1; pointer-events: none; }
@@ -76,6 +143,13 @@ export function Hero({ lang = "no" }: { lang?: string }) {
           -webkit-font-smoothing: antialiased;
         }
 
+        .sticky-bar { --safe-top: 4px; position: fixed; top: 0; left: 0; width: 100%; z-index: 30; pointer-events: none;
+          height: calc(var(--safe-top) + var(--bar-row-h, 30px) + 10px); background: transparent; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.18); box-shadow: none; transition: opacity 0.2s linear; }
+        @media (max-width: 767px) { .sticky-bar { --safe-top: calc(max(env(safe-area-inset-top, 0px), 48px) + 4px); } }
+        @media (min-width: 768px) { .sticky-bar { --safe-top: 28px; } }
+        .pin-title { animation: pinIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        @keyframes pinIn { from { opacity: 0; transform: translateY(calc(var(--pin-dir, 1) * 28px)); } to { opacity: 1; transform: translateY(0); } }
+
         .hero-title { font-size: 10.8vw !important; line-height: 0.8; display: block; width: 100%; text-align: center;
           /* курсив гарантовано: Bebas Neue не має курсивної гарнітури, тому нахил задано явно (як в оригінальному логотипі) */
           font-style: normal !important; transform: skewX(-14deg); transform-origin: 50% 100%; }
@@ -84,6 +158,11 @@ export function Hero({ lang = "no" }: { lang?: string }) {
         /* на телефоні брендинг при скролі зупиняється під «бровами» айфона (вирізом / Dynamic Island) */
         @media (max-width: 767px) {
           .sticky-title-container { --safe-top: calc(max(env(safe-area-inset-top, 0px), 48px) + 4px); }
+        }
+
+        /* на комп'ютері логотип, що піднімається за скролом, зупиняється трохи нижче */
+        @media (min-width: 768px) {
+          .sticky-title-container { --safe-top: 28px; }
         }
 
         @media (min-width: 1024px) {
@@ -134,34 +213,54 @@ export function Hero({ lang = "no" }: { lang?: string }) {
         </p>
       </div>
 
-      <div className="sticky-title-container" style={{
+      {/* ЧЕРВОНА СМУЖКА під логотипом/назвою: з'являється, коли логотип піднявся вгору */}
+      <div ref={barRef} className="sticky-bar" style={{ opacity: Math.max(0, Math.min(1, (scrollProgress - 0.75) / 0.25)) }} />
+
+      <div ref={logoRef} className="sticky-title-container" style={{
         top: "var(--safe-top)",
         transform: `translateY(${translateY}vh) scale(${textScale}) translateZ(0)`,
         transformOrigin: "top center",
         backfaceVisibility: "hidden"
       }}>
-        <div className="w-full max-w-6xl px-4">
+        <div className="w-full max-w-6xl px-4 relative" style={{ ["--pin-dir" as any]: dirRef.current }}>
+          {/* НАЗВА БЛОКУ: застигає на місці логотипа; наступна заміняє її (напрямок залежить від скролу) */}
+          {pinned >= 0 && (
+            <div key={pinned} aria-hidden="true" className="pin-title absolute inset-x-0 top-0 bottom-0 px-4 flex flex-col items-center justify-center">
+              <p className="hero-title logo-font font-bebas font-bold uppercase text-white italic whitespace-nowrap">{PINS[pinned][2]}</p>
+              <p className="hero-subtitle logo-font font-bebas opacity-90 uppercase mt-3">KOREOGRAFI FOR ALLE</p>
+            </div>
+          )}
+          <div style={{ opacity: pinned >= 0 ? 0 : 1, transform: pinned >= 0 ? "translateY(-14px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
           {/* [SEO] єдиний H1 доповнено "dansetimer i Bergen" (візуально не змінюється) */}
           <h1 className="hero-title logo-font font-bebas font-bold uppercase text-white italic">KOREOGRAFI FOR ALLE<span className="sr-only"> – dansetimer i Bergen</span></h1>
           <p className="hero-subtitle logo-font font-bebas opacity-90 uppercase mt-3">{tr(lang, "med", "with", "з")} GALYNA GERASYMENKO</p>
+          </div>
         </div>
       </div>
 
-      <div className="relative z-[10] flex-1 flex flex-col items-center px-4 justify-end pb-12">
-        <div className="flex flex-col items-center gap-10 w-full">
-          <div className="text-center text-sm md:text-lg text-white/80 leading-relaxed font-normal">
-            <p>{tr(lang, "Er du ny?", "New here?", "Ви тут уперше?")} <span className="text-[#22c55e] font-semibold">{tr(lang, "Book gratis prøvetime", "Book a free trial class", "Забронюйте безкоштовне пробне заняття")}</span></p>
-            <p>{tr(lang, "Eksisterende kunde?", "Existing customer?", "Вже займаєтесь?")} <span className="text-[#f97316] font-semibold">{tr(lang, "Betal direkte", "Pay directly", "Оплатіть напряму")}</span></p>
-            {/* [SEO/Ads] адреса одразу на першому екрані */}
+      {/* АДРЕСА: по центру по вертикалі між логотипом і описом кнопок (позиція рахується з реальних розмірів) */}
+      <div ref={addrRef} className="absolute inset-x-0 z-[10] px-4 flex justify-center" style={{ top: addrTop }}>
+        {/* [SEO/Ads] адреса одразу на першому екрані */}
             <button
               onClick={() => {
                 trackEvent("click_directions", { location: "hero" });
                 document.querySelector('#location')?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="mt-3 underline underline-offset-4 decoration-white/30 hover:decoration-white"
+              className="underline underline-offset-4 decoration-white/30 hover:decoration-white text-sm md:text-lg text-white/80 text-center"
             >
-              📍 Wolffs gate 12, Møllaren Frivilligsentral, Bergen
+              {/* пін локації: проста біла іконка без обводки */}
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" className="inline-block align-[-3px] mr-2" fill="#fff">
+                <path fillRule="evenodd" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+              </svg>
+              Wolffs gate 12, Møllaren Frivilligsentral, Bergen
             </button>
+      </div>
+
+      <div className="relative z-[10] flex-1 flex flex-col items-center px-4 justify-end pb-12">
+        <div className="flex flex-col items-center gap-10 w-full">
+          <div ref={descRef} className="text-center text-sm md:text-lg text-white/80 leading-relaxed font-normal">
+            <p>{tr(lang, "Er du ny?", "New here?", "Ви тут уперше?")} <span className="text-[#22c55e] font-semibold">{tr(lang, "Book gratis prøvetime", "Book a free trial class", "Забронюйте безкоштовне пробне заняття")}</span></p>
+            <p>{tr(lang, "Eksisterende kunde?", "Existing customer?", "Вже займаєтесь?")} <span className="text-[#f97316] font-semibold">{tr(lang, "Betal direkte", "Pay directly", "Оплатіть напряму")}</span></p>
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 justify-center items-center w-full max-w-2xl">

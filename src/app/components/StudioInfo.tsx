@@ -78,24 +78,24 @@ export function StudioInfo({ lang }: { lang: string }) {
           </div>
         </div>
 
-        {/* SLIK FINNER DU OSS */}
-        <div className="w-full flex flex-col items-center">
-          <h2 className="text-2xl md:text-5xl font-bold text-white mb-3 tracking-tight text-center drop-shadow-lg">{t.findTitle}</h2>
-          <p className="text-sm md:text-xl text-white/80 text-center mb-5 md:mb-8 flex items-center gap-2">
-            <MapPin className="w-5 h-5" /> {t.findSub}
+        {/* SLIK FINNER DU OSS — один цільний скляний блок, фото всередині (без окремих рамок і без обрізання) */}
+        <div className="w-full bg-white/10 backdrop-blur-2xl rounded-[28px] md:rounded-[40px] border border-white/20 shadow-2xl p-4 md:p-8 flex flex-col items-center [transform:translateZ(0)] [isolation:isolate]">
+          <h2 className="text-2xl md:text-5xl font-bold text-white mb-2 md:mb-3 tracking-tight text-center drop-shadow-lg">{t.findTitle}</h2>
+          <p className="text-xs md:text-xl text-white/80 text-center mb-4 md:mb-8 flex items-center justify-center gap-2">
+            <MapPin className="w-4 h-4 md:w-5 md:h-5 shrink-0" /> <span>{t.findSub}</span>
           </p>
           {/* TODO: заміни чорні плейсхолдери на фото (src) і додай короткий опис дверей */}
-          <div className="w-full flex md:grid md:grid-cols-3 gap-4 overflow-x-auto snap-x snap-mandatory md:overflow-visible" style={{ scrollbarWidth: "none" }}>
+          <div className="w-full grid grid-cols-3 gap-2 md:gap-4">
             {t.steps.map((label, i) => (
-              <figure key={i} className="snap-center shrink-0 w-[70%] md:w-auto bg-white/10 backdrop-blur-2xl rounded-[32px] border border-white/20 shadow-2xl p-3">
+              <figure key={i} className="flex flex-col items-center">
                 <div
                   role="img"
                   aria-label={`${label} – ${t.stepAlt}`}
-                  className="aspect-video rounded-[22px] bg-black flex items-center justify-center"
+                  className="w-full aspect-[3/4] md:aspect-video rounded-[16px] md:rounded-[22px] bg-black flex items-center justify-center overflow-hidden"
                 >
-                  <span className="font-bebas text-white text-6xl md:text-8xl leading-none select-none">{i + 1}</span>
+                  <span className="font-bebas text-white text-4xl md:text-8xl leading-none select-none">{i + 1}</span>
                 </div>
-                <figcaption className="text-center text-white font-bold uppercase tracking-widest text-xs py-4">{label}</figcaption>
+                <figcaption className="text-center text-white font-bold uppercase tracking-wider md:tracking-widest text-[9px] md:text-xs pt-2 md:pt-4 leading-tight">{label}</figcaption>
               </figure>
             ))}
           </div>

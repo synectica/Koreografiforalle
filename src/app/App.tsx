@@ -96,37 +96,52 @@ function InstallApp({ lang = "no" }: { lang?: string }) {
 // порядок перемикання: NO → EN → UA → NO
 const NEXT: Record<Lang, Lang> = { no: "en", en: "ua", ua: "no" };
 
+// Мінімалістичні прапори: плоскі, повноколірні, без обводки й тіней (SVG, розтягуються на весь значок)
 function FlagFace({ l }: { l: Lang }) {
-  if (l === "ua") return (<><div className="h-1/2 bg-[#0057B7]" /><div className="h-1/2 bg-[#FFD700]" /></>);
-  if (l === "en") return <div className="w-full h-full" style={{ background: UK_ICON_BG }} />;
+  const svg = { className: "block w-full h-full", preserveAspectRatio: "none" as const, "aria-hidden": true };
+  if (l === "ua") return (
+    <svg viewBox="0 0 3 2" {...svg}><rect width="3" height="1" fill="#0057B7" /><rect y="1" width="3" height="1" fill="#FFD500" /></svg>
+  );
+  if (l === "en") return (
+    <svg viewBox="0 0 60 30" {...svg}>
+      <rect width="60" height="30" fill="#012169" />
+      <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6" />
+      <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" strokeWidth="2.4" />
+      <path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10" />
+      <path d="M30,0 V30 M0,15 H60" stroke="#C8102E" strokeWidth="6" />
+    </svg>
+  );
   return (
-    <>
-      <div className="absolute top-[37.5%] h-[25%] w-full bg-white" /><div className="absolute left-[27.27%] w-[18.18%] h-full bg-white" /><div className="absolute top-[43.75%] h-[12.5%] w-full bg-[#00205B] z-[2]" /><div className="absolute left-[31.81%] w-[9.09%] h-full bg-[#00205B] z-[2]" />
-    </>
+    <svg viewBox="0 0 22 16" {...svg}>
+      <rect width="22" height="16" fill="#BA0C2F" />
+      <path d="M8,0 V16 M0,8 H22" stroke="#fff" strokeWidth="4" />
+      <path d="M8,0 V16 M0,8 H22" stroke="#00205B" strokeWidth="2" />
+    </svg>
   );
 }
 
-const FLAGS: { l: Lang; label: string }[] = [
-  { l: "no", label: "Norsk" },
-  { l: "en", label: "English" },
-  { l: "ua", label: "Українська" },
-];
+const FLAG_BG: Record<Lang, string> = { no: "#BA0C2F", en: "#012169", ua: "#0057B7" }; // суцільна підложка — прапор ніколи не просвічує
 
+// ОДИН прапорець: по натисканню перегортається на наступну мову (NO → EN → UA → NO), хвиля розходиться від нього
 function FlagSwitch({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<Lang | "">("");
-  const [origin, setOrigin] = useState({ x: 0, y: 30 });       // звідки розходиться хвиля — центр натиснутого прапорця
-  const [spin, setSpin] = useState<Record<string, number>>({ no: 0, en: 0, ua: 0 }); // оберт кожного прапорця
+  const [origin, setOrigin] = useState({ x: 0, y: 30 });
+  // двосторонній значок: на видимому боці — поточна мова, на прихованому — наступна; кожне перемикання крутить на 180°
+  const [faces, setFaces] = useState<[Lang, Lang]>([lang, NEXT[lang]]);
+  const [rot, setRot] = useState(0);
 
-  const handleSwitch = (l: Lang, el: HTMLElement) => {
+  const handleSwitch = (el: HTMLElement) => {
     if (isAnimating) return;
-    setSpin((s) => ({ ...s, [l]: s[l] + 360 }));          // прапорець крутиться при натисканні
-    if (l === lang) return;                               // та сама мова — лише оберт
+    const nextLang = NEXT[lang];
     const r = el.getBoundingClientRect();
     setOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-    setActiveOverlay(l);
+    const hidden = (rot / 180) % 2 === 0 ? 1 : 0;
+    setFaces((f) => { const n: [Lang, Lang] = [f[0], f[1]]; n[hidden] = nextLang; return n; });
+    setRot((x) => x + 180);
+    setActiveOverlay(nextLang);
     setIsAnimating(true);
-    setTimeout(() => setLang(l), 170);
+    setTimeout(() => setLang(nextLang), 170);
     setTimeout(() => {
       setIsAnimating(false);
       setTimeout(() => setActiveOverlay(""), 300);
@@ -134,7 +149,7 @@ function FlagSwitch({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void 
   };
 
   const getOverlayBackground = () => {
-    if (activeOverlay === "ua") return "linear-gradient(to bottom, #0057B7 50%, #FFD700 50%)";
+    if (activeOverlay === "ua") return "linear-gradient(to bottom, #0057B7 50%, #FFD500 50%)";
     if (activeOverlay === "en") return UK_HALF_BG;
     if (activeOverlay === "no") return `linear-gradient(to bottom, transparent calc(50% - 4vh), #00205B calc(50% - 4vh), #00205B calc(50% + 4vh), transparent calc(50% + 4vh)), linear-gradient(to right, transparent calc(35% - 4vh), #00205B calc(35% - 4vh), #00205B calc(35% + 4vh), transparent calc(35% + 4vh)), linear-gradient(to bottom, transparent calc(50% - 8vh), white calc(50% - 8vh), white calc(50% + 8vh), transparent calc(50% + 8vh)), linear-gradient(to right, transparent calc(35% - 8vh), white calc(35% - 8vh), white calc(35% + 8vh), transparent calc(35% + 8vh)), #BA0C2F`;
     return "transparent";
@@ -152,34 +167,20 @@ function FlagSwitch({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void 
           background: getOverlayBackground(),
         }}
       />
-      {/* три прапорці поруч: NO · EN · UA */}
-      <div
-        className="fixed z-[13000] flex items-center gap-1"
-        style={{ top: "calc(max(env(safe-area-inset-top, 0px), 0px) + 12px)", right: "12px" }}
-        role="group"
+      <button
+        type="button"
+        onClick={(e) => handleSwitch(e.currentTarget)}
         aria-label="Language: NO / EN / UA"
+        className="fixed z-[13000] p-2 cursor-pointer active:scale-90 transition-transform !opacity-100"
+        style={{ opacity: 1, top: "calc(var(--flag-safe) + var(--bar-row-h, 30px) / 2 - 18px)", right: "10px" }} // по вертикалі — по центру червоної смужки, на одній лінії з логотипом
       >
-        {FLAGS.map(({ l, label }) => (
-          <button
-            key={l}
-            type="button"
-            onClick={(e) => handleSwitch(l, e.currentTarget)}
-            aria-label={label}
-            aria-pressed={lang === l}
-            className="p-1.5 cursor-pointer transition-all duration-300 active:scale-90"
-            style={{ opacity: lang === l ? 1 : 0.55, transform: lang === l ? "scale(1.08)" : "scale(1)" }}
-          >
-            <span className="block w-[25.3px] h-[18.4px] relative [perspective:600px]">
-              <span
-                className={`block w-full h-full relative rounded-[2px] overflow-hidden shadow-lg border ${lang === l ? "border-white/80" : "border-white/10"} ${l === "no" ? "bg-[#BA0C2F]" : ""}`}
-                style={{ transform: `rotateY(${spin[l]}deg)`, transition: "transform 0.45s ease" }}
-              >
-                <FlagFace l={l} />
-              </span>
-            </span>
-          </button>
-        ))}
-      </div>
+        <span className="block w-[28px] h-[20px] relative [perspective:600px]">
+          <span className="block w-full h-full relative [transform-style:preserve-3d]" style={{ transform: `rotateY(${rot}deg)`, transition: "transform 0.25s ease" }}>
+            <span className="absolute inset-0 [backface-visibility:hidden] rounded-[3px] overflow-hidden" style={{ opacity: 1, background: FLAG_BG[faces[0]] }}><FlagFace l={faces[0]} /></span>
+            <span className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-[3px] overflow-hidden" style={{ opacity: 1, background: FLAG_BG[faces[1]] }}><FlagFace l={faces[1]} /></span>
+          </span>
+        </span>
+      </button>
     </>
   );
 }
@@ -222,6 +223,8 @@ export default function App() {
         /* Єдиний шрифт сайту: IBM Plex Mono (є латиниця + кирилиця, тож укр/норв/англ виглядають однаково) */
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&subset=cyrillic,latin&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+        :root { --flag-safe: calc(max(env(safe-area-inset-top, 0px), 48px) + 4px); }
+        @media (min-width: 768px) { :root { --flag-safe: 28px; } }
         main, main *, input, textarea, button { font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace !important; }
         .footer-logo { height: 52px; width: auto; object-fit: contain; border-radius: 4px; transition: transform 0.3s ease; }
         .footer-logo:hover { transform: translateY(-2px) scale(1.02); }
