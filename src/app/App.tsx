@@ -172,7 +172,7 @@ function FlagSwitch({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void 
         onClick={(e) => handleSwitch(e.currentTarget)}
         aria-label="Language: NO / EN / UA"
         className="fixed z-[13000] p-2 cursor-pointer active:scale-90 transition-transform !opacity-100"
-        style={{ opacity: 1, top: "calc(var(--flag-safe) + var(--bar-row-h, 30px) / 2 - 18px)", right: "10px" }} // по вертикалі — по центру червоної смужки, на одній лінії з логотипом
+        style={{ opacity: 1, top: "calc(var(--flag-safe) + var(--bar-row-h, 30px) / 2 - 18px)", right: "6px" }} // по вертикалі — по центру червоної смужки, на одній лінії з логотипом
       >
         <span className="block w-[28px] h-[20px] relative [perspective:600px]">
           <span className="block w-full h-full relative [transform-style:preserve-3d]" style={{ transform: `rotateY(${rot}deg)`, transition: "transform 0.25s ease" }}>
@@ -223,7 +223,8 @@ export default function App() {
         /* Єдиний шрифт сайту: IBM Plex Mono (є латиниця + кирилиця, тож укр/норв/англ виглядають однаково) */
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&subset=cyrillic,latin&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-        :root { --flag-safe: calc(max(env(safe-area-inset-top, 0px), 48px) + 4px); }
+        /* центр острова (айфон) / отвору камери (Android): ≈55% від safe-area; запасне значення 48px — для прев'ю */
+        :root { --island-c: calc(max(env(safe-area-inset-top, 0px), 48px) * 0.55); --flag-safe: max(2px, calc(var(--island-c) - var(--bar-row-h, 30px) / 2)); }
         @media (min-width: 768px) { :root { --flag-safe: 28px; } }
         main, main *, input, textarea, button { font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace !important; }
         .footer-logo { height: 52px; width: auto; object-fit: contain; border-radius: 4px; transition: transform 0.3s ease; }

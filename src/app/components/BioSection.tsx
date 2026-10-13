@@ -64,7 +64,7 @@ export function BioSection({ lang = "no" }: { lang?: string }) {
         }
 
         /* під брови/логотип: відступ зверху = safe-area + висота логотипу */
-        .bio-section { padding-top: calc(max(env(safe-area-inset-top, 0px), 48px) + 52px); min-height: 100dvh; }
+        .bio-section { padding-top: calc(max(env(safe-area-inset-top, 0px), 48px) * 1.1 + 36px); min-height: 100dvh; }
         @media (min-width: 768px) { .bio-section { padding-top: 5rem; min-height: 0; } }
         /* фото підлаштовується під висоту екрана */
         .bio-photo-container { height: clamp(190px, 31dvh, 350px); }

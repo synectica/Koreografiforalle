@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { trackEvent } from "./track"; // [GOOGLE ADS] події конверсій
 import { tr } from "./i18n";
 
@@ -11,6 +11,31 @@ export function Hero({ lang = "no" }: { lang?: string }) {
   const barRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const addrRef = useRef<HTMLDivElement>(null);
+  const pinTextRef = useRef<HTMLParagraphElement>(null);
+  const [fit, setFit] = useState(1); // стиснення довгої назви (напр. «ІНСТРУКТОРКА» з запасним шрифтом), щоб вона не заходила на острів
+  const [vw, setVw] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 390);
+  const [notchHalf, setNotchHalf] = useState(74); // півширина «острова/брови» + запас, px
+  const isPhone = vw < 768;
+  const zoneWPre = Math.max(60, vw / 2 - notchHalf - 12);
+  // зона зліва від острова, де стоїть логотип/назва: від 12px до (центр − півширина острова)
+  const zoneW = Math.max(60, vw / 2 - notchHalf - 12);
+  const zoneC = 12 + zoneW / 2;
+
+  useEffect(() => {
+    const onR = () => {
+      setVw(window.innerWidth);
+      // safe-area зверху: ≈59 і більше — Dynamic Island (вузький); 1–54 — стара широка «брова»; 0 — Android/прев'ю (острів ≈ як у новому айфоні)
+      const probe = document.createElement("div");
+      probe.style.cssText = "position:fixed;top:0;left:0;padding-top:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none";
+      document.body.appendChild(probe);
+      const inset = probe.offsetHeight;
+      document.body.removeChild(probe);
+      setNotchHalf(inset > 0 && inset < 55 ? 112 : 74);
+    };
+    onR();
+    window.addEventListener("resize", onR);
+    return () => window.removeEventListener("resize", onR);
+  }, []);
   const descRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const [addrTop, setAddrTop] = useState<number | string>("55%");
@@ -50,7 +75,18 @@ export function Hero({ lang = "no" }: { lang?: string }) {
     return () => { window.removeEventListener("resize", measure); clearTimeout(t); };
   }, [lang]);
   const [pinned, setPinned] = useState<number>(-1);   // який заголовок зараз «застиг» угорі (−1 = логотип)
-  const dirRef = useRef<1 | -1>(1);                   // напрямок скролу: звідки «в'їжджає» нова назва
+  const dirRef = useRef<1 | -1>(1);
+
+  // підігнати ширину назви блоку під вільну зону зліва від острова (на телефонах)
+  useLayoutEffect(() => {
+    const el = pinTextRef.current;
+    if (!el || !isPhone) { setFit(1); return; }
+    el.style.transform = "skewX(-14deg)";
+    const natural = el.scrollWidth;                 // реальна ширина тексту (без стиснення)
+    const room = zoneWPre / 0.4;                    // доступна ширина до зменшення у 0.4
+    setFit(natural > room ? Math.max(0.35, room / natural) : 1);
+    el.style.transform = "";
+  }, [pinned, lang, isPhone, vw, notchHalf]);                   // напрямок скролу: звідки «в'їжджає» нова назва
 
   // заголовки блоків, що по черзі застигають угорі на місці логотипа: [селектор, індекс, коротка назва]
   const PINS: [string, number, string][] = [
@@ -144,8 +180,9 @@ export function Hero({ lang = "no" }: { lang?: string }) {
         }
 
         .sticky-bar { --safe-top: 4px; position: fixed; top: 0; left: 0; width: 100%; z-index: 30; pointer-events: none;
-          height: calc(var(--safe-top) + var(--bar-row-h, 30px) + 10px); background: transparent; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.18); box-shadow: none; transition: opacity 0.2s linear; }
-        @media (max-width: 767px) { .sticky-bar { --safe-top: calc(max(env(safe-area-inset-top, 0px), 48px) + 4px); } }
+          height: calc(var(--safe-top) + var(--bar-row-h, 30px) + var(--bar-pad-b, 28px)); background: transparent; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.18); box-shadow: none; transition: opacity 0.2s linear; }
+        /* телефон: скляна смужка на висоті острова (від верху екрана), центр смужки = центр острова */
+        @media (max-width: 767px) { .sticky-bar { top: 0; height: max(calc(var(--island-c) * 2), calc(var(--bar-row-h, 30px) + 8px)); } }
         @media (min-width: 768px) { .sticky-bar { --safe-top: 28px; } }
         .pin-title { animation: pinIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
         @keyframes pinIn { from { opacity: 0; transform: translateY(calc(var(--pin-dir, 1) * 28px)); } to { opacity: 1; transform: translateY(0); } }
@@ -156,8 +193,9 @@ export function Hero({ lang = "no" }: { lang?: string }) {
         .hero-subtitle { font-size: 3.3vw !important; letter-spacing: 0.49em !important; display: block; width: 100%; margin-right: -0.49em; text-align: center; }
 
         /* на телефоні брендинг при скролі зупиняється під «бровами» айфона (вирізом / Dynamic Island) */
+        /* ТЕЛЕФОН (айфон з островом/бровами, Android): логотип/назва — ЗЛІВА від острова, прапорець — СПРАВА, на рівні острова */
         @media (max-width: 767px) {
-          .sticky-title-container { --safe-top: calc(max(env(safe-area-inset-top, 0px), 48px) + 4px); }
+          .sticky-title-container { --safe-top: max(2px, calc(var(--island-c) - var(--bar-row-h, 30px) / 2)); }
         }
 
         /* на комп'ютері логотип, що піднімається за скролом, зупиняється трохи нижче */
@@ -218,7 +256,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
 
       <div ref={logoRef} className="sticky-title-container" style={{
         top: "var(--safe-top)",
-        transform: `translateY(${translateY}vh) scale(${textScale}) translateZ(0)`,
+        transform: `translateX(${isPhone ? -(vw / 2 - zoneC) * scrollProgress : 0}px) translateY(${translateY}vh) scale(${textScale}) translateZ(0)`,
         transformOrigin: "top center",
         backfaceVisibility: "hidden"
       }}>
@@ -226,14 +264,14 @@ export function Hero({ lang = "no" }: { lang?: string }) {
           {/* НАЗВА БЛОКУ: застигає на місці логотипа; наступна заміняє її (напрямок залежить від скролу) */}
           {pinned >= 0 && (
             <div key={pinned} aria-hidden="true" className="pin-title absolute inset-x-0 top-0 bottom-0 px-4 flex flex-col items-center justify-center">
-              <p className="hero-title logo-font font-bebas font-bold uppercase text-white italic whitespace-nowrap">{PINS[pinned][2]}</p>
-              <p className="hero-subtitle logo-font font-bebas opacity-90 uppercase mt-3">KOREOGRAFI FOR ALLE</p>
+              <p ref={pinTextRef} className={`hero-title logo-font font-bebas font-bold uppercase text-white italic ${isPhone ? "" : "whitespace-nowrap"}`} style={isPhone ? { maxWidth: zoneW / 0.4, margin: "0 auto", whiteSpace: "nowrap", transform: `skewX(-14deg) scale(${fit})`, transformOrigin: "50% 50%" } : undefined}>{PINS[pinned][2]}</p>
+              <p className="hero-subtitle logo-font font-bebas opacity-90 uppercase mt-3" style={isPhone ? { letterSpacing: "0.2em", marginRight: "-0.2em" } : undefined}>KOREOGRAFI FOR ALLE</p>
             </div>
           )}
           <div style={{ opacity: pinned >= 0 ? 0 : 1, transform: pinned >= 0 ? "translateY(-14px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
           {/* [SEO] єдиний H1 доповнено "dansetimer i Bergen" (візуально не змінюється) */}
           <h1 className="hero-title logo-font font-bebas font-bold uppercase text-white italic">KOREOGRAFI FOR ALLE<span className="sr-only"> – dansetimer i Bergen</span></h1>
-          <p className="hero-subtitle logo-font font-bebas opacity-90 uppercase mt-3">{tr(lang, "med", "with", "з")} GALYNA GERASYMENKO</p>
+          <p className="hero-subtitle logo-font font-bebas opacity-90 uppercase mt-3" style={isPhone ? { letterSpacing: `${0.49 - 0.29 * scrollProgress}em`, marginRight: `${-(0.49 - 0.29 * scrollProgress)}em` } : undefined}>{tr(lang, "med", "with", "з")} GALYNA GERASYMENKO</p>
           </div>
         </div>
       </div>
