@@ -3,8 +3,15 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { trackEvent } from "./track"; // [GOOGLE ADS] події конверсій
 import { tr } from "./i18n";
 
+const VIDEO_SOURCES = [
+  "/KFA.mp4",
+  "https://raw.githubusercontent.com/synectica/assets/main/KFA.mp4",
+  "https://cdn.jsdelivr.net/gh/synectica/assets/KFA.mp4",
+];
+
 export function Hero({ lang = "no" }: { lang?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [srcIdx, setSrcIdx] = useState(0);
   // Сайт починається з червоного кольору (true)
   const [isRedOverlayVisible, setIsRedOverlayVisible] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -128,8 +135,14 @@ export function Hero({ lang = "no" }: { lang?: string }) {
     const video = videoRef.current;
     if (!video) return;
 
-    // Початкова точка відео
-    video.currentTime = 3;
+    // Початкова точка відео (після завантаження метаданих — інакше Safari ігнорує)
+    // Гарантовано без звуку (React не завжди ставить атрибут muted у DOM)
+    const forceMute = () => { video.defaultMuted = true; video.muted = true; video.volume = 0; };
+    forceMute();
+    video.addEventListener("volumechange", forceMute);
+    video.addEventListener("loadedmetadata", forceMute);
+    const seekStart = () => { try { if (video.duration > 3.5) video.currentTime = 3; } catch (e) {} };
+    if (video.readyState >= 1) seekStart(); else video.addEventListener("loadedmetadata", seekStart, { once: true });
 
     const handleTimeUpdate = () => {
       // Починаємо плавно зафарбовувати в червоний за 1 секунду до кінця (плавний перехід ДО 1.5с холду)
@@ -159,8 +172,12 @@ export function Hero({ lang = "no" }: { lang?: string }) {
     };
 
     startPlay();
-    return () => video.removeEventListener("timeupdate", handleTimeUpdate);
-  }, [isRedOverlayVisible]);
+    return () => {
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("volumechange", forceMute);
+      video.removeEventListener("loadedmetadata", forceMute);
+    };
+  }, [isRedOverlayVisible, srcIdx]);
 
   const textScale = 1 - (scrollProgress * 0.6);
   const translateY = 35 * (1 - scrollProgress);
@@ -236,9 +253,9 @@ export function Hero({ lang = "no" }: { lang?: string }) {
       `}</style>
 
       <div className="fixed-bg-video">
-        <video ref={videoRef} muted autoPlay playsInline className="w-full h-full object-cover" style={{ filter: "brightness(0.45)", transform: "scale(1.45)" }}>
-          <source src="https://cdn.jsdelivr.net/gh/synectica/assets/KFA.mp4" type="video/mp4" />
-        </video>
+        <video key={srcIdx} ref={videoRef} src={VIDEO_SOURCES[srcIdx]} muted defaultMuted autoPlay loop={false} playsInline preload="auto"
+          onError={() => setSrcIdx((i) => Math.min(i + 1, VIDEO_SOURCES.length - 1))}
+          className="w-full h-full object-cover" style={{ filter: "brightness(0.45)", transform: "scale(1.45)" }} />
         {/* Червоний оверлей з оновленою транзицією */}
         <div className={`absolute inset-0 z-[3] bg-red-600 red-transition pointer-events-none ${isRedOverlayVisible ? 'opacity-100' : 'opacity-0'}`} />
         <div className="absolute inset-0 bg-black/40 z-[2]" />
