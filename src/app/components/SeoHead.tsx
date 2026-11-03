@@ -8,6 +8,8 @@ import { useEffect } from "react";
 const TITLE = "Dansetimer i Bergen – Koreografi for alle | Gratis prøvetime";
 const DESCRIPTION =
   "Koreografitimer i Bergen med Galyna Gerasymenko: teknikk ved barren, adagio og gulvarbeid for nybegynnere og viderekomne. Book gratis prøvetime.";
+// Основний домен. Використовується, якщо VITE_SITE_URL не задано — щоб canonical ніколи не вказував на vercel.app
+const CANONICAL_SITE = "https://www.koreografiforalle.no";
 const MAPS_URL = "https://www.google.no/maps/place/M%C3%B8llaren+Frivilligsentral/@60.3830593,5.3239127,17z/";
 // Іконки малюються в браузері (canvas) — окремі файли PNG не потрібні.
 function makeIcon(size: number, safe: number): string {
@@ -53,7 +55,7 @@ function setLink(rel: string, href: string, extra: Record<string, string> = {}) 
 
 export function SeoHead() {
   useEffect(() => {
-    const SITE = ((import.meta.env.VITE_SITE_URL as string | undefined) ?? window.location.origin).replace(/\/$/, "");
+    const SITE = ((import.meta.env.VITE_SITE_URL as string | undefined) ?? CANONICAL_SITE).replace(/\/$/, "");
 
     document.documentElement.lang = "nb";
     document.title = TITLE;
@@ -79,13 +81,29 @@ export function SeoHead() {
     setMeta("property", "og:title", TITLE);
     setMeta("property", "og:description", DESCRIPTION);
     setMeta("property", "og:url", `${SITE}/`);
-    // TODO: legg til /og.jpg (1200x630) i /public og fjern kommentaren under
-    // setMeta("property", "og:image", `${SITE}/og.jpg`);
+    setMeta("property", "og:image", `${SITE}/og.jpg`);
+    setMeta("property", "og:image:width", "1200");
+    setMeta("property", "og:image:height", "630");
+    setMeta("property", "og:image:alt", "Koreografi for alle – dansetimer i Bergen");
+    setMeta("name", "twitter:image", `${SITE}/og.jpg`);
     setMeta("name", "twitter:card", "summary_large_image");
     setMeta("name", "twitter:title", TITLE);
     setMeta("name", "twitter:description", DESCRIPTION);
 
     setLink("canonical", `${SITE}/`);
+
+    // Шрифти: preconnect + <link> замість @import у CSS (швидше відображення тексту, краще LCP)
+    const addLink = (key: string, attrs: Record<string, string>) => {
+      if (document.head.querySelector(`link[data-seo="${key}"]`)) return;
+      const l = document.createElement("link");
+      Object.entries(attrs).forEach(([k, v]) => l.setAttribute(k, v));
+      l.setAttribute("data-seo", key);
+      document.head.appendChild(l);
+    };
+    addLink("pc1", { rel: "preconnect", href: "https://fonts.googleapis.com" });
+    addLink("pc2", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" });
+    addLink("f1", { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Bebas+Neue&display=swap" });
+    addLink("pc3", { rel: "preconnect", href: "https://cdn.jsdelivr.net", crossorigin: "" });
 
     // Застосунок «Betaling for kurs – for faste kunder»: manifest і іконки створюються тут, у коді (файли в public не потрібні)
     const i192 = makeIcon(192, 0.9), i512 = makeIcon(512, 0.9), iMask = makeIcon(512, 0.66), iApple = makeIcon(180, 0.9);
@@ -123,6 +141,8 @@ export function SeoHead() {
           name: "Koreografi for alle",
           description: DESCRIPTION,
           url: SITE,
+          image: `${SITE}/og.jpg`,
+          logo: "https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png",
           address: {
             "@type": "PostalAddress",
             streetAddress: "Wolffs gate 12",

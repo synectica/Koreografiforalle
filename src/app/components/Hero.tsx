@@ -141,7 +141,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
     forceMute();
     video.addEventListener("volumechange", forceMute);
     video.addEventListener("loadedmetadata", forceMute);
-    const seekStart = () => { try { if (video.duration > 3.5) video.currentTime = 3; } catch (e) {} };
+    const seekStart = () => { try { /* відео вже обрізане, перемотка не потрібна */ } catch (e) {} };
     if (video.readyState >= 1) seekStart(); else video.addEventListener("loadedmetadata", seekStart, { once: true });
 
     const handleTimeUpdate = () => {
@@ -152,7 +152,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
 
       // Коли відео майже закінчилося — перекидаємо на початок
       if (video.currentTime >= video.duration - 0.1) {
-        video.currentTime = 3;
+        video.currentTime = 0;
         video.play();
         // Фіксуємо "щільний" червоний на 1.5 секунди перед початком зникнення
         setTimeout(() => setIsRedOverlayVisible(false), 1500);
@@ -164,15 +164,16 @@ export function Hero({ lang = "no" }: { lang?: string }) {
     const startPlay = async () => {
       try {
         await video.play();
-        // При першому заході: тримаємо червоний 1.5с, потім запускаємо перехід у 0.5с
-        setTimeout(() => setIsRedOverlayVisible(false), 1500);
       } catch (e) {
         console.log("Autoplay blocked");
       }
     };
 
     startPlay();
+    // Червоний екран не чекає на відео: через 1.5с зникає, під ним уже видно постер (перший кадр)
+    const redT = setTimeout(() => setIsRedOverlayVisible(false), 1500);
     return () => {
+      clearTimeout(redT);
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("volumechange", forceMute);
       video.removeEventListener("loadedmetadata", forceMute);
@@ -253,7 +254,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
       `}</style>
 
       <div className="fixed-bg-video">
-        <video key={srcIdx} ref={videoRef} src={VIDEO_SOURCES[srcIdx]} muted defaultMuted autoPlay loop={false} playsInline preload="auto"
+        <video key={srcIdx} ref={videoRef} src={VIDEO_SOURCES[srcIdx]} muted defaultMuted autoPlay loop={false} playsInline preload="auto" poster="/KFA-poster.jpg"
           onError={() => setSrcIdx((i) => Math.min(i + 1, VIDEO_SOURCES.length - 1))}
           className="w-full h-full object-cover" style={{ filter: "brightness(0.45)", transform: "scale(1.45)" }} />
         {/* Червоний оверлей з оновленою транзицією */}

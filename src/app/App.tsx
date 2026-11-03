@@ -227,8 +227,6 @@ export default function App() {
 
       <style>{`
         /* Єдиний шрифт сайту: IBM Plex Mono (є латиниця + кирилиця, тож укр/норв/англ виглядають однаково) */
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&subset=cyrillic,latin&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
         /* центр острова (айфон) / отвору камери (Android): ≈55% від safe-area; запасне значення 48px — для прев'ю */
         :root { --island-c: calc(max(env(safe-area-inset-top, 0px), 48px) * 0.55); --flag-safe: max(2px, calc(var(--island-c) - var(--bar-row-h, 30px) / 2)); }
         @media (min-width: 768px) { :root { --flag-safe: 28px; } }
