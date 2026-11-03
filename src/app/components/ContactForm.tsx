@@ -50,7 +50,7 @@ export function ContactForm({ lang = "no" }: { lang?: string }) {
 
   return (
     <section id="contact" className="relative w-full flex flex-col items-center justify-center py-6 md:py-12 px-4 bg-transparent overflow-visible">
-      <div className="w-full max-w-3xl z-10 flex flex-col items-center">
+      <div className="w-full max-w-5xl z-10 flex flex-col items-center">
         {/* Заголовок у стандартному регістрі */}
         <h2 className="text-3xl md:text-5xl font-bold text-center text-white mb-4 tracking-tight drop-shadow-lg">
           {tr(lang, "Kontakt meg", "Contact me", "Зв'яжіться зі мною")}

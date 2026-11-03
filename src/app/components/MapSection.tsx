@@ -96,7 +96,7 @@ export function MapSection({ lang = "no" }: { lang?: string }) {
         }
       `}</style>
 
-      <div className="w-full max-w-4xl mx-auto z-10 flex flex-col items-center">
+      <div className="w-full max-w-5xl mx-auto z-10 flex flex-col items-center">
 
         <div className="text-center mb-10">
           {/* [SEO/локальний пошук] заголовок і підзаголовок із назвою міста та місця (було: "Finn oss" / "Studiolokasjon") */}

@@ -55,7 +55,8 @@ export function BioSection({ lang = "no" }: { lang?: string }) {
             height: 100%;
             object-fit: cover;
             transition: all 0.5s ease;
-            transform: scale(1.5) translateX(12%) translateY(-10%);
+            transform: none;
+            object-position: 72% 30%;
             filter: brightness(0.85) contrast(1.1) saturate(1.05);
             transform-origin: center center;
             /* Покращення для стабільності картинки */
@@ -78,7 +79,7 @@ export function BioSection({ lang = "no" }: { lang?: string }) {
           .bio-hide-short { display: none; }
         }
         @media (max-width: 767px) {
-          .bio-img { transform: scale(1.5) translateX(8%) translateY(-5%); }
+          .bio-img { transform: none; object-position: 55% 28%; }
         }
 
         /* FIX ДЛЯ СКЛА (ПРИБИРАЄ ГЛЮКИ ТА СМУГИ) */
@@ -137,7 +138,7 @@ export function BioSection({ lang = "no" }: { lang?: string }) {
           <div className="w-full md:w-[42%] relative shrink-0 overflow-hidden bio-photo-container border-b md:border-b-0 md:border-r border-white/5">
             {/* [SEO] описовий alt + lazy-loading */}
             <img
-              src="https://cdn.jsdelivr.net/gh/synectica/assets/mama%20for%20KFA.webp"
+              src="/galyna.webp"
               alt="Galyna Gerasymenko, koreograf og instruktør i Bergen"
               loading="lazy"
               decoding="async"
