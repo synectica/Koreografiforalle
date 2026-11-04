@@ -26,8 +26,8 @@ const T = {
     mapCaps: { florida: "Kart: gangvei fra Florida (ca. 7 min)", moehlenpris: "Kart: gangvei fra Møhlenpris (ca. 7 min)" },
     tabs: ["Fra Florida", "Fra Møhlenpris"],
     routeCaps: {
-      florida: ["Gangveien opp mot Vitalitetsenteret", "Hjørnet ved Vitalitetsenteret"],
-      moehlenpris: ["Fra Møhlenpris: krysset og gangveien opp til inngangen"],
+      florida: ["Gangveien opp mot Vitalitetsenteret", "Krysset og gangveien opp til inngangen"],
+      moehlenpris: ["Hjørnet ved Vitalitetsenteret"],
     },
     insideTitle: "Inne i bygget",
     steps: ["Inngang A – Vitalitetsenteret", "Gå gjennom gangen", "Døren til salen", "Salen"],
@@ -53,8 +53,8 @@ const T = {
     mapCaps: { florida: "Map: walking route from Florida (approx. 7 min)", moehlenpris: "Map: walking route from Møhlenpris (approx. 7 min)" },
     tabs: ["From Florida", "From Møhlenpris"],
     routeCaps: {
-      florida: ["The footpath up towards Vitalitetsenteret", "The corner by Vitalitetsenteret"],
-      moehlenpris: ["From Møhlenpris: the crossing and the footpath up to the entrance"],
+      florida: ["The footpath up towards Vitalitetsenteret", "The crossing and the footpath up to the entrance"],
+      moehlenpris: ["The corner by Vitalitetsenteret"],
     },
     insideTitle: "Inside the building",
     steps: ["Entrance A – Vitalitetsenteret", "Walk through the corridor", "The door to the hall", "The hall"],
@@ -80,8 +80,8 @@ const T = {
     mapCaps: { florida: "Мапа: пішки від Florida (близько 7 хв)", moehlenpris: "Мапа: пішки від Møhlenpris (близько 7 хв)" },
     tabs: ["Від Florida", "Від Møhlenpris"],
     routeCaps: {
-      florida: ["Пішохідна доріжка вгору до Vitalitetsenteret", "Ріг біля Vitalitetsenteret"],
-      moehlenpris: ["Від Møhlenpris: перехрестя та доріжка вгору до входу"],
+      florida: ["Пішохідна доріжка вгору до Vitalitetsenteret", "Перехрестя та доріжка вгору до входу"],
+      moehlenpris: ["Ріг біля Vitalitetsenteret"],
     },
     insideTitle: "Всередині будівлі",
     steps: ["Вхід A – Vitalitetsenteret", "Пройдіть коридором", "Двері до залу", "Зал"],
@@ -97,8 +97,8 @@ const T = {
 const IMG = (n: string) => `/find/${n}.webp`;
 // Які фото до якого маршруту — міняється тут (назви файлів у public/find/)
 const ROUTES = {
-  florida: ["approach-street", "approach-corner"],
-  moehlenpris: ["approach-moehlenpris"],
+  florida: ["approach-street", "approach-moehlenpris"],
+  moehlenpris: ["approach-corner"],
 } as const;
 const MAPS = { florida: "map-florida", moehlenpris: "map-moehlenpris" } as const;
 const INSIDE = ["entrance", "hall-corridor", "door", "hall"] as const;
