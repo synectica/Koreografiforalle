@@ -23,16 +23,18 @@ const T = {
     findTitle: "Slik finner du oss",
     findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Bergen",
     routeTitle: "Velg hvor du kommer fra",
-    mapCaps: { florida: "Fra Florida: langs veien ca. 580 m · 7 min (hel linje) – gjennom parken ca. 680 m · 8 min (stiplet)", moehlenpris: "Fra Møhlenpris: ca. 440 m · 5 min" },
+    mapCaps: { florida: "Fra Florida – hel linje: langs veien, stiplet: gjennom parken", moehlenpris: "Fra Møhlenpris" },
     tabs: ["Fra Florida", "Fra Møhlenpris"],
     routeCaps: {
-      florida: ["Gå opp gangveien", "Ved krysset: fortsett opp"],
+      florida: ["Ved krysset: fortsett opp", "Gå opp gangveien"],
       moehlenpris: ["Gå mot Vitalitetsenteret"],
     },
     insideTitle: "Inne i bygget",
     steps: ["Inngang A", "Gå gjennom gangen", "Døren til salen", "Salen"],
     zoomHint: "Trykk på et bilde for å forstørre",
     close: "Lukk",
+    prev: "Forrige",
+    next: "Neste",
     fbTitle: "Bli med i Facebook-gruppen",
     fbD: "Følg med på nyheter og still spørsmål.",
     fbBtn: "Åpne Facebook-gruppen",
@@ -50,16 +52,18 @@ const T = {
     findTitle: "How to find us",
     findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Bergen",
     routeTitle: "Choose where you are coming from",
-    mapCaps: { florida: "From Florida: along the road approx. 580 m · 7 min (solid line) – through the park approx. 680 m · 8 min (dashed)", moehlenpris: "From Møhlenpris: approx. 440 m · 5 min" },
+    mapCaps: { florida: "From Florida – solid: along the road, dashed: through the park", moehlenpris: "From Møhlenpris" },
     tabs: ["From Florida", "From Møhlenpris"],
     routeCaps: {
-      florida: ["Walk up the footpath", "At the crossing: keep going up"],
+      florida: ["At the crossing: keep going up", "Walk up the footpath"],
       moehlenpris: ["Walk towards Vitalitetsenteret"],
     },
     insideTitle: "Inside the building",
     steps: ["Entrance A", "Walk through the corridor", "The door to the hall", "The hall"],
     zoomHint: "Tap a photo to enlarge it",
     close: "Close",
+    prev: "Previous",
+    next: "Next",
     fbTitle: "Join the Facebook group",
     fbD: "Follow the news and ask questions.",
     fbBtn: "Open the Facebook group",
@@ -77,16 +81,18 @@ const T = {
     findTitle: "Як нас знайти",
     findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Берген",
     routeTitle: "Оберіть, звідки ви йдете",
-    mapCaps: { florida: "Від Florida: дорогою ≈ 580 м · 7 хв (суцільна лінія) – через парк ≈ 680 м · 8 хв (пунктир)", moehlenpris: "Від Møhlenpris: ≈ 440 м · 5 хв" },
+    mapCaps: { florida: "Від Florida – суцільна: дорогою, пунктир: через парк", moehlenpris: "Від Møhlenpris" },
     tabs: ["Від Florida", "Від Møhlenpris"],
     routeCaps: {
-      florida: ["Ідіть угору доріжкою", "На перехресті: далі вгору"],
+      florida: ["На перехресті: далі вгору", "Ідіть угору доріжкою"],
       moehlenpris: ["Йдіть до Vitalitetsenteret"],
     },
     insideTitle: "Всередині будівлі",
     steps: ["Вхід A", "Пройдіть коридором", "Двері до залу", "Зал"],
     zoomHint: "Натисніть на фото, щоб збільшити",
     close: "Закрити",
+    prev: "Назад",
+    next: "Далі",
     fbTitle: "Приєднуйтесь до групи у Facebook",
     fbD: "Стежте за новинами та ставте запитання.",
     fbBtn: "Відкрити групу у Facebook",
@@ -97,11 +103,12 @@ const T = {
 const IMG = (n: string) => `/find/${n}.webp`;
 // Які фото до якого маршруту — міняється тут (назви файлів у public/find/)
 const ROUTES = {
-  florida: ["approach-street", "approach-moehlenpris"],
+  florida: ["approach-moehlenpris", "approach-street"],
   moehlenpris: ["approach-corner"],
 } as const;
 const MAPS = { florida: "map-florida", moehlenpris: "map-moehlenpris" } as const;
-const INSIDE = ["entrance", "hall-corridor", "door", "hall"] as const;
+const INSIDE = ["entrance", "door", "hall"] as const; // слайдшоу: не всі фото (коридор пропущено)
+const INSIDE_CAP = [0, 2, 3] as const; // індекси підписів у t.steps
 
 function Photo({ file, caption, num, onOpen }: { file: string; caption: string; num?: number; onOpen: (src: string, cap: string) => void }) {
   return (
@@ -119,6 +126,37 @@ function Photo({ file, caption, num, onOpen }: { file: string; caption: string; 
       </button>
       <figcaption className="text-center text-white font-bold uppercase tracking-wider md:tracking-widest text-[10px] md:text-xs pt-2 md:pt-3 leading-tight">{caption}</figcaption>
     </figure>
+  );
+}
+
+
+function Slideshow({ slides, onOpen, prev, next }: { slides: { f: string; cap: string }[]; onOpen: (src: string, cap: string) => void; prev: string; next: string }) {
+  const [i, setI] = useState(0);
+  const [x0, setX0] = useState<number | null>(null);
+  const n = slides.length;
+  const go = (d: number) => setI((v) => (v + d + n) % n);
+  const sl = slides[i];
+  return (
+    <div className="w-full max-w-3xl mx-auto">
+      <div
+        className="relative w-full rounded-[18px] md:rounded-[24px] overflow-hidden bg-black/40 border border-white/15"
+        onTouchStart={(e) => setX0(e.touches[0].clientX)}
+        onTouchEnd={(e) => { if (x0 !== null) { const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1); } setX0(null); }}
+      >
+        <button type="button" onClick={() => onOpen(IMG(sl.f), sl.cap)} className="block w-full cursor-zoom-in" aria-label={sl.cap}>
+          <img key={sl.f} src={IMG(sl.f)} alt={`${sl.cap} – Møllaren Frivilligsentral, Bergen`} width={1400} height={788} decoding="async" className="w-full h-auto block aspect-video object-cover" />
+        </button>
+        <span className="absolute top-2 left-2 md:top-3 md:left-3 min-w-8 h-8 px-2 rounded-full bg-black/70 text-white font-bold flex items-center justify-center text-xs md:text-sm border border-white/30">{i + 1}/{n}</span>
+        <button type="button" onClick={() => go(-1)} aria-label={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/60 border border-white/30 text-white text-2xl leading-none flex items-center justify-center">‹</button>
+        <button type="button" onClick={() => go(1)} aria-label={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/60 border border-white/30 text-white text-2xl leading-none flex items-center justify-center">›</button>
+      </div>
+      <p className="text-center text-white font-bold uppercase tracking-wider md:tracking-widest text-[11px] md:text-sm pt-3 leading-tight">{sl.cap}</p>
+      <div className="flex justify-center gap-2 pt-3">
+        {slides.map((s, k) => (
+          <button key={s.f} type="button" onClick={() => setI(k)} aria-label={`${k + 1}`} className={`h-2.5 rounded-full transition-all ${k === i ? "w-6 bg-white" : "w-2.5 bg-white/35"}`} />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -196,15 +234,17 @@ export function StudioInfo({ lang }: { lang: string }) {
           <div className="w-full max-w-3xl mx-auto mb-3 md:mb-5">
             <Photo key={MAPS[route]} file={MAPS[route]} caption={t.mapCaps[route]} onOpen={open} />
           </div>
-          {/* ОДНА нумерована послідовність: дорога → вхід → коридор → двері → зал (усі фото 16:9, зі стрілками) */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5 sm:[&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:w-1/2 sm:[&>*:last-child:nth-child(odd)]:mx-auto">
-            {[
+          {/* СЛАЙДШОУ прямо в блоці */}
+          <Slideshow
+            key={route}
+            slides={[
               ...ROUTES[route].map((f, i) => ({ f, cap: t.routeCaps[route][i] })),
-              ...INSIDE.map((f, i) => ({ f, cap: t.steps[i] })),
-            ].map(({ f, cap }, i) => (
-              <Photo key={f} file={f} caption={cap} num={i + 1} onOpen={open} />
-            ))}
-          </div>
+              ...INSIDE.map((f, i) => ({ f, cap: t.steps[INSIDE_CAP[i]] })),
+            ]}
+            onOpen={open}
+            prev={t.prev}
+            next={t.next}
+          />
           <p className="text-white/50 text-[10px] md:text-xs text-center mt-4">{t.zoomHint}</p>
         </div>
         {viewer && <Viewer src={viewer.src} cap={viewer.cap} close={() => setViewer(null)} label={t.close} />}
