@@ -56,7 +56,7 @@ export function BioSection({ lang = "no" }: { lang?: string }) {
             object-fit: cover;
             transition: all 0.5s ease;
             transform: none;
-            object-position: 60% 40%;
+            object-position: 72% 30%;
             filter: brightness(0.85) contrast(1.1) saturate(1.05);
             transform-origin: center center;
             /* Покращення для стабільності картинки */
@@ -135,19 +135,15 @@ export function BioSection({ lang = "no" }: { lang?: string }) {
         <div className="glass-container flex flex-col md:flex-row md:min-h-[500px]">
 
           {/* PHOTO SECTION */}
-          <div className="w-full md:w-[48%] relative shrink-0 overflow-hidden bio-photo-container border-b md:border-b-0 md:border-r border-white/5">
+          <div className="w-full md:w-[42%] relative shrink-0 overflow-hidden bio-photo-container border-b md:border-b-0 md:border-r border-white/5">
             {/* [SEO] описовий alt + lazy-loading */}
-            <picture>
-              {/* комп'ютер: вертикальний кадр, Галина видна повністю; телефон: широкий кадр */}
-              <source media="(min-width: 768px)" srcSet="/galyna-portrait.webp" />
-              <img
-                src="/galyna.webp"
-                alt="Galyna Gerasymenko, koreograf og instruktør i Bergen"
-                loading="lazy"
-                decoding="async"
-                className="bio-img absolute inset-0"
-              />
-            </picture>
+            <img
+              src="/galyna.webp"
+              alt="Galyna Gerasymenko, koreograf og instruktør i Bergen"
+              loading="lazy"
+              decoding="async"
+              className="bio-img absolute inset-0"
+            />
 
             {!activeTab && (
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent z-10 flex flex-col justify-end p-4 md:hidden">

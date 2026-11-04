@@ -1,214 +1,82 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import React from "react";
+import { Play } from "lucide-react";
 import { trackEvent } from "./track"; // [GOOGLE ADS] події
 
-// ЯК ЗАМІНИТИ НА РЕАЛЬНІ ФОТО:
-// додай файли у public/ (напр. /studio-1.jpg) і впиши шлях у `src`.
-// Фото має бути горизонтальне 16:9 — на телефоні воно саме обріжеться під вертикальну картку,
-// на комп'ютері показується повністю (16:9). Перелистування — курсором (перетягнути) або пальцем.
-// Натискання на фото відкриває його на весь екран (хрестик, стрілки, Esc, свайп).
-// Зараз замість фото — плавний градієнт, що переливається (чистий CSS, без файлів: швидко і без GIF).
-// Коли будуть фото: додай файли у public/ у форматі WebP (напр. /studio-1.webp), впиши шлях у `src`
-// і постав SHOW_NUMBERS = false.
-const SHOW_NUMBERS = true;
-const slides = [
-  { id: 1, src: "", grad: ["#ff7a59", "#ff3d71", "#7b4dff"], alt: "Dansestudio i Bergen – salen sett fra inngangen" },
-  { id: 2, src: "", grad: ["#22c55e", "#00bfff", "#0047ab"], alt: "Dansestudio i Bergen – speilvegg og gulv" },
-  { id: 3, src: "", grad: ["#fbbc05", "#f97316", "#ea4335"], alt: "Dansestudio i Bergen – lokalet under en time" },
-  { id: 4, src: "", grad: ["#7b4dff", "#ff69b4", "#fbbc05"], alt: "Dansestudio i Bergen – garderobe og oppholdsrom" },
+// ПРИКЛАДИ ЗАНЯТЬ (відео). Поки відео немає — показуються плавні градієнтні плейсхолдери «Video kommer snart».
+// ЯК ДОДАТИ ВІДЕО: поклади файл у public/ (напр. /public/video/time-1.mp4, без звуку, до 5–10 МБ, 720p),
+// за бажанням постер (public/video/time-1.jpg), і впиши шляхи в `src` та `poster` нижче.
+// Кілька відео — просто додай рядки в масив VIDEOS. Підписи (title) — три мови.
+type V = { id: number; src: string; poster: string; grad: [string, string, string]; title: { no: string; en: string; ua: string } };
+const VIDEOS: V[] = [
+  { id: 1, src: "", poster: "", grad: ["#ff7a59", "#ff3d71", "#7b4dff"], title: { no: "Teknikk ved barren", en: "Barre technique", ua: "Техніка біля станка" } },
+  { id: 2, src: "", poster: "", grad: ["#22c55e", "#00bfff", "#0047ab"], title: { no: "Adagio på midten", en: "Adagio in the centre", ua: "Адажіо на середині" } },
+  { id: 3, src: "", poster: "", grad: ["#fbbc05", "#f97316", "#ea4335"], title: { no: "Gulvarbeid", en: "Floor work", ua: "Робота на підлозі" } },
 ];
 
 const TXT = {
-  no: { title: "Dansestudio i Bergen", sub: "Slik ser salen ut innvendig", open: "Åpne bilde", prev: "Forrige bilde", next: "Neste bilde", close: "Lukk", label: "Bilder av dansestudioet i Bergen" },
-  en: { title: "Dance studio in Bergen", sub: "This is what the hall looks like inside", open: "Open photo", prev: "Previous photo", next: "Next photo", close: "Close", label: "Photos of the dance studio in Bergen" },
-  ua: { title: "Танцювальна студія в Бергені", sub: "Ось як виглядає зал всередині", open: "Відкрити фото", prev: "Попереднє фото", next: "Наступне фото", close: "Закрити", label: "Фото танцювальної студії в Бергені" },
+  no: { title: "Eksempler på timer", sub: "Se hvordan en koreografitime ser ut", soon: "Video kommer snart", label: "Videoeksempler fra timene i Bergen" },
+  en: { title: "Class examples", sub: "See what a choreography class looks like", soon: "Video coming soon", label: "Video examples from the classes in Bergen" },
+  ua: { title: "Приклади занять", sub: "Подивіться, як проходить заняття з хореографії", soon: "Відео скоро з'явиться", label: "Відеоприклади занять у Бергені" },
 } as const;
 
-function Slide({ s }: { s: (typeof slides)[number] }) {
-  const [failed, setFailed] = useState(false); // якщо файлу фото немає — лишається градієнт
-  const g = s.grad;
+function Card({ v, l, soon }: { v: V; l: "no" | "en" | "ua"; soon: string }) {
+  const [c1, c2, c3] = v.grad;
   return (
-    <div role="img" aria-label={s.alt} className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-      <style>{`@keyframes kfaGrad { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }`}</style>
-      {/* градієнт, що плавно переливається (CSS — без GIF) */}
-      <div className="absolute inset-0" style={{ background: `linear-gradient(120deg, ${g[0]}, ${g[1]}, ${g[2]}, ${g[0]})`, backgroundSize: "300% 300%", animation: "kfaGrad 8s ease-in-out infinite" }} />
-      {s.src && !failed && (
-        <img src={s.src} alt="" draggable={false} loading="lazy" decoding="async" onError={() => setFailed(true)} className="absolute inset-0 w-full h-full object-cover" />
-      )}
-      {SHOW_NUMBERS && (
-        <span className="relative font-bebas text-white font-bold leading-none select-none text-[9rem] md:text-[14rem] drop-shadow-[0_4px_24px_rgba(0,0,0,0.35)]">{s.id}</span>
-      )}
-    </div>
+    <figure className="flex flex-col items-center">
+      <div className="relative w-full aspect-video rounded-[18px] md:rounded-[24px] overflow-hidden bg-black border border-white/15">
+        {v.src ? (
+          <video
+            controls
+            playsInline
+            preload="metadata"
+            poster={v.poster || undefined}
+            className="w-full h-full object-cover"
+            onPlay={() => trackEvent("select_content", { content_type: "video", item_id: `class_video_${v.id}` })} // [GOOGLE ADS]
+          >
+            <source src={v.src} type="video/mp4" />
+          </video>
+        ) : (
+          <div
+            role="img"
+            aria-label={`${v.title[l]} – ${soon}`}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+            style={{ background: `linear-gradient(120deg, ${c1}, ${c2}, ${c3}, ${c1})`, backgroundSize: "300% 300%", animation: "kfaGrad 8s ease-in-out infinite" }}
+          >
+            <span className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-black/40 border border-white/40 flex items-center justify-center">
+              <Play className="w-6 h-6 md:w-9 md:h-9 text-white ml-1" fill="currentColor" />
+            </span>
+            <span className="text-white font-bold uppercase tracking-widest text-[10px] md:text-xs drop-shadow">{soon}</span>
+          </div>
+        )}
+      </div>
+      <figcaption className="text-center text-white font-bold uppercase tracking-wider md:tracking-widest text-[10px] md:text-xs pt-2 md:pt-3 leading-tight">{v.title[l]}</figcaption>
+    </figure>
   );
 }
 
 export function GallerySection({ lang = "no" }: { lang?: string }) {
-  const t = TXT[lang === "ua" ? "ua" : lang === "en" ? "en" : "no"];
-  const [index, setIndex] = useState(0);   // комп'ютер
-  const [mi, setMi] = useState(0);         // телефон
-  const [drag, setDrag] = useState(0);     // зсув під час перетягування (px)
-  const [dragging, setDragging] = useState(false);
-  const startX = useRef<number | null>(null);
-  const frame = useRef<HTMLDivElement>(null);
-  const moved = useRef(0);                  // наскільки зсунули курсор (щоб відрізнити клік від перетягування)
-  const [viewer, setViewer] = useState<number | null>(null); // індекс фото на весь екран
-  const openViewer = (i: number) => { setViewer(i); trackEvent("select_content", { content_type: "gallery_open", item_id: `studio_${i + 1}` }); }; // [GOOGLE ADS]
-
-  // Esc / стрілки / блокування прокрутки сторінки, поки фото відкрите
-  useEffect(() => {
-    if (viewer === null) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setViewer(null);
-      if (e.key === "ArrowRight") setViewer((v) => (v === null ? v : (v + 1) % slides.length));
-      if (e.key === "ArrowLeft") setViewer((v) => (v === null ? v : (v - 1 + slides.length) % slides.length));
-    };
-    window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
-  }, [viewer]);
-
-  const wrap = (n: number) => (n + slides.length) % slides.length;
-
-  const go = (next: number) => {
-    const i = wrap(next);
-    setIndex(i);
-    trackEvent("select_content", { content_type: "gallery", item_id: `studio_${i + 1}` }); // [GOOGLE ADS]
-  };
-
-  // перетягування курсором / пальцем на комп'ютері
-  const onDown = (e: React.PointerEvent) => {
-    startX.current = e.clientX;
-    moved.current = 0;
-    setDragging(true);
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onMove = (e: React.PointerEvent) => {
-    if (startX.current === null) return;
-    moved.current = Math.max(moved.current, Math.abs(e.clientX - startX.current));
-    setDrag(e.clientX - startX.current);
-  };
-  const onUp = () => {
-    if (startX.current === null) return;
-    const w = frame.current?.clientWidth ?? 600;
-    if (moved.current < 6) openViewer(index);              // простий клік — на весь екран
-    else if (Math.abs(drag) > w * 0.12) go(index + (drag < 0 ? 1 : -1));
-    startX.current = null;
-    setDrag(0);
-    setDragging(false);
-  };
-
-  const arrow = "absolute top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/25 active:scale-90 transition";
-
+  const l: "no" | "en" | "ua" = lang === "ua" ? "ua" : lang === "en" ? "en" : "no";
+  const t = TXT[l];
   return (
     <section id="studio" className="relative w-full bg-transparent flex flex-col items-center py-0 px-4 overflow-visible">
+      <style>{`@keyframes kfaGrad { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }`}</style>
       <div className="w-full max-w-5xl mx-auto z-10 flex flex-col items-center">
-
         <div className="text-center mb-8">
           {/* [SEO] заголовок з ключовою фразою */}
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight drop-shadow-lg">
-            {t.title}
-          </h2>
-          <p className="text-xl text-white/80 text-center font-normal max-w-xl mx-auto leading-relaxed">
-            {t.sub}
-          </p>
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight drop-shadow-lg">{t.title}</h2>
+          <p className="text-xl text-white/80 text-center font-normal max-w-xl mx-auto leading-relaxed">{t.sub}</p>
         </div>
-
-        <div className="w-full p-3 md:p-6 bg-white/10 backdrop-blur-2xl rounded-[40px] md:rounded-[50px] border border-white/20 shadow-2xl overflow-hidden [transform:translateZ(0)] [isolation:isolate]">
-
-          {/* ТЕЛЕФОН: вертикальні картки (обрізані з 16:9), гортаються пальцем */}
-          <div
-            className="md:hidden flex overflow-x-auto snap-x snap-mandatory rounded-[28px]"
-            style={{ scrollbarWidth: "none" }}
-            role="region"
-            aria-roledescription="carousel"
-            aria-label={t.label}
-            onScroll={(e) => setMi(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
-          >
-            {slides.map((s) => (
-              <div key={s.id} onClick={() => openViewer(s.id - 1)} role="button" tabIndex={0} aria-label={`${t.open} ${s.id}`} onKeyDown={(e) => { if (e.key === "Enter") openViewer(s.id - 1); }} className="snap-center shrink-0 w-full aspect-[3/4] rounded-[28px] overflow-hidden bg-black select-none cursor-zoom-in">
-                <Slide s={s} />
-              </div>
-            ))}
-          </div>
-
-          {/* КРАПКИ (телефон) */}
-          <div className="flex md:hidden justify-center gap-3 mt-4 mb-1">
-            {slides.map((s, i) => (
-              <span key={s.id} aria-hidden="true" className={`h-2.5 rounded-full transition-all ${i === mi ? "w-8 bg-white" : "w-2.5 bg-white/30"}`} />
-            ))}
-          </div>
-
-          {/* КОМП'ЮТЕР: горизонтальна карусель 16:9, перетягується курсором */}
-          <div
-            ref={frame}
-            className={`hidden md:block relative w-full aspect-video rounded-[28px] overflow-hidden bg-black select-none touch-pan-y ${dragging ? "cursor-grabbing" : "cursor-zoom-in"}`}
-            role="region"
-            aria-roledescription="carousel"
-            aria-label={t.label}
-            onPointerDown={onDown}
-            onPointerMove={onMove}
-            onPointerUp={onUp}
-            onPointerCancel={onUp}
-          >
-            <div
-              className={`flex h-full ${dragging ? "" : "transition-transform duration-500 ease-out"}`}
-              style={{ transform: `translateX(calc(${-index * 100}% + ${drag}px))` }}
-            >
-              {slides.map((s, i) => (
-                <div key={s.id} className="w-full h-full shrink-0 pointer-events-none" role="group" aria-roledescription="slide" aria-label={`${i + 1} / ${slides.length}`}>
-                  <Slide s={s} />
-                </div>
-              ))}
-            </div>
-            <button onPointerDown={(e) => e.stopPropagation()} onClick={() => go(index - 1)} aria-label={t.prev} className={`${arrow} left-4`}><ChevronLeft className="w-6 h-6" /></button>
-            <button onPointerDown={(e) => e.stopPropagation()} onClick={() => go(index + 1)} aria-label={t.next} className={`${arrow} right-4`}><ChevronRight className="w-6 h-6" /></button>
-          </div>
-
-          {/* КРАПКИ (комп'ютер) */}
-          <div className="hidden md:flex justify-center gap-3 mt-6 mb-2">
-            {slides.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => go(i)}
-                aria-label={`${i + 1} / ${slides.length}`}
-                aria-current={i === index}
-                className={`h-2.5 rounded-full transition-all ${i === index ? "w-8 bg-white" : "w-2.5 bg-white/30"}`}
-              />
-            ))}
-          </div>
+        <div
+          role="region"
+          aria-label={t.label}
+          className="w-full p-3 md:p-6 bg-white/10 backdrop-blur-2xl rounded-[28px] md:rounded-[50px] border border-white/20 shadow-2xl grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 [transform:translateZ(0)] [isolation:isolate]"
+        >
+          {VIDEOS.map((v) => (
+            <Card key={v.id} v={v} l={l} soon={t.soon} />
+          ))}
         </div>
       </div>
-
-      {viewer !== null && typeof document !== "undefined" && createPortal(
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={t.label}
-          className="fixed inset-0 z-[20000] bg-black/95 flex flex-col items-center justify-center"
-          style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
-          onClick={() => setViewer(null)}
-        >
-          <div
-            className="relative aspect-[3/4] md:aspect-video rounded-[24px] overflow-hidden bg-black shadow-2xl"
-            style={{ width: "min(92vw, calc(72dvh * 0.75))" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Slide s={slides[viewer]} />
-          </div>
-          <style>{`@media (min-width: 768px) { [aria-label="${t.label}"][role="dialog"] > div:first-child { width: min(92vw, calc(78dvh * 1.7778)) !important; } }`}</style>
-
-          <div className="mt-5 flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
-            <button type="button" onClick={() => setViewer((viewer - 1 + slides.length) % slides.length)} aria-label={t.prev} className="w-12 h-12 rounded-full bg-white/15 border border-white/25 text-white flex items-center justify-center active:scale-90 transition"><ChevronLeft className="w-6 h-6" /></button>
-            <button type="button" onClick={() => setViewer(null)} aria-label={t.close} className="h-12 px-6 rounded-full bg-white text-black font-black uppercase text-xs tracking-widest flex items-center gap-2 active:scale-95 transition"><X className="w-4 h-4" />{t.close}</button>
-            <button type="button" onClick={() => setViewer((viewer + 1) % slides.length)} aria-label={t.next} className="w-12 h-12 rounded-full bg-white/15 border border-white/25 text-white flex items-center justify-center active:scale-90 transition"><ChevronRight className="w-6 h-6" /></button>
-          </div>
-          <p className="mt-3 text-white/60 text-xs tracking-widest">{viewer + 1} / {slides.length}</p>
-        </div>,
-        document.body
-      )}
     </section>
   );
 }

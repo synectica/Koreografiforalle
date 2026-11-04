@@ -1,6 +1,7 @@
 "use client";
-import React from "react";
-import { Footprints, Waves, Facebook, MapPin } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { Footprints, Shirt, ShowerHead, Waves, Facebook, MapPin, X } from "lucide-react";
 import { trackEvent } from "./track"; // [GOOGLE ADS] події
 
 // TODO: встав посилання на Facebook-групу. Поки порожнє — кнопка не показується.
@@ -11,51 +12,142 @@ type L = "no" | "en" | "ua";
 const T = {
   no: {
     needTitle: "Hva du trenger",
+    clothT: "Treningsklær",
+    clothD: "Tøy som er behagelig og strekker seg.",
     socksT: "Sokker",
-    socksD: "Vi danser i sokker – helst med anti-skli.",
+    socksD: "Glatte sokker som likevel kontrollerer parketten.",
+    changeT: "Garderobe og dusj",
+    changeD: "Det finnes garderobe og dusj.",
     towelT: "Håndkle",
-    towelD: "Ta med et håndkle å legge på matten.",
+    towelD: "Ett til dusjen og ett til matten.",
     findTitle: "Slik finner du oss",
-    findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Bergen",
-    steps: ["Wolffs gate 12", "Inngangen", "Døren til salen"],
-    stepAlt: "Bilde kommer",
+    findSub: "Møllaren Frivilligsentral, Thormøhlens gate 39, Bergen",
+    routeTitle: "Velg hvor du kommer fra",
+    mapCaps: { florida: "Kart: gangvei fra Florida (ca. 7 min)", moehlenpris: "Kart: gangvei fra Møhlenpris (ca. 7 min)" },
+    tabs: ["Fra Florida", "Fra Møhlenpris"],
+    routeCaps: {
+      florida: ["Gangveien opp mot Vitalitetsenteret", "Hjørnet ved Vitalitetsenteret"],
+      moehlenpris: ["Fra Møhlenpris: krysset og gangveien opp til inngangen"],
+    },
+    insideTitle: "Inne i bygget",
+    steps: ["Inngang A – Vitalitetsenteret", "Gå gjennom gangen", "Døren til salen", "Salen"],
+    zoomHint: "Trykk på et bilde for å forstørre",
+    close: "Lukk",
     fbTitle: "Bli med i Facebook-gruppen",
     fbD: "Følg med på nyheter og still spørsmål.",
     fbBtn: "Åpne Facebook-gruppen",
   },
   en: {
     needTitle: "What to bring",
+    clothT: "Workout clothes",
+    clothD: "Comfortable, stretchy clothing.",
     socksT: "Socks",
-    socksD: "We dance in socks – ideally with non-slip soles.",
-    towelT: "Towel",
-    towelD: "Bring a towel to lay on the mat.",
+    socksD: "Slippery socks that still give you control on the parquet floor.",
+    changeT: "Changing room and shower",
+    changeD: "A changing room and a shower are available.",
+    towelT: "Towels",
+    towelD: "One for the shower and one for your mat.",
     findTitle: "How to find us",
-    findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Bergen",
-    steps: ["Wolffs gate 12", "The entrance", "The door to the hall"],
-    stepAlt: "Photo coming soon",
+    findSub: "Møllaren Frivilligsentral, Thormøhlens gate 39, Bergen",
+    routeTitle: "Choose where you are coming from",
+    mapCaps: { florida: "Map: walking route from Florida (approx. 7 min)", moehlenpris: "Map: walking route from Møhlenpris (approx. 7 min)" },
+    tabs: ["From Florida", "From Møhlenpris"],
+    routeCaps: {
+      florida: ["The footpath up towards Vitalitetsenteret", "The corner by Vitalitetsenteret"],
+      moehlenpris: ["From Møhlenpris: the crossing and the footpath up to the entrance"],
+    },
+    insideTitle: "Inside the building",
+    steps: ["Entrance A – Vitalitetsenteret", "Walk through the corridor", "The door to the hall", "The hall"],
+    zoomHint: "Tap a photo to enlarge it",
+    close: "Close",
     fbTitle: "Join the Facebook group",
     fbD: "Follow the news and ask questions.",
     fbBtn: "Open the Facebook group",
   },
   ua: {
     needTitle: "Що взяти з собою",
+    clothT: "Тренувальний одяг",
+    clothD: "Зручний одяг, що тягнеться.",
     socksT: "Шкарпетки",
-    socksD: "Ми танцюємо в шкарпетках – найкраще з антиковзним покриттям.",
-    towelT: "Рушник",
-    towelD: "Візьміть рушник, щоб стелити на килимок.",
+    socksD: "Слизькі шкарпетки, які все одно контролюють поверхню паркету.",
+    changeT: "Переодягальня та душ",
+    changeD: "Є переодягальня і душ.",
+    towelT: "Рушники",
+    towelD: "Один для душу та один для килимка.",
     findTitle: "Як нас знайти",
-    findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Берген",
-    steps: ["Wolffs gate 12", "Вхід", "Двері до залу"],
-    stepAlt: "Фото скоро",
+    findSub: "Møllaren Frivilligsentral, Thormøhlens gate 39, Берген",
+    routeTitle: "Оберіть, звідки ви йдете",
+    mapCaps: { florida: "Мапа: пішки від Florida (близько 7 хв)", moehlenpris: "Мапа: пішки від Møhlenpris (близько 7 хв)" },
+    tabs: ["Від Florida", "Від Møhlenpris"],
+    routeCaps: {
+      florida: ["Пішохідна доріжка вгору до Vitalitetsenteret", "Ріг біля Vitalitetsenteret"],
+      moehlenpris: ["Від Møhlenpris: перехрестя та доріжка вгору до входу"],
+    },
+    insideTitle: "Всередині будівлі",
+    steps: ["Вхід A – Vitalitetsenteret", "Пройдіть коридором", "Двері до залу", "Зал"],
+    zoomHint: "Натисніть на фото, щоб збільшити",
+    close: "Закрити",
     fbTitle: "Приєднуйтесь до групи у Facebook",
     fbD: "Стежте за новинами та ставте запитання.",
     fbBtn: "Відкрити групу у Facebook",
   },
 } as const;
 
+
+const IMG = (n: string) => `/find/${n}.webp`;
+// Які фото до якого маршруту — міняється тут (назви файлів у public/find/)
+const ROUTES = {
+  florida: ["approach-street", "approach-corner"],
+  moehlenpris: ["approach-moehlenpris"],
+} as const;
+const MAPS = { florida: "map-florida", moehlenpris: "map-moehlenpris" } as const;
+const INSIDE = ["entrance", "hall-corridor", "door", "hall"] as const;
+
+function Photo({ file, caption, num, onOpen }: { file: string; caption: string; num?: number; onOpen: (src: string, cap: string) => void }) {
+  return (
+    <figure className="flex flex-col items-center">
+      <button
+        type="button"
+        onClick={() => onOpen(IMG(file), caption)}
+        className="relative w-full rounded-[18px] md:rounded-[24px] overflow-hidden bg-black/40 border border-white/15 cursor-zoom-in active:scale-[0.99] transition"
+        aria-label={caption}
+      >
+        <img src={IMG(file)} alt={`${caption} – Møllaren Frivilligsentral, Bergen`} width={1400} height={788} loading="lazy" decoding="async" className="w-full h-auto block" />
+        {num !== undefined && (
+          <span className="absolute top-2 left-2 md:top-3 md:left-3 w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/70 text-white font-bold flex items-center justify-center text-sm md:text-lg border border-white/30">{num}</span>
+        )}
+      </button>
+      <figcaption className="text-center text-white font-bold uppercase tracking-wider md:tracking-widest text-[10px] md:text-xs pt-2 md:pt-3 leading-tight">{caption}</figcaption>
+    </figure>
+  );
+}
+
+function Viewer({ src, cap, close, label }: { src: string; cap: string; close: () => void; label: string }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [close]);
+  return createPortal(
+    <div role="dialog" aria-modal="true" aria-label={cap} onClick={close} className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-3 md:p-8">
+      <button type="button" onClick={close} aria-label={label} className="absolute top-3 right-3 md:top-6 md:right-6 h-11 px-4 rounded-full bg-white/15 border border-white/25 text-white flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+        <X className="w-4 h-4" /> {label}
+      </button>
+      <img src={src} alt={cap} className="max-w-full max-h-[80dvh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
+      <p className="text-white/90 text-sm md:text-base font-bold text-center mt-4 max-w-xl">{cap}</p>
+    </div>,
+    document.body
+  );
+}
+
 export function StudioInfo({ lang }: { lang: string }) {
   const l: L = lang === "ua" ? "ua" : lang === "en" ? "en" : "no";
   const t = T[l];
+  const [route, setRoute] = useState<"florida" | "moehlenpris">("florida");
+  const [viewer, setViewer] = useState<{ src: string; cap: string } | null>(null);
+  const open = (src: string, cap: string) => setViewer({ src, cap });
 
   return (
     <section id="info" className="relative z-10 w-full flex flex-col items-center py-0 px-4">
@@ -66,7 +158,9 @@ export function StudioInfo({ lang }: { lang: string }) {
           <h2 className="text-2xl md:text-5xl font-bold text-white mb-5 md:mb-8 tracking-tight text-center drop-shadow-lg">{t.needTitle}</h2>
           <div className="w-full grid grid-cols-2 gap-3 md:gap-4">
             {[
+              { Icon: Shirt, title: t.clothT, text: t.clothD },
               { Icon: Footprints, title: t.socksT, text: t.socksD },
+              { Icon: ShowerHead, title: t.changeT, text: t.changeD },
               { Icon: Waves, title: t.towelT, text: t.towelD },
             ].map(({ Icon, title, text }) => (
               <div key={title} className="bg-white/10 backdrop-blur-2xl rounded-[28px] md:rounded-[40px] border border-white/20 shadow-2xl p-4 md:p-8 flex flex-col items-center text-center">
@@ -84,22 +178,40 @@ export function StudioInfo({ lang }: { lang: string }) {
           <p className="text-xs md:text-xl text-white/80 text-center mb-4 md:mb-8 flex items-center justify-center gap-2">
             <MapPin className="w-4 h-4 md:w-5 md:h-5 shrink-0" /> <span>{t.findSub}</span>
           </p>
-          {/* TODO: заміни чорні плейсхолдери на фото (src) і додай короткий опис дверей */}
-          <div className="w-full grid grid-cols-3 gap-2 md:gap-4">
-            {t.steps.map((label, i) => (
-              <figure key={i} className="flex flex-col items-center">
-                <div
-                  role="img"
-                  aria-label={`${label} – ${t.stepAlt}`}
-                  className="w-full aspect-[3/4] md:aspect-video rounded-[16px] md:rounded-[22px] bg-black flex items-center justify-center overflow-hidden"
-                >
-                  <span className="font-bebas text-white text-4xl md:text-8xl leading-none select-none">{i + 1}</span>
-                </div>
-                <figcaption className="text-center text-white font-bold uppercase tracking-wider md:tracking-widest text-[9px] md:text-xs pt-2 md:pt-4 leading-tight">{label}</figcaption>
-              </figure>
+          {/* МАРШРУТ: вибір, звідки йти (Florida / Møhlenpris) */}
+          <h3 className="text-white/90 font-bold uppercase tracking-widest text-[11px] md:text-sm text-center mb-3">{t.routeTitle}</h3>
+          <div className="flex justify-center gap-2 md:gap-3 mb-4 md:mb-6" role="group" aria-label={t.routeTitle}>
+            {(["florida", "moehlenpris"] as const).map((k, i) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={route === k}
+                onClick={() => { setRoute(k); trackEvent("select_content", { content_type: "route", item_id: k }); }} // [GOOGLE ADS]
+                className={`h-11 md:h-12 px-5 md:px-8 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs border transition ${route === k ? "bg-white text-black border-white" : "bg-white/10 text-white border-white/25"}`}
+              >
+                {t.tabs[i]}
+              </button>
             ))}
           </div>
+          <div className="w-full max-w-3xl mx-auto mb-3 md:mb-5">
+            <Photo key={MAPS[route]} file={MAPS[route]} caption={t.mapCaps[route]} onOpen={open} />
+          </div>
+          <div className={`w-full grid gap-3 md:gap-5 mb-6 md:mb-10 ${ROUTES[route].length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 max-w-xl mx-auto"}`}>
+            {ROUTES[route].map((f, i) => (
+              <Photo key={f} file={f} caption={t.routeCaps[route][i]} onOpen={open} />
+            ))}
+          </div>
+
+          {/* ВСЕРЕДИНІ: вхід → коридор → двері → зал */}
+          <h3 className="text-white/90 font-bold uppercase tracking-widest text-[11px] md:text-sm text-center mb-3">{t.insideTitle}</h3>
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5">
+            {INSIDE.map((f, i) => (
+              <Photo key={f} file={f} caption={t.steps[i]} num={i + 1} onOpen={open} />
+            ))}
+          </div>
+          <p className="text-white/50 text-[10px] md:text-xs text-center mt-4">{t.zoomHint}</p>
         </div>
+        {viewer && <Viewer src={viewer.src} cap={viewer.cap} close={() => setViewer(null)} label={t.close} />}
 
         {/* FACEBOOK */}
         {FACEBOOK_GROUP_URL && (

@@ -104,7 +104,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
     ["#info h2", 0, tr(lang, "Hva du trenger", "What to bring", "Що взяти")],
     ["#info h2", 1, tr(lang, "Slik finner du oss", "How to find us", "Як знайти двері")],
     ["#location h2", 0, tr(lang, "Finn oss", "Find us", "Де ми")],
-    ["#studio h2", 0, tr(lang, "Dansestudio", "Dance studio", "Студія")],
+    ["#studio h2", 0, tr(lang, "Timer i video", "Class videos", "Відео занять")],
   ];
   const pinsRef = useRef(PINS);
   pinsRef.current = PINS;
@@ -308,7 +308,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
               <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" className="inline-block align-[-3px] mr-2" fill="#fff">
                 <path fillRule="evenodd" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
               </svg>
-              Wolffs gate 12, Møllaren Frivilligsentral, Bergen
+              Thormøhlens gate 39, Møllaren Frivilligsentral, Bergen
             </button>
       </div>
 

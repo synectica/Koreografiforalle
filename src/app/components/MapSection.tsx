@@ -5,7 +5,7 @@ import { trackEvent } from "./track"; // [GOOGLE ADS] події конверс�
 import { tr } from "./i18n";
 
 export function MapSection({ lang = "no" }: { lang?: string }) {
-  const displayAddress = "Wolffs gate 12, 5006 Bergen";
+  const displayAddress = "Thormøhlens gate 39, 5006 Bergen";
   // Ваше пряме посилання на локацію
   const googleMapsUrl = `https://www.google.no/maps/place/M%C3%B8llaren+Frivilligsentral/@60.3830593,5.3239127,17z/`;
 
@@ -104,7 +104,7 @@ export function MapSection({ lang = "no" }: { lang?: string }) {
             {tr(lang, "Finn oss i Bergen", "Find us in Bergen", "Знайдіть нас у Бергені")}
           </h2>
           <p className="text-xl text-white/80 text-center font-normal max-w-xl mx-auto leading-relaxed">
-            {tr(lang, "Studiolokasjon:", "Studio location:", "Локація студії:")} Møllaren Frivilligsentral
+            {tr(lang, "Koreografistudio:", "Choreography studio:", "Студія хореографії:")} Møllaren Frivilligsentral
           </p>
         </div>
 
@@ -114,7 +114,7 @@ export function MapSection({ lang = "no" }: { lang?: string }) {
           <div className="map-iframe-container h-[40vh] md:h-[50vh]">
             <div className="map-iframe-wrapper">
               <iframe
-                title="Kart: Møllaren Frivilligsentral, Wolffs gate 12, Bergen"
+                title="Kart: Møllaren Frivilligsentral, Thormøhlens gate 39, Bergen"
                 src={`https://maps.google.com/maps?q=${encodeURIComponent(displayAddress)}&t=&z=17&ie=UTF8&iwloc=&output=embed`}
                 allowFullScreen
                 loading="lazy"
@@ -125,7 +125,7 @@ export function MapSection({ lang = "no" }: { lang?: string }) {
           {/* [SEO/локальний пошук] адреса в семантичному тегу <address> (NAP має збігатися з Google Business Profile) */}
           <address className="not-italic mt-8 flex flex-col items-center justify-center text-center px-4 pb-4">
             <p className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-              Wolffs gate 12
+              Thormøhlens gate 39
             </p>
             <p className="text-white/50 text-base md:text-lg mt-1 font-medium">
               {tr(lang, "5006 Bergen, Norge", "5006 Bergen, Norway", "5006 Берген, Норвегія")}

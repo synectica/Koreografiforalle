@@ -145,7 +145,7 @@ export function SeoHead() {
           logo: "https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png",
           address: {
             "@type": "PostalAddress",
-            streetAddress: "Wolffs gate 12",
+            streetAddress: "Thormøhlens gate 39",
             postalCode: "5006",
             addressLocality: "Bergen",
             addressCountry: "NO",

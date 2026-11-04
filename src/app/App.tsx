@@ -10,7 +10,7 @@ import { BookingSection } from "./components/BookingSection";
 import { ContactForm } from "./components/ContactForm";
 import { MapSection } from "./components/MapSection";
 import { StudioInfo } from "./components/StudioInfo"; // адреса-інфо: що взяти, як знайти, Facebook
-import { GallerySection } from "./components/GallerySection"; // фото залу (замість плакатів)
+import { GallerySection } from "./components/GallerySection"; // приклади занять (відео)
 import { SeoHead } from "./components/SeoHead"; // [SEO] title, meta, JSON-LD
 import { Analytics } from "./components/Analytics"; // [GOOGLE ADS] gtag + згода на cookie
 import { Download, Share, PlusSquare, X } from "lucide-react";
