@@ -115,7 +115,7 @@ export function MapSection({ lang = "no" }: { lang?: string }) {
             <div className="map-iframe-wrapper">
               <iframe
                 title="Kart: Møllaren Frivilligsentral, Wolffs gate 12, Bergen"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(displayAddress)}&t=&z=17&ie=UTF8&iwloc=&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(displayAddress)}&ll=60.3828628,5.3232897&t=&z=17&ie=UTF8&iwloc=&output=embed`}
                 allowFullScreen
                 loading="lazy"
               ></iframe>

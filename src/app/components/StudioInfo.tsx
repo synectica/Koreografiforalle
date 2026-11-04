@@ -23,14 +23,14 @@ const T = {
     findTitle: "Slik finner du oss",
     findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Bergen",
     routeTitle: "Velg hvor du kommer fra",
-    mapCaps: { florida: "Kart: gangvei fra Florida (ca. 9 min)", moehlenpris: "Kart: gangvei fra Møhlenpris (ca. 6 min)" },
+    mapCaps: { florida: "Fra Florida: langs veien ca. 580 m · 7 min (hel linje) – gjennom parken ca. 680 m · 8 min (stiplet)", moehlenpris: "Fra Møhlenpris: ca. 440 m · 5 min" },
     tabs: ["Fra Florida", "Fra Møhlenpris"],
     routeCaps: {
-      florida: ["Gangveien opp mot Vitalitetsenteret", "Krysset og gangveien opp til inngangen"],
-      moehlenpris: ["Hjørnet ved Vitalitetsenteret"],
+      florida: ["Gå opp gangveien", "Ved krysset: fortsett opp"],
+      moehlenpris: ["Gå mot Vitalitetsenteret"],
     },
     insideTitle: "Inne i bygget",
-    steps: ["Inngang A – Vitalitetsenteret", "Gå gjennom gangen", "Døren til salen", "Salen"],
+    steps: ["Inngang A", "Gå gjennom gangen", "Døren til salen", "Salen"],
     zoomHint: "Trykk på et bilde for å forstørre",
     close: "Lukk",
     fbTitle: "Bli med i Facebook-gruppen",
@@ -50,14 +50,14 @@ const T = {
     findTitle: "How to find us",
     findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Bergen",
     routeTitle: "Choose where you are coming from",
-    mapCaps: { florida: "Map: walking route from Florida (approx. 9 min)", moehlenpris: "Map: walking route from Møhlenpris (approx. 6 min)" },
+    mapCaps: { florida: "From Florida: along the road approx. 580 m · 7 min (solid line) – through the park approx. 680 m · 8 min (dashed)", moehlenpris: "From Møhlenpris: approx. 440 m · 5 min" },
     tabs: ["From Florida", "From Møhlenpris"],
     routeCaps: {
-      florida: ["The footpath up towards Vitalitetsenteret", "The crossing and the footpath up to the entrance"],
-      moehlenpris: ["The corner by Vitalitetsenteret"],
+      florida: ["Walk up the footpath", "At the crossing: keep going up"],
+      moehlenpris: ["Walk towards Vitalitetsenteret"],
     },
     insideTitle: "Inside the building",
-    steps: ["Entrance A – Vitalitetsenteret", "Walk through the corridor", "The door to the hall", "The hall"],
+    steps: ["Entrance A", "Walk through the corridor", "The door to the hall", "The hall"],
     zoomHint: "Tap a photo to enlarge it",
     close: "Close",
     fbTitle: "Join the Facebook group",
@@ -77,14 +77,14 @@ const T = {
     findTitle: "Як нас знайти",
     findSub: "Møllaren Frivilligsentral, Wolffs gate 12, Берген",
     routeTitle: "Оберіть, звідки ви йдете",
-    mapCaps: { florida: "Мапа: пішки від Florida (близько 9 хв)", moehlenpris: "Мапа: пішки від Møhlenpris (близько 6 хв)" },
+    mapCaps: { florida: "Від Florida: дорогою ≈ 580 м · 7 хв (суцільна лінія) – через парк ≈ 680 м · 8 хв (пунктир)", moehlenpris: "Від Møhlenpris: ≈ 440 м · 5 хв" },
     tabs: ["Від Florida", "Від Møhlenpris"],
     routeCaps: {
-      florida: ["Пішохідна доріжка вгору до Vitalitetsenteret", "Перехрестя та доріжка вгору до входу"],
-      moehlenpris: ["Ріг біля Vitalitetsenteret"],
+      florida: ["Ідіть угору доріжкою", "На перехресті: далі вгору"],
+      moehlenpris: ["Йдіть до Vitalitetsenteret"],
     },
     insideTitle: "Всередині будівлі",
-    steps: ["Вхід A – Vitalitetsenteret", "Пройдіть коридором", "Двері до залу", "Зал"],
+    steps: ["Вхід A", "Пройдіть коридором", "Двері до залу", "Зал"],
     zoomHint: "Натисніть на фото, щоб збільшити",
     close: "Закрити",
     fbTitle: "Приєднуйтесь до групи у Facebook",
@@ -196,17 +196,13 @@ export function StudioInfo({ lang }: { lang: string }) {
           <div className="w-full max-w-3xl mx-auto mb-3 md:mb-5">
             <Photo key={MAPS[route]} file={MAPS[route]} caption={t.mapCaps[route]} onOpen={open} />
           </div>
-          <div className={`w-full grid gap-3 md:gap-5 mb-6 md:mb-10 ${ROUTES[route].length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 max-w-xl mx-auto"}`}>
-            {ROUTES[route].map((f, i) => (
-              <Photo key={f} file={f} caption={t.routeCaps[route][i]} onOpen={open} />
-            ))}
-          </div>
-
-          {/* ВСЕРЕДИНІ: вхід → коридор → двері → зал */}
-          <h3 className="text-white/90 font-bold uppercase tracking-widest text-[11px] md:text-sm text-center mb-3">{t.insideTitle}</h3>
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5">
-            {INSIDE.map((f, i) => (
-              <Photo key={f} file={f} caption={t.steps[i]} num={i + 1} onOpen={open} />
+          {/* ОДНА нумерована послідовність: дорога → вхід → коридор → двері → зал (усі фото 16:9, зі стрілками) */}
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5 sm:[&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:w-1/2 sm:[&>*:last-child:nth-child(odd)]:mx-auto">
+            {[
+              ...ROUTES[route].map((f, i) => ({ f, cap: t.routeCaps[route][i] })),
+              ...INSIDE.map((f, i) => ({ f, cap: t.steps[i] })),
+            ].map(({ f, cap }, i) => (
+              <Photo key={f} file={f} caption={cap} num={i + 1} onOpen={open} />
             ))}
           </div>
           <p className="text-white/50 text-[10px] md:text-xs text-center mt-4">{t.zoomHint}</p>
