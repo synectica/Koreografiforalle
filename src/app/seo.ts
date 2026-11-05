@@ -49,6 +49,11 @@ export function buildJsonLd(lang: SeoLang) {
         hasMap: MAPS_URL,
         areaServed: { "@type": "City", name: "Bergen" },
         knowsLanguage: ["nb", "en", "uk"],
+        amenityFeature: [
+          { "@type": "LocationFeatureSpecification", name: "Inkluderende tilgang og tilrettelagt infrastruktur", value: true },
+          { "@type": "LocationFeatureSpecification", name: "Barnevogn kan stå i treningssalen", value: true },
+          { "@type": "LocationFeatureSpecification", name: "Garderobe og dusj", value: true },
+        ],
         priceRange: "kr 150–200",
         currenciesAccepted: "NOK",
         openingHoursSpecification: [

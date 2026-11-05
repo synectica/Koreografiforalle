@@ -245,7 +245,7 @@ export default function App({ initialLang = "no" }: { initialLang?: Lang } = {})
         .footer-logo:hover { transform: translateY(-2px) scale(1.02); }
         @media (max-width: 768px) { .footer-logo { height: 40px; } }
         /* ЛОГОТИП (тільки він): повернуто оригінальний шрифт Bebas Neue */
-        .logo-font, .logo-font * { font-family: 'Bebas Neue', sans-serif !important; }
+        .logo-font, .logo-font * { font-family: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif !important; } /* Bebas Neue не має кирилиці: українські літери беруться з Oswald (той самий вузький жирний стиль) */
         section[id] { scroll-margin-top: calc(max(env(safe-area-inset-top, 0px), 48px) + 64px); }
         @media (min-width: 768px) { section[id] { scroll-margin-top: 1rem; } }
         img, video { max-width: 100%; }

@@ -109,7 +109,7 @@ export function SeoHead({ lang = "no" }: { lang?: SeoLang }) {
     };
     addLink("pc1", { rel: "preconnect", href: "https://fonts.googleapis.com" });
     addLink("pc2", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" });
-    addLink("f1", { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Bebas+Neue&display=swap" });
+    addLink("f1", { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Bebas+Neue&family=Oswald:wght@500;700&display=swap" });
     addLink("pc3", { rel: "preconnect", href: "https://cdn.jsdelivr.net", crossorigin: "" });
 
     // Застосунок «Betaling for kurs – for faste kunder»: manifest і іконки створюються тут, у коді (файли в public не потрібні)
