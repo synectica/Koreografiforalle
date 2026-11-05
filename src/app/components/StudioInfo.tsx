@@ -325,7 +325,7 @@ export function StudioInfo({ lang }: { lang: string }) {
                 className="relative w-full rounded-[18px] md:rounded-[24px] overflow-hidden bg-black/40 border border-white/15 cursor-zoom-in active:scale-[0.99] transition"
                 aria-label={`${t.expand}: ${t.mapCaps[k]}`}
               >
-                <img src={IMG(MAPS[k])} alt={`${t.mapCaps[k]} – Møllaren Frivilligsentral, Wolffs gate 12, Bergen`} width={1400} height={1050} loading={k === "florida" ? "eager" : "lazy"} decoding="async" className="w-full h-auto block" />
+                <img src={IMG(MAPS[k])} alt={`${t.mapCaps[k]} – Møllaren Frivilligsentral, Wolffs gate 12, Bergen`} width={1240} height={930} loading={k === "florida" ? "eager" : "lazy"} decoding="async" className="w-full h-auto block" />
                 <span className="absolute bottom-2 right-2 md:bottom-3 md:right-3 h-10 px-3 rounded-full bg-black/75 text-white flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider border border-white/30">
                   <Maximize2 className="w-4 h-4" /> {t.expand}
                 </span>
