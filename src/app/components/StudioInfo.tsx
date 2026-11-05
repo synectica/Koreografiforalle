@@ -31,6 +31,7 @@ const T = {
     },
     insideTitle: "Inne i bygget",
     steps: ["Inngang A", "Gå gjennom gangen", "Døren til salen", "Salen"],
+    dirs: "Fra Florida: gå langs veien (ca. 580 m, 7 min) eller gjennom parken (ca. 680 m, 8 min) til Wolffs gate. Fra Møhlenpris: ca. 440 m, 5 min til fots. Gå inn gjennom Inngang A ved Vitalitetssenteret, videre gjennom gangen til døren til salen.",
     zoomHint: "Trykk på et bilde for å forstørre",
     close: "Lukk",
     prev: "Forrige",
@@ -60,6 +61,7 @@ const T = {
     },
     insideTitle: "Inside the building",
     steps: ["Entrance A", "Walk through the corridor", "The door to the hall", "The hall"],
+    dirs: "From Florida: walk along the road (about 580 m, 7 min) or through the park (about 680 m, 8 min) to Wolffs gate. From Møhlenpris: about 440 m, 5 min on foot. Enter through Entrance A at Vitalitetssenteret, then go through the corridor to the door of the hall.",
     zoomHint: "Tap a photo to enlarge it",
     close: "Close",
     prev: "Previous",
@@ -89,6 +91,7 @@ const T = {
     },
     insideTitle: "Всередині будівлі",
     steps: ["Вхід A", "Пройдіть коридором", "Двері до залу", "Зал"],
+    dirs: "Від Florida: дорогою (близько 580 м, 7 хв) або через парк (близько 680 м, 8 хв) до Wolffs gate. Від Møhlenpris: близько 440 м, 5 хв пішки. Заходьте через вхід A біля Vitalitetssenteret, далі коридором до дверей у зал.",
     zoomHint: "Натисніть на фото, щоб збільшити",
     close: "Закрити",
     prev: "Назад",
@@ -245,6 +248,7 @@ export function StudioInfo({ lang }: { lang: string }) {
             prev={t.prev}
             next={t.next}
           />
+          <p className="text-white/80 text-xs md:text-base text-center leading-relaxed max-w-2xl mx-auto mt-5">{t.dirs}</p>
           <p className="text-white/50 text-[10px] md:text-xs text-center mt-4">{t.zoomHint}</p>
         </div>
         {viewer && <Viewer src={viewer.src} cap={viewer.cap} close={() => setViewer(null)} label={t.close} />}

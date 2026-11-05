@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { SEO, SITE as SEO_SITE, LANG_PATH, HREFLANG, buildJsonLd, type SeoLang } from "../seo";
 
 // Ставить title, meta, canonical, Open Graph, manifest і JSON-LD під час виконання —
 // працює в Figma Make / Vite без доступу до index.html.
@@ -53,14 +54,36 @@ function setLink(rel: string, href: string, extra: Record<string, string> = {}) 
   Object.entries(extra).forEach(([k, v]) => el!.setAttribute(k, v));
 }
 
-export function SeoHead() {
+export function SeoHead({ lang = "no" }: { lang?: SeoLang }) {
+  // 1) мовно-залежні теги: title, description, canonical, hreflang, og, JSON-LD
+  useEffect(() => {
+    const m = SEO[lang];
+    const url = SEO_SITE + LANG_PATH[lang];
+    document.documentElement.lang = m.htmlLang;
+    document.title = m.title;
+    setMeta("name", "description", m.description);
+    setMeta("property", "og:locale", m.ogLocale);
+    setMeta("property", "og:title", m.title);
+    setMeta("property", "og:description", m.description);
+    setMeta("property", "og:url", url);
+    setMeta("property", "og:image:alt", m.imgAlt);
+    setMeta("name", "twitter:title", m.title);
+    setMeta("name", "twitter:description", m.description);
+    setLink("canonical", url);
+    (Object.keys(LANG_PATH) as SeoLang[]).forEach((l) => {
+      let el = document.head.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${HREFLANG[l]}"]`);
+      if (!el) { el = document.createElement("link"); el.rel = "alternate"; el.setAttribute("hreflang", HREFLANG[l]); document.head.appendChild(el); }
+      el.href = SEO_SITE + LANG_PATH[l];
+    });
+    let script = document.getElementById("ld-json") as HTMLScriptElement | null;
+    if (!script) { script = document.createElement("script"); script.id = "ld-json"; script.type = "application/ld+json"; document.head.appendChild(script); }
+    script.textContent = JSON.stringify(buildJsonLd(lang));
+  }, [lang]);
+
+  // 2) одноразові теги: PWA, шрифти, іконки
   useEffect(() => {
     const SITE = ((import.meta.env.VITE_SITE_URL as string | undefined) ?? CANONICAL_SITE).replace(/\/$/, "");
 
-    document.documentElement.lang = "nb";
-    document.title = TITLE;
-
-    setMeta("name", "description", DESCRIPTION);
     setMeta("name", "robots", "index, follow, max-image-preview:large");
     setMeta("name", "author", "Galyna Gerasymenko");
     setMeta("name", "theme-color", "#EA4335");
@@ -75,22 +98,6 @@ export function SeoHead() {
     const vp = document.head.querySelector<HTMLMetaElement>('meta[name="viewport"]');
     if (vp && !vp.content.includes("viewport-fit")) vp.content += ", viewport-fit=cover";
 
-    setMeta("property", "og:type", "website");
-    setMeta("property", "og:locale", "nb_NO");
-    setMeta("property", "og:site_name", "Koreografi for alle");
-    setMeta("property", "og:title", TITLE);
-    setMeta("property", "og:description", DESCRIPTION);
-    setMeta("property", "og:url", `${SITE}/`);
-    setMeta("property", "og:image", `${SITE}/og.jpg`);
-    setMeta("property", "og:image:width", "1200");
-    setMeta("property", "og:image:height", "630");
-    setMeta("property", "og:image:alt", "Koreografi for alle – dansetimer i Bergen");
-    setMeta("name", "twitter:image", `${SITE}/og.jpg`);
-    setMeta("name", "twitter:card", "summary_large_image");
-    setMeta("name", "twitter:title", TITLE);
-    setMeta("name", "twitter:description", DESCRIPTION);
-
-    setLink("canonical", `${SITE}/`);
 
     // Шрифти: preconnect + <link> замість @import у CSS (швидше відображення тексту, краще LCP)
     const addLink = (key: string, attrs: Record<string, string>) => {
@@ -131,58 +138,6 @@ export function SeoHead() {
       setLink("icon", i192, { type: "image/png" });
     }
 
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@graph": [
-        { "@type": "WebSite", "@id": `${SITE}/#website`, url: SITE, name: "Koreografi for alle", inLanguage: "nb-NO" },
-        {
-          "@type": ["SportsActivityLocation", "LocalBusiness"],
-          "@id": `${SITE}/#studio`,
-          name: "Koreografi for alle",
-          description: DESCRIPTION,
-          url: SITE,
-          image: `${SITE}/og.jpg`,
-          logo: "https://cdn.jsdelivr.net/gh/synectica/assets/kfaforkfa.png",
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: "Wolffs gate 12",
-            postalCode: "5006",
-            addressLocality: "Bergen",
-            addressCountry: "NO",
-          },
-          geo: { "@type": "GeoCoordinates", latitude: 60.3830593, longitude: 5.3239127 },
-          hasMap: MAPS_URL,
-          areaServed: "Bergen",
-          priceRange: "kr 150–200",
-          openingHoursSpecification: [
-            { "@type": "OpeningHoursSpecification", dayOfWeek: "Tuesday", opens: "15:00", closes: "16:00" },
-            { "@type": "OpeningHoursSpecification", dayOfWeek: "Friday", opens: "15:30", closes: "17:00" },
-          ],
-          employee: { "@id": `${SITE}/#galyna` },
-          makesOffer: [
-            { "@type": "Offer", name: "Gratis prøvetime", price: "0", priceCurrency: "NOK", itemOffered: { "@type": "Service", name: "Gratis prøvetime i koreografi" } },
-            { "@type": "Offer", name: "Koreografitime 60 minutter (tirsdager)", price: "150", priceCurrency: "NOK", itemOffered: { "@type": "Service", name: "Koreografitime 60 minutter" } },
-            { "@type": "Offer", name: "Koreografitime 90 minutter (fredager)", price: "200", priceCurrency: "NOK", itemOffered: { "@type": "Service", name: "Koreografitime 90 minutter" } },
-          ],
-        },
-        {
-          "@type": "Person",
-          "@id": `${SITE}/#galyna`,
-          name: "Galyna Gerasymenko",
-          jobTitle: "Koreograf og instruktør",
-          worksFor: { "@id": `${SITE}/#studio` },
-        },
-      ],
-    };
-
-    let script = document.getElementById("ld-json") as HTMLScriptElement | null;
-    if (!script) {
-      script = document.createElement("script");
-      script.id = "ld-json";
-      script.type = "application/ld+json";
-      document.head.appendChild(script);
-    }
-    script.textContent = JSON.stringify(jsonLd);
   }, []);
 
   return null;

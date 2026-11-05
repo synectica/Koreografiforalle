@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { type Lang, tr } from "./components/i18n"; // три мови: no / en / ua
+import { type Lang, tr } from "./components/i18n";
+import { LANG_PATH } from "./seo"; // три мови: no / en / ua
 
 // Імпорти твоїх компонентів
 import { Hero } from "./components/Hero";
@@ -12,6 +13,8 @@ import { MapSection } from "./components/MapSection";
 import { StudioInfo } from "./components/StudioInfo"; // адреса-інфо: що взяти, як знайти, Facebook
 import { GallerySection } from "./components/GallerySection"; // приклади занять (відео)
 import { SeoHead } from "./components/SeoHead"; // [SEO] title, meta, JSON-LD
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react"; // Vercel Web Analytics (без cookie)
+import { SpeedInsights } from "@vercel/speed-insights/react"; // Vercel Speed Insights
 import { Analytics } from "./components/Analytics"; // [GOOGLE ADS] gtag + згода на cookie
 import { Download, Share, PlusSquare, X } from "lucide-react";
 import { trackEvent } from "./components/track";
@@ -191,9 +194,14 @@ function FlagSwitch({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void 
   );
 }
 
-export default function App() {
+export default function App({ initialLang = "no" }: { initialLang?: Lang } = {}) {
   // основна мова — норвезька (реклама й Google ведуть норвезьку аудиторію); прапор вгорі перемикає NO → EN → UA
-  const [lang, setLang] = useState<Lang>("no");
+  const [lang, setLangState] = useState<Lang>(initialLang);
+  // мова = окрема адреса (/, /en/, /ua/) — так Google індексує кожну мову
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    try { window.history.replaceState(null, "", LANG_PATH[l] + window.location.search + window.location.hash); } catch {}
+  };
   const [instagramUrl, setInstagramUrl] = useState("https://www.instagram.com/vik_gerasymenko/");
 
   useEffect(() => {
@@ -222,8 +230,10 @@ export default function App() {
   return (
     <main className="min-h-[100dvh] bg-[#0a0a0a] selection:bg-[#22c55e]/30 scroll-smooth flex flex-col overflow-x-hidden">
 
-      <SeoHead />
+      <SeoHead lang={lang} />
       <Analytics lang={lang} />
+      <VercelAnalytics />
+      <SpeedInsights />
 
       <style>{`
         /* Єдиний шрифт сайту: IBM Plex Mono (є латиниця + кирилиця, тож укр/норв/англ виглядають однаково) */

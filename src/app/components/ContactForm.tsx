@@ -122,7 +122,7 @@ export function ContactForm({ lang = "no" }: { lang?: string }) {
           <div className={`absolute inset-0 w-full h-full bg-white/10 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 border border-white/20 shadow-2xl flex flex-col items-center transition-all duration-500 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
             <div className="flex flex-col items-center justify-center flex-1 text-center">
               <Heart className="w-20 h-20 text-[#1877F2] fill-[#1877F2] mb-8 animate-pulse" />
-              <h3 className="text-6xl md:text-7xl font-black text-white leading-none mb-6 tracking-tighter">{tr(lang, "Takk!", "Thank you!", "Дякуємо!")}</h3>
+              <p aria-hidden={!submitted} className="text-6xl md:text-7xl font-black text-white leading-none mb-6 tracking-tighter">{submitted ? tr(lang, "Takk!", "Thank you!", "Дякуємо!") : ""}</p>
               <p className="text-white font-bold text-xl leading-relaxed max-w-md">
                 {tr(lang, "Meldingen din er sendt.", "Your message has been sent.", "Ваше повідомлення надіслано.")}
               </p>

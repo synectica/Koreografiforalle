@@ -222,9 +222,9 @@ export function BookingSection({ lang = "no" }: { lang?: string }) {
           <div className={`w-full light-frosted-glass rounded-[40px] p-6 md:p-10 flex flex-col items-center justify-between text-center transition-all duration-500 absolute inset-0 ${!submitted ? 'opacity-0 pointer-events-none scale-95 z-0' : 'opacity-100 scale-100 z-20'}`}>
                 <div className="flex flex-col items-center justify-center flex-1 relative z-10 w-full">
                   <Heart className="w-16 h-16 text-[#22c55e] fill-[#22c55e] mb-6 animate-pulse" />
-                  <h3 className="text-6xl md:text-7xl font-black text-black leading-none mb-4 tracking-tighter">
-                    {tr(lang, "Takk!", "Thank you!", "Дякуємо!")}
-                  </h3>
+                  <p aria-hidden={!submitted} className="text-6xl md:text-7xl font-black text-black leading-none mb-4 tracking-tighter">
+                    {submitted ? tr(lang, "Takk!", "Thank you!", "Дякуємо!") : ""}
+                  </p>
                   <p className="text-black font-bold text-xl mb-8">{tr(lang, "Din prøvetime er booket:", "Your trial class is booked:", "Ваше пробне заняття заброньовано:")}</p>
                   <div className="bg-white/60 rounded-[32px] py-8 px-10 border border-white/80 shadow-sm w-full max-w-md">
                     <span className="text-black font-black text-2xl md:text-3xl block mb-2">{finalDetails.day}</span>

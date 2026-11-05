@@ -288,7 +288,7 @@ export function Hero({ lang = "no" }: { lang?: string }) {
           )}
           <div style={{ opacity: pinned >= 0 ? 0 : 1, transform: pinned >= 0 ? "translateY(-14px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
           {/* [SEO] єдиний H1 доповнено "dansetimer i Bergen" (візуально не змінюється) */}
-          <h1 className="hero-title logo-font font-bebas font-bold uppercase text-white italic">KOREOGRAFI FOR ALLE<span className="sr-only"> – dansetimer i Bergen</span></h1>
+          <h1 className="hero-title logo-font font-bebas font-bold uppercase text-white italic">KOREOGRAFI FOR ALLE<span className="sr-only"> – {tr(lang, "dansetimer i Bergen", "dance classes in Bergen", "заняття з хореографії в Бергені")}</span></h1>
           <p className="hero-subtitle logo-font font-bebas opacity-90 uppercase mt-3" style={isPhone ? { letterSpacing: `${0.49 - 0.29 * scrollProgress}em`, marginRight: `${-(0.49 - 0.29 * scrollProgress)}em` } : undefined}>{tr(lang, "med", "with", "з")} GALYNA GERASYMENKO</p>
           </div>
         </div>
